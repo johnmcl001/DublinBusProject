@@ -14,20 +14,14 @@ class StopView(viewsets.ModelViewSet):
     """
     # Define which serializer to use
     serializer_class = StopSerializer
-
-    def get_queryset(self):
-        """
-        Overwrite default get_queryset to produce desired result
-        """
-        stop_number = self.request.query_params.get("stopnumber")
-        queryset = Stops.objects.filter(stop_id__endswith=stop_number)
-        return queryset
+    queryset = Stops.objects.all()
 
 class RouteView(viewsets.ModelViewSet):
     """
     For SearchByRoute
     """
-    pass
+    serializer_class = RouteSerializer
+    queryset = Routes.objects.all()
 
 class DestinationView(viewsets.ModelViewSet):
     """
