@@ -1,10 +1,8 @@
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
+"""
+Create database models here
+Will probably just be importing them using inspectdb
+"""
+
 from django.db import models
 
 
@@ -18,6 +16,9 @@ class Routes(models.Model):
     route_short_name = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
+        """
+        Meta data for Routes
+        """
         managed = True
         db_table = 'routes'
 
@@ -35,14 +36,23 @@ class Stops(models.Model):
     location_type = models.BigIntegerField(blank=True, null=True)
 
     class Meta:
+        """
+        Meta data for Stops
+        """
         managed = True
         db_table = 'stops'
 
 
 class Test(models.Model):
+    """
+    Test model for connection
+    """
     c1 = models.IntegerField(primary_key=True)
     c2 = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
+        """
+        Meta data for Test
+        """
         managed = True
         db_table = 'test'

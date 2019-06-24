@@ -3,7 +3,7 @@ Convert query results to json files
 """
 
 from rest_framework import serializers
-from .models import *
+from .models import Routes, Stops
 
 
 class StopSerializer(serializers.ModelSerializer):
@@ -11,9 +11,11 @@ class StopSerializer(serializers.ModelSerializer):
     Convert stop data from gtfs to json
     """
     class Meta:
-        # Specify mode
+        """
+        Meta data for StopSerializer, model and what to return
+        """
         model = Stops
-        # Specify fields, this represents all fields
+        # Return more specific fields when we know what we want
         fields = "__all__"
 
 class RouteSerializer(serializers.ModelSerializer):
@@ -21,7 +23,9 @@ class RouteSerializer(serializers.ModelSerializer):
     Convert route data from gtfs to json
     """
     class Meta:
-        # specify model
+        """
+        Meta data for RouteSerializer, model and what to return
+        """
         model = Routes
-        # Specify fields
+        # Return more specific fields when we know what we want
         fields = "__all__"

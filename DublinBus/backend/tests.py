@@ -1,7 +1,12 @@
+"""
+Tests for django backend
+"""
+
 from django.test import TestCase
-from .models import *
+from .models import Routes, Stops
 
 # Create your tests here.
+
 
 class StopsTests(TestCase):
     """
@@ -23,8 +28,31 @@ class StopsTests(TestCase):
 
     def test_query_stop_name(self):
         """
-        Should return tuple with coordinates
+        Should return stop name string
         """
         stop = Stops.objects.filter(stop_id__endswith=3365)
         stop_name = stop.values("stop_name")[0]["stop_name"]
         self.assertEqual(stop_name, "Abberley")
+
+class RoutesTests(TestCase):
+    """
+    Unit tests for Routes Model
+    """
+    def setUp(self):
+        """
+        Set up fake model for testing
+        """
+        Routes.objects.create(
+            route_id="1",
+            route_type=1,
+            agency_id="2",
+            route_short_name="test"
+        )
+
+    def test_query_short_name(self):
+        """
+        Should return route name string
+        """
+        route = Routes.objects.filter(route_id="1")
+        short_name = route.values("route_short_name")[0]["route_short_name"]
+        self.assertEqual(short_name, "test")
