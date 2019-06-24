@@ -5,13 +5,21 @@
 #   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
-
-"""
-Put database models here
-Most likely just use python manage.py inspectdb to autogenerate
-"""
-
 from django.db import models
+
+
+class Routes(models.Model):
+    """
+    Model for gtfs routes.txt
+    """
+    route_id = models.CharField(primary_key=True, max_length=45)
+    route_type = models.IntegerField(blank=True, null=True)
+    agency_id = models.CharField(max_length=45, blank=True, null=True)
+    route_short_name = models.CharField(max_length=45, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'routes'
 
 
 class Stops(models.Model):
@@ -32,9 +40,6 @@ class Stops(models.Model):
 
 
 class Test(models.Model):
-    """
-    Test model to test connection
-    """
     c1 = models.IntegerField(primary_key=True)
     c2 = models.CharField(max_length=20, blank=True, null=True)
 

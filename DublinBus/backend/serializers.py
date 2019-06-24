@@ -15,3 +15,13 @@ class StopSerializer(serializers.ModelSerializer):
         model = Stops
         # Specify fields, this represents all fields
         fields = "__all__"
+
+class RouteSerializer(serializers.ModelSerializer):
+    """
+    Convert route data from gtfs to json
+    """
+    class Meta:
+        # specify model
+        model = Routes
+        # Specify fields
+        fields = "__all__"
