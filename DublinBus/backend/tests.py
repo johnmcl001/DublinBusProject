@@ -2,19 +2,25 @@
 Tests for django backend
 """
 
-from django.test import TestCase
-from .models import Routes, Stops
+from django.test import RequestFactory, TestCase
+from django.test import Client
+from django.urls import reverse
+
+
+from .views import *
+
+client = Client()
 
 # Create your tests here.
 
+class SeactByStopTest(TestCase):
+    """
+    UnitTests for SearchByStops Feature
+    """
 
-class StopsTests(TestCase):
-    """
-    UnitTests for Stops Model
-    """
     def setUp(self):
         """
-        Setup fake model for testing
+        Setup fake models for testing
         """
         Stops.objects.create(
             index=1,
@@ -26,33 +32,32 @@ class StopsTests(TestCase):
             location_type=0,
         )
 
-    def test_query_stop_name(self):
-        """
-        Should return stop name string
-        """
-        stop = Stops.objects.filter(stop_id__endswith=3365)
-        stop_name = stop.values("stop_name")[0]["stop_name"]
-        self.assertEqual(stop_name, "Abberley")
-
-class RoutesTests(TestCase):
-    """
-    Unit tests for Routes Model
-    """
-    def setUp(self):
-        """
-        Set up fake model for testing
-        """
-        Routes.objects.create(
-            route_id="1",
-            route_type=1,
-            agency_id="2",
-            route_short_name="test"
+        Trips.objects.create(
+            route_id="60-1-b12-1",
+            direction_id=0,
+            trip_headsign="Shanard Road (Shanard Avenue) - Saint John's Road East",
+            shape_id="60-1-b12-1.1.O",
+            service_id="2_merged_7780 ",
+            trip_id="14733.2.60-1-b12-1.1.O"
         )
+        self.factory = RequestFactory()
 
-    def test_query_short_name(self):
         """
-        Should return route name string
+        For this one I built each function one at a time and changed what
+        the class was returning because I couldn't figure out how to
+        call individual methods without returning the overall result
         """
-        route = Routes.objects.filter(route_id="1")
-        short_name = route.values("route_short_name")[0]["route_short_name"]
-        self.assertEqual(short_name, "test")
+
+    def setup_view(view, request, *args, **kwargs):
+        view.request = request
+        view.args = args
+        view.kwargs = kwargs
+        return view
+
+    def test_get_stop_number(self):
+        """
+        Should return stop number as a string
+        """
+        request = self.factory.get("/api/stop/?stop=2007&time=14:00:00&day=wed")
+        v = setup_view(SearchByStop(), request)
+        self.assertEqual(v.get_params("stopnumber"), "2007")
