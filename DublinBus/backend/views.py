@@ -8,7 +8,6 @@ from django.shortcuts import HttpResponse
 from rest_framework import viewsets
 from rest_framework import views
 from rest_framework.response import Response
-from django_downloadview import setup_view
 
 
 from .serializers import *
@@ -29,22 +28,24 @@ class SearchByStop(views.APIView):
         stop_number = self.get_params("stopnumber")
         time = self.get_params("time")
         day = self.get_params("day")
-        weather = self.get_weather(time, day)
-        routes = self.get_routes(stop_number)
-        direction = self.get_direction(stop_number, routes)
-        machine_learning_inputs = self.serialize_machine_learning_input(
-            stop_number, weather, routes, direction,
-        )
-        output = self.get_arrival_times(machine_learning_inputs)
-        results = self.serialize_machine_learning_output(output)
-        return Response(stop_number)
+        # weather = self.get_weather(time, day)
+        # routes = self.get_routes(stop_number)
+        # direction = self.get_direction(stop_number, routes)
+        machine_learning_inputs = serialize_machine_learning_input(stop_number,
+                                                                    weather,
+                                                                    routes,
+                                                                    direction)
+        # results = self.get_arrival_times(machine_learning_inputs)
+        results_sorted = self.sort_results(results)
+        # results_json = jsonify_results(results)
+        return Response(results_json)
 
     def get_params(self, target):
         """
         input: params from url
         output: desired param as string
         """
-        param = self.request.get(target, None)
+        param = self.request.GET.get(target, None)
         return param
 
     def get_weather(self, time, date):
@@ -78,8 +79,12 @@ class SearchByStop(views.APIView):
         Output: machine learning inputs as json
 
         """
-        machine_learning_inputs = "Serializer"
-        return machine_learning_inputs
+        machine_learning_inputs = MachineLearningInputs(stop_number,
+                                                        weather,
+                                                        routes,
+                                                        direction)
+        machine_learning_inputs = MachineLearningInputSerializer(machine_learning_inputs)
+        return machine_learning_inputs.data
 
     def get_arrival_times(self, machine_learning_inputs):
         """
@@ -87,16 +92,26 @@ class SearchByStop(views.APIView):
         Output: machine learning predictions as dictionary/json
         Note: output format depends on if we serialize here or somewhere else
         """
-        predictions = []
-        return predictions
+        results = []
+        return results
 
-    def serialize_machine_learning_output(self, machine_learning_results):
+    def sort_results(self, results):
         """
-        Input: Machine learning results
-        Output: Machine learning results as json
+        Input: Machine learning results as json
+        Output: Machine learning results sorted by departure time as json
         """
-        results_as_json = "json"
-        return results_as_json
+        results_sorted = sorted(results, key=lambda k: k["arrival_time"])
+        return results_sorted
+
+    def jsonify_results(self, results):
+        """
+        Input: Serialized machine learning results
+        Output: Machine Learning results as json
+        Note: Not sure if we can just do this in the previous function
+        """
+        results_jsonified = ResultsJsonifier(results)
+        return results_jsonified.data
+
 
 class SearchByRoute(SearchByStop):
     """
@@ -105,6 +120,7 @@ class SearchByRoute(SearchByStop):
     """
     def get(self, request):
         return HttpResponse("<h1>SearchByRoute</h1>")
+
 
 class SearchByDestination(SearchByStop):
     """
@@ -127,6 +143,7 @@ class StopsView(viewsets.ModelViewSet):
     """
     queryset = Stops.objects.all()
     serializer_class = StopsSerializer
+
 
 class RoutesView(viewsets.ModelViewSet):
     """

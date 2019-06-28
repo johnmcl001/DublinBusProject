@@ -3,15 +3,12 @@ Tests for django backend
 """
 
 from django.test import RequestFactory, TestCase
-from django.test import Client
-from django.urls import reverse
-
 
 from .views import *
 
-client = Client()
 
 # Create your tests here.
+
 
 class SeactByStopTest(TestCase):
     """
@@ -41,23 +38,72 @@ class SeactByStopTest(TestCase):
             trip_id="14733.2.60-1-b12-1.1.O"
         )
         self.factory = RequestFactory()
+        self.request = self.factory.get("/api/stop/?stop=2007&time=14:00:00&day=wed")
+        self.test_view = self.setup_view(SearchByStop(), self.request)
 
+    def setup_view(self, view, request, *args, **kwargs):
         """
-        For this one I built each function one at a time and changed what
-        the class was returning because I couldn't figure out how to
-        call individual methods without returning the overall result
+        Sets up view so its methods can be called and tested
         """
-
-    def setup_view(view, request, *args, **kwargs):
         view.request = request
         view.args = args
         view.kwargs = kwargs
         return view
 
-    def test_get_stop_number(self):
+    def test_get_params_stop(self):
+        """
+        Should return time as a string
+        """
+        self.assertEqual(self.test_view.get_params("stop"), "2007")
+
+    def test_get_params_time(self):
         """
         Should return stop number as a string
         """
-        request = self.factory.get("/api/stop/?stop=2007&time=14:00:00&day=wed")
-        v = setup_view(SearchByStop(), request)
-        self.assertEqual(v.get_params("stopnumber"), "2007")
+        self.assertEqual(self.test_view.get_params("time"), "14:00:00")
+
+    def test_get_params_day(self):
+        """
+        Should return day as a string
+        """
+        self.assertEqual(self.test_view.get_params("day"), "wed")
+
+    def test_serialize_machine_learning_input(self):
+        """
+        Should return machine learning inputs as json type
+        """
+        stop_number = "2007"
+        weather = {"temp": "20", "precipitation": "34%", "wind": "23"}
+        routes = ["7b", "7d", "46a", "47", "84x", "116", "145", "155"]
+        direction = 1
+        result = {
+            "stop_number": stop_number,
+            "weather": weather,
+            "routes": routes,
+            "direction": direction
+        }
+        self.assertEqual(self.test_view.serialize_machine_learning_input(
+            stop_number,
+            weather,
+            routes,
+            direction), result)
+
+    def test_sort_results(self):
+        """
+        Should return machine learning results sorted as json
+        """
+        test_input = [
+            {"route": "46a", "arrival_time": 4, "travel_time": None},
+            {"route": "39a", "arrival_time": 2, "travel_time": None},
+            {"route": "145", "arrival_time": 1, "travel_time": None},
+            {"route": "46a", "arrival_time": 8, "travel_time": None},
+            {"route": "155", "arrival_time": 6, "travel_time": None}
+        ]
+        test_output = [
+            {"route": "145", "arrival_time": 1, "travel_time": None},
+            {"route": "39a", "arrival_time": 2, "travel_time": None},
+            {"route": "46a", "arrival_time": 4, "travel_time": None},
+            {"route": "155", "arrival_time": 6, "travel_time": None},
+            {"route": "46a", "arrival_time": 8, "travel_time": None},
+        ]
+        self.assertEqual(self.test_view.sort_results(test_input), test_output)
