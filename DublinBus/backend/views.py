@@ -28,9 +28,9 @@ class SearchByStop(views.APIView):
         stop_number = self.get_params("stopnumber")
         time = self.get_params("time")
         day = self.get_params("day")
-        # weather = self.get_weather(time, day)
-        # routes = self.get_routes(stop_number)
-        # direction = self.get_direction(stop_number, routes)
+        # weather = self.get_weather(time, day) # Done by Niamh
+        # routes = self.get_routes(stop_number) # Done by Niamh
+        # direction = self.get_direction(stop_number, routes) # Done by Niamh
         machine_learning_inputs = serialize_machine_learning_input(stop_number,
                                                                     weather,
                                                                     routes,
@@ -38,7 +38,7 @@ class SearchByStop(views.APIView):
         # results = self.get_arrival_times(machine_learning_inputs)
         results_sorted = self.sort_results(results)
         # results_json = jsonify_results(results)
-        return Response(results_json)
+        # return Response(results_json)
 
     def get_params(self, target):
         """
