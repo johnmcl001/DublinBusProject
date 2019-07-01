@@ -17,7 +17,6 @@ import json
 from .serializers import *
 from .models import *
 
-from .permissions import ApiPermissions
 
 class SearchByStop(views.APIView):
     """
@@ -34,7 +33,7 @@ class SearchByStop(views.APIView):
         time = self.get_params("time")
         day = self.get_params("day")
         weather = self.get_weather(time, day)
-        # routes = self.get_routes(stop_number) # Done by Niamh
+        routes = self.get_routes(stop_number)
         # direction = self.get_direction(stop_number, routes) # Done by Niamh
         machine_learning_inputs = serialize_machine_learning_input(stop_number,
                                                                    weather,
@@ -86,7 +85,7 @@ class SearchByStop(views.APIView):
         Input: bus stop number as a string
         Output: List of Routes that server that bus stop as list
         """
-        with open('../frontend/frontEndBusInfo.json') as json_file:
+        with open('frontEndBusInfo.json') as json_file:
                     busStopInfo = json.load(json_file)
         busStopInfo = busStopInfo[stop_number]['routes'][0]
         return routes
@@ -173,10 +172,8 @@ class StopsView(viewsets.ModelViewSet):
     """
 
       # Define which serializer to use
-    permission_classes = (ApiPermissions, )
     serializer_class = StopSerializer
     queryset = Stops.objects.all()
-    serializer_class = StopsSerializer
 
 
 class RoutesView(viewsets.ModelViewSet):
@@ -184,7 +181,7 @@ class RoutesView(viewsets.ModelViewSet):
     Shows routes table
     """
     queryset = Routes.objects.all()
-    serializer_class = RoutesSerializer
+    serializer_class = RouteSerializer
 
 
 class StopTimesView(viewsets.ModelViewSet):
@@ -192,7 +189,7 @@ class StopTimesView(viewsets.ModelViewSet):
     Shows stoptimes table
     """
     queryset = StopTimes.objects.all()
-    serializer_class = StopTimesSerializer
+    serializer_class = StopTimeSerializer
 
 
 class TripsView(viewsets.ModelViewSet):
@@ -200,4 +197,4 @@ class TripsView(viewsets.ModelViewSet):
     shows trips table
     """
     queryset = Trips.objects.all()
-    serializer_class = TripsSerializer
+    serializer_class = TripSerializer

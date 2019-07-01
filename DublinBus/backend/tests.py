@@ -107,3 +107,6 @@ class SeactByStopTest(TestCase):
             {"route": "46a", "arrival_time": 8, "travel_time": None},
         ]
         self.assertEqual(self.test_view.sort_results(test_input), test_output)
+
+    def test_get_routes(self):
+        self.assertEqual(self.test_view.get_routes("7556"), 0)
