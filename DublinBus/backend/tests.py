@@ -2,19 +2,22 @@
 Tests for django backend
 """
 
-from django.test import TestCase
-from .models import Routes, Stops
+from django.test import RequestFactory, TestCase
+
+from .views import *
+
 
 # Create your tests here.
 
 
-class StopsTests(TestCase):
+class SeactByStopTest(TestCase):
     """
-    UnitTests for Stops Model
+    UnitTests for SearchByStops Feature
     """
+
     def setUp(self):
         """
-        Setup fake model for testing
+        Setup fake models for testing
         """
         Stops.objects.create(
             index=1,
@@ -26,33 +29,81 @@ class StopsTests(TestCase):
             location_type=0,
         )
 
-    def test_query_stop_name(self):
-        """
-        Should return stop name string
-        """
-        stop = Stops.objects.filter(stop_id__endswith=3365)
-        stop_name = stop.values("stop_name")[0]["stop_name"]
-        self.assertEqual(stop_name, "Abberley")
-
-class RoutesTests(TestCase):
-    """
-    Unit tests for Routes Model
-    """
-    def setUp(self):
-        """
-        Set up fake model for testing
-        """
-        Routes.objects.create(
-            route_id="1",
-            route_type=1,
-            agency_id="2",
-            route_short_name="test"
+        Trips.objects.create(
+            route_id="60-1-b12-1",
+            direction_id=0,
+            trip_headsign="Shanard Road (Shanard Avenue) - Saint John's Road East",
+            shape_id="60-1-b12-1.1.O",
+            service_id="2_merged_7780 ",
+            trip_id="14733.2.60-1-b12-1.1.O"
         )
+        self.factory = RequestFactory()
+        self.request = self.factory.get("/api/stop/?stop=2007&time=14:00:00&day=wed")
+        self.test_view = self.setup_view(SearchByStop(), self.request)
 
-    def test_query_short_name(self):
+    def setup_view(self, view, request, *args, **kwargs):
         """
-        Should return route name string
+        Sets up view so its methods can be called and tested
         """
-        route = Routes.objects.filter(route_id="1")
-        short_name = route.values("route_short_name")[0]["route_short_name"]
-        self.assertEqual(short_name, "test")
+        view.request = request
+        view.args = args
+        view.kwargs = kwargs
+        return view
+
+    def test_get_params_stop(self):
+        """
+        Should return time as a string
+        """
+        self.assertEqual(self.test_view.get_params("stop"), "2007")
+
+    def test_get_params_time(self):
+        """
+        Should return stop number as a string
+        """
+        self.assertEqual(self.test_view.get_params("time"), "14:00:00")
+
+    def test_get_params_day(self):
+        """
+        Should return day as a string
+        """
+        self.assertEqual(self.test_view.get_params("day"), "wed")
+
+    def test_serialize_machine_learning_input(self):
+        """
+        Should return machine learning inputs as json type
+        """
+        stop_number = "2007"
+        weather = {"temp": "20", "precipitation": "34%", "wind": "23"}
+        routes = ["7b", "7d", "46a", "47", "84x", "116", "145", "155"]
+        direction = 1
+        result = {
+            "stop_number": stop_number,
+            "weather": weather,
+            "routes": routes,
+            "direction": direction
+        }
+        self.assertEqual(self.test_view.serialize_machine_learning_input(
+            stop_number,
+            weather,
+            routes,
+            direction), result)
+
+    def test_sort_results(self):
+        """
+        Should return machine learning results sorted as json
+        """
+        test_input = [
+            {"route": "46a", "arrival_time": 4, "travel_time": None},
+            {"route": "39a", "arrival_time": 2, "travel_time": None},
+            {"route": "145", "arrival_time": 1, "travel_time": None},
+            {"route": "46a", "arrival_time": 8, "travel_time": None},
+            {"route": "155", "arrival_time": 6, "travel_time": None}
+        ]
+        test_output = [
+            {"route": "145", "arrival_time": 1, "travel_time": None},
+            {"route": "39a", "arrival_time": 2, "travel_time": None},
+            {"route": "46a", "arrival_time": 4, "travel_time": None},
+            {"route": "155", "arrival_time": 6, "travel_time": None},
+            {"route": "46a", "arrival_time": 8, "travel_time": None},
+        ]
+        self.assertEqual(self.test_view.sort_results(test_input), test_output)

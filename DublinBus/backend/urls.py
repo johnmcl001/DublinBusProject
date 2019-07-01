@@ -2,19 +2,22 @@
 Create backend urls here
 """
 
-from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-from . import views
+from .views import *
 
 # Declare common routes for rest api
 ROUTER = routers.DefaultRouter()
-ROUTER.register(r"stop", views.StopView, "stop")
-ROUTER.register(r"route", views.RouteView, "route")
-ROUTER.register(r"destination", views.DestinationView, "destination")
+ROUTER.register(r"stops", StopsView, "stop")
+ROUTER.register(r"routes", RoutesView, "route")
+ROUTER.register(r"stoptimes", StopTimesView, "stoptimes")
+ROUTER.register(r"trips", TripsView, "trips")
 
 # Specify url patterns within project
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path("api/", include(ROUTER.urls))
+    path("", include(ROUTER.urls)),
+    path("stop/<str:stopnumber>/<str:time>/<str:date>/", SearchByStop.as_view()),
+    path("route/", SearchByRoute.as_view()),
+    path("destination/", SearchByDestination.as_view())
+
 ]
