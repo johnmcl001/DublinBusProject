@@ -10,6 +10,7 @@ from rest_framework import views
 from rest_framework.response import Response
 import pymysql
 from datetime import datetime, timedelta
+import json
 
 
 
@@ -71,7 +72,7 @@ class SearchByStop(views.APIView):
         date=datetime.strftime("%d-%m-%Y")
         time=datetime.strftime("%H:%M")
 
-        sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
+        sql = "SELECT * FROM website.forecast where date='%s' and time='%s'" %(date, time)
         db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
         cursor = db.cursor()
         cursor.execute(sql)
@@ -82,10 +83,12 @@ class SearchByStop(views.APIView):
 
     def get_routes(self, stop_number):
         """
-        Input: bus stop number
+        Input: bus stop number as a string
         Output: List of Routes that server that bus stop as list
         """
-        routes = "select all routes from routes where stop = bus_stop_number"
+        with open('../frontend/frontEndBusInfo.json') as json_file:
+                    busStopInfo = json.load(json_file)
+        busStopInfo = busStopInfo[stop_number]['routes'][0]
         return routes
 
     def get_direction(self, route_number, stop_number):
