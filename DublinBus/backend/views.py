@@ -12,8 +12,6 @@ import pymysql
 from datetime import datetime, timedelta
 import json
 
-
-
 from .serializers import *
 from .models import *
 
@@ -34,7 +32,7 @@ class SearchByStop(views.APIView):
         day = self.get_params("day")
         weather = self.get_weather(time, day)
         routes = self.get_routes(stop_number)
-        # direction = self.get_direction(stop_number, routes) # Done by Niamh
+        direction = self.get_direction(stop_number, routes)
         machine_learning_inputs = serialize_machine_learning_input(stop_number,
                                                                    weather,
                                                                    routes,
@@ -54,7 +52,7 @@ class SearchByStop(views.APIView):
 
     def get_weather(self, time, date):
         """
-        Input: time and date
+        Input: time and date as strings
         Output: weather conditions for prediction as json or dictionary
         """
         def hour_rounder(t):
@@ -66,10 +64,10 @@ class SearchByStop(views.APIView):
             return (t.replace(second=0, minute=0, hour=t.hour)
                        +timedelta(hours=t.minute//30))
 
-        datetime = datetime.strptime(date+" "+time, '%d-%m-%Y %H:%M')
-        datetime=(hour_rounder(datetime))
-        date=datetime.strftime("%d-%m-%Y")
-        time=datetime.strftime("%H:%M")
+        dateAndTime = datetime.strptime(date+" "+time, '%d-%m-%Y %H:%M')
+        dateAndTime=(hour_rounder(dateAndTime))
+        date=dateAndTime.strftime("%d-%m-%Y")
+        time=dateAndTime.strftime("%H:%M")
 
         sql = "SELECT * FROM website.forecast where date='%s' and time='%s'" %(date, time)
         db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
@@ -85,18 +83,31 @@ class SearchByStop(views.APIView):
         Input: bus stop number as a string
         Output: List of Routes that server that bus stop as list
         """
-        with open('frontEndBusInfo.json') as json_file:
+        with open('/home/niamh/github/DublinBusProject/DublinBus/backend/frontEndBusInfo.json') as json_file:
                     busStopInfo = json.load(json_file)
         busStopInfo = busStopInfo[stop_number]['routes'][0]
-        return routes
+        return busStopInfo
 
     def get_direction(self, route_number, stop_number):
         """
         Input: bus stop number and route_number
-        Output: Direction of route as int
+        Output: Direction of route as int and headsign label
         Note: Only have to do this for 1 route since it's same for each
+        ????????????????????????????????????????????????????????????????
         """
-        direction = "select direction from stops/routes where route = route_number and stop = stop_number"
+        sql = ("SELECT distinct t.direction_id, t.trip_headsign "\
+        "FROM website.routes as r, website.trips as t, "\
+        "website.stops as s, website.stop_times as st "\
+        "where r.route_id=t.route_id  and r.route_short_name="+route_number+
+        " and s.stopID_short="+stop_number+" and s.stop_id=st.stop_id "\
+        "and t.trip_id=st.trip_id ;")
+        db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306,
+        user="niamh", passwd="comp47360jnnd", db="website")
+        cursor = db.cursor()
+        cursor.execute(sql)
+        direction = cursor.fetchall()
+        cursor.close()
+
         return direction
 
     def serialize_machine_learning_input(self, stop_number, weather, routes, direction):
