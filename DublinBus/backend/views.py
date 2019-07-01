@@ -12,6 +12,8 @@ from rest_framework.response import Response
 
 from .serializers import *
 from .models import *
+from .permissions import ApiPermissions
+
 
 
 class SearchByStop(views.APIView):
@@ -141,6 +143,9 @@ class StopsView(viewsets.ModelViewSet):
     """
     Shows stops table
     """
+    # Define which serializer to use
+    permission_classes = (ApiPermissions, )
+    serializer_class = StopSerializer
     queryset = Stops.objects.all()
     serializer_class = StopsSerializer
 
@@ -149,6 +154,8 @@ class RoutesView(viewsets.ModelViewSet):
     """
     Shows routes table
     """
+    permission_classes = (ApiPermissions, )
+    serializer_class = RouteSerializer
     queryset = Routes.objects.all()
     serializer_class = RoutesSerializer
 
@@ -167,3 +174,4 @@ class TripsView(viewsets.ModelViewSet):
     """
     queryset = Trips.objects.all()
     serializer_class = TripsSerializer
+    permission_classes = (ApiPermissions, )

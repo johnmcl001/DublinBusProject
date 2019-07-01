@@ -110,3 +110,5 @@ chrome-user-data
 .vscode
 *.swp
 *.swo
+*.report
+Api.js

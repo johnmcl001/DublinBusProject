@@ -1,5 +1,9 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import axios from "axios";
+import apikey from "./Api";
+
+
 class DataProvider extends Component {
   static propTypes = {
     endpoint: PropTypes.string.isRequired,
@@ -8,15 +12,21 @@ class DataProvider extends Component {
   state = {
       data: [],
       loaded: false,
-      placeholder: "Loading..."
+      placeholder: "Loading...",
+      apikey: apikey
     };
   componentDidMount() {
-    fetch(this.props.endpoint)
+    axios({
+      url: this.props.endpoint,
+      params: {
+        apikey: this.state.apikey
+      }
+    })
       .then(response => {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-        return response.json();
+        return response.data;
       })
       .then(data => this.setState({ data: data, loaded: true }));
   }
