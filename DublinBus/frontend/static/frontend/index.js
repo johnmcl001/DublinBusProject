@@ -28010,7 +28010,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var App = function App() {
   return _react.default.createElement(_DataProvider.default, {
-    endpoint: "api/routstops/",
+    endpoint: "api/routes/",
     render: function render(data) {
       return _react.default.createElement(_Table.default, {
         data: data
@@ -28055,7 +28055,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40835" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45685" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
