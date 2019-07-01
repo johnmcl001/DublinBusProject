@@ -6,10 +6,10 @@ class DataProvider extends Component {
     render: PropTypes.func.isRequired
   };
   state = {
-      data: [],
-      loaded: false,
-      placeholder: "Loading..."
-    };
+    data: [],
+    loaded: false,
+    placeholder: "Loading..."
+  };
   componentDidMount() {
     fetch(this.props.endpoint)
       .then(response => {

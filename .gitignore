@@ -109,3 +109,11 @@ chrome-user-data
 .vscode
 *.swp
 *.swo
+
+node_modules
+.cache/
+dist/
+.env
+.DS_Store
+coverage/
+.vscode/
