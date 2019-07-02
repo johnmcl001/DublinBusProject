@@ -13,8 +13,10 @@ class DataProvider extends Component {
     placeholder: "Loading..."
   };
   componentDidMount() {
-    axios.get(this.props.endpoint)
-      .then(response => {
+    axios({
+      method: "get",
+      url: this.props.endpoint,
+    }).then(response => {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
