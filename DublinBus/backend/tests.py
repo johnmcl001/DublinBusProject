@@ -113,8 +113,8 @@ class SeactByStopTest(TestCase):
         self.assertEqual(self.test_view.get_routes("7556"), ['7D', '7B'])
 
     def test_get_weather(self):
-        self.assertEqual(len(self.test_view.get_weather("23:39", datetime.datetime.now().strftime("%d-%m-%Y") )), 7)
+        self.assertEqual(len(self.test_view.get_weather("23:39", datetime.datetime.now().strftime("%d-%m-%Y") )[0]), 7)
 
     def test_get_direction(self):
-        self.assertEqual(self.test_view.get_direction('7d',7556 )[0], '1')
-        self.assertEqual(self.test_view.get_direction('7d',7556 )[1], 'Castle Street - Mountjoy Square Nth')
+        self.assertEqual(self.test_view.get_direction('7d',7556 )[0][0], 1)
+        self.assertEqual(self.test_view.get_direction('7d',7556 )[0][1], 'Castle Street - Mountjoy Square Nth')

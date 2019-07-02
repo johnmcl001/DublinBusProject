@@ -9,7 +9,6 @@ from rest_framework import viewsets
 from rest_framework import views
 from rest_framework.response import Response
 import pymysql
-from datetime import datetime, timedelta
 import json
 
 from .serializers import *
@@ -55,24 +54,11 @@ class SearchByStop(views.APIView):
         Input: time and date as strings
         Output: weather conditions for prediction as json or dictionary
         """
-        def hour_rounder(t):
-            """
-            Rounds to nearest hour by adding a timedelta hour if minute >= 30
-            Input: DateTime
-            Output: DateTime Rounded
-            """
-            return (t.replace(second=0, minute=0, hour=t.hour)
-                       +timedelta(hours=t.minute//30))
-
-        dateAndTime = datetime.strptime(date+" "+time, '%d-%m-%Y %H:%M')
-        dateAndTime=(hour_rounder(dateAndTime))
-        date=dateAndTime.strftime("%d-%m-%Y")
-        time=dateAndTime.strftime("%H:%M")
-
-        sql = "SELECT * FROM website.forecast where date='%s' and time='%s'" %(date, time)
+        sql = "SELECT * FROM website.forecast where date=%s and start_time<=%s and (end_time>%s or end_time='00:00');"
         db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
         cursor = db.cursor()
-        cursor.execute(sql)
+        val=(date, time, time)
+        cursor.execute(sql, (val),)
         weather = cursor.fetchall()
         cursor.close()
 
@@ -98,13 +84,13 @@ class SearchByStop(views.APIView):
         sql = ("SELECT distinct t.direction_id, t.trip_headsign "\
         "FROM website.routes as r, website.trips as t, "\
         "website.stops as s, website.stop_times as st "\
-        "where r.route_id=t.route_id  and r.route_short_name="+route_number+
-        " and s.stopID_short="+stop_number+" and s.stop_id=st.stop_id "\
-        "and t.trip_id=st.trip_id ;")
-        db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306,
-        user="niamh", passwd="comp47360jnnd", db="website")
+        "where r.route_id=t.route_id  and r.route_short_name=%s"\
+        " and s.stopID_short=%s and s.stop_id=st.stop_id "\
+        "and t.trip_id=st.trip_id")
+        db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
         cursor = db.cursor()
-        cursor.execute(sql)
+        val=(route_number, stop_number)
+        cursor.execute(sql, (val),)
         direction = cursor.fetchall()
         cursor.close()
 
