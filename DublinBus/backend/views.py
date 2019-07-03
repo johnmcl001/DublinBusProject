@@ -8,7 +8,7 @@ from django.shortcuts import HttpResponse
 from rest_framework import viewsets
 from rest_framework import views
 from rest_framework.response import Response
-import pymysql
+#import pymysql
 from datetime import datetime, timedelta
 
 
@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from .serializers import *
 from .models import *
 
-from .permissions import ApiPermissions
+#from .permissions import ApiPermissions
 
 class SearchByStop(views.APIView):
     """
@@ -71,7 +71,7 @@ class SearchByStop(views.APIView):
         date=datetime.strftime("%d-%m-%Y")
         time=datetime.strftime("%H:%M")
 
-        sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
+        #sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
         db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
         cursor = db.cursor()
         cursor.execute(sql)
@@ -170,8 +170,8 @@ class StopsView(viewsets.ModelViewSet):
     """
 
       # Define which serializer to use
-    permission_classes = (ApiPermissions, )
-    serializer_class = StopSerializer
+   # permission_classes = (ApiPermissions, )
+    serializer_class = StopsSerializer
     queryset = Stops.objects.all()
     serializer_class = StopsSerializer
 
