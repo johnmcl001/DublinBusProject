@@ -12,7 +12,7 @@ class SearchByStop extends Component {
           className="col-md-12 col-lg-5 col-xl-4 bg-light  "
           id="innerContainer"
         >
-          <AppViewHeader title="Search by Stop"/>
+          <AppViewHeader title="Search by Stop" />
           <AppViewFavourAndLogin />
           <div className="col-12" id="formColor">
             <form id="SearchByStopForm">

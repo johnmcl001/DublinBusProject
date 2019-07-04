@@ -2,7 +2,7 @@ import React, { Component } from "react";
 //import "./SearchbyDestination.css";
 import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
-import DatePicker from "react-datepicker";
+//import DatePicker from "react-datepicker";
 class SearchbyDestination extends Component {
   render() {
     return (
