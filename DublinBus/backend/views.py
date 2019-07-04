@@ -37,18 +37,17 @@ class SearchByStop(views.APIView):
         stop_number = self.get_params("stopnumber")
         time = self.get_params("time")
         day = self.get_params("day")
-        # weather = self.get_weather(time, day)
-        # routes = self.get_routes(stop_number) # Done by Niamh
-        # direction = self.get_direction(stop_number, routes) # Done by Niamh
-        # machine_learning_inputs = self. serialize_machine_learning_input(
-        #                                                        stop_number,
-        #                                                        weather,
-        #                                                        routes,
-        #                                                        direction)
+        weather = self.get_weather(time, day)
+        routes = self.get_routes(stop_number)
+        direction = self.get_direction(stop_number, routes)
+        machine_learning_inputs = serialize_machine_learning_input(stop_number,
+                                                                   weather,
+                                                                   routes,
+                                                                   direction)
         # results = self.get_arrival_times(machine_learning_inputs)
-        # results_sorted = self.sort_results(results)
+        results_sorted = self.sort_results(results)
         # results_json = jsonify_results(results)
-        # return Response(results_json)
+
         return Response([
    {
       "route":"145",
@@ -85,26 +84,8 @@ class SearchByStop(views.APIView):
         Input: time and date as strings
         Output: weather conditions for prediction as json or dictionary
         """
-        sql = "SELECT * FROM website.forecast where date=%s and start_time<=%s and (end_time>%s or end_time='00:00');"
-
-        def hour_rounder(t):
-            """
-            Rounds to nearest hour by adding a timedelta hour if minute >= 30
-            Input: DateTime
-            Output: DateTime Rounded
-            """
-            return (t.replace(second=0, minute=0, hour=t.hour)
-                       +timedelta(hours=t.minute//30))
-        """
-        datetime = datetime.strptime(date+" "+time, '%d-%m-%Y %H:%M')
-        datetime=(hour_rounder(datetime))
-        date=datetime.strftime("%d-%m-%Y")
-        time=datetime.strftime("%H:%M")
-
-        sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
-        """
-
-        return weather
+        weatherResult=Forecast.objects.get(date=date, start_time__lte=time, end_time__lt=time )
+        return weatherResult
 
     def get_routes(self, stop_number):
         """
@@ -122,15 +103,10 @@ class SearchByStop(views.APIView):
         Input: bus stop number and route_number
         Output: Direction of route as int and headsign label
         """
-        sql = ("SELECT distinct t.direction_id, t.trip_headsign "\
-        "FROM website.routes as r, website.trips as t, "\
-        "website.stops as s, website.stop_times as st "\
-        "where r.route_id=t.route_id  and r.route_short_name=%s"\
-        " and s.stopID_short=%s and s.stop_id=st.stop_id "\
-        "and t.trip_id=st.trip_id")
-        cursor.close()
-
-        return direction
+        stop_number=Stops.objects.get(stopid_short=stop_number)
+        allTrips=StopTimes.objects.filter(stop=stop_number.stop_id)
+        allRoutes=Trips.objects.filter(route__route_short_name='7d', trip__in=allTrips).values('direction_id', 'trip_headsign').distinct()
+        return allRoutes[0]
 
     def serialize_machine_learning_input(self, stop_number, weather, routes, direction):
         """
