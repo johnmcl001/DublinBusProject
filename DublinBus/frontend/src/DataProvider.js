@@ -18,7 +18,10 @@ class DataProvider extends Component {
       method: "get",
       url: this.props.endpoint
     })
+<<<<<<< HEAD
 >>>>>>> Frontend stuff integrated with django for the most part, missing an img, not functional
+=======
+>>>>>>> 1823c8e874cb6fa2905b1a746c5961dd9743575e
       .then(response => {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });

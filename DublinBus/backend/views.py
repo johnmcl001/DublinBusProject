@@ -11,6 +11,7 @@ from rest_framework.response import Response
 import json
 import os
 from rest_framework import generics
+
 #import pymysql
 from datetime import datetime, timedelta
 
@@ -100,16 +101,8 @@ class SearchByStop(views.APIView):
         date=datetime.strftime("%d-%m-%Y")
         time=datetime.strftime("%H:%M")
 
-
         sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
         """
-
-        #sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
-        db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
-        cursor = db.cursor()
-        cursor.execute(sql)
-        weather = cursor.fetchall()
-        cursor.close()
 
         return weather
 
@@ -203,5 +196,8 @@ class SearchByDestination(SearchByStop):
         return HttpResponse("<h1>SearchByDestination</h1>")
 
 class RouteView(generics.ListCreateAPIView):
+    """
+    Shows routes table
+    """
     queryset = Routes.objects.all()
     serializer_class = RouteSerializer

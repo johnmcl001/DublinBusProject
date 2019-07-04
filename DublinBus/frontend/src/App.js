@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import ReactDOM from "react-dom";
-
 import Header from "./Components/Header"
 import Footer from "./Components/Footer"
 import Map from './Components/Map'
