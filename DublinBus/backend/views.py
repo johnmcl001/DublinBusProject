@@ -12,12 +12,16 @@ import json
 import os
 from rest_framework import generics
 
+#import pymysql
+from datetime import datetime, timedelta
+
 
 dirname = os.path.dirname(__file__)
 
 from .serializers import *
 from .models import *
 
+#from .permissions import ApiPermissions
 
 class SearchByStop(views.APIView):
     """
@@ -99,6 +103,8 @@ class SearchByStop(views.APIView):
 
         sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
         """
+
+        return weather
 
     def get_routes(self, stop_number):
         """
@@ -190,7 +196,8 @@ class SearchByDestination(SearchByStop):
         return HttpResponse("<h1>SearchByDestination</h1>")
 
 class RouteView(generics.ListCreateAPIView):
+    """
+    Shows routes table
+    """
     queryset = Routes.objects.all()
     serializer_class = RouteSerializer
-
-

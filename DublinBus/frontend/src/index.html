@@ -6,13 +6,12 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--Need to put css files in frontend/static/frontend/ for them to work-->
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'frontend/style/AppViewFavourAndLogin.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'frontend/style/AppViewHeader.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'frontend/style/Map.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'frontend/style/SearchbyDestination.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'frontend/style/SearchByRoute.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'frontend/style/StyleSearchByStop.css' %}">
+    <link rel="stylesheet" type="text/css" href='./Components/AppViewFavourAndLogin.css'>
+    <link rel="stylesheet" type="text/css" href='./Components/AppViewHeader.css'>
+    <link rel="stylesheet" type="text/css" href='./Components/Map.css'>
+    <link rel="stylesheet" type="text/css" href='./Components/SearchbyDestination.css'>
+    <link rel="stylesheet" type="text/css" href='./Components/SearchByRoute.css'>
+    <link rel="stylesheet" type="text/css" href='./Components/StyleSearchByStop.css'>
 
 
     <!--<link rel="manifest" href="%PUBLIC_URL%/manifest.json"/>-->
@@ -45,6 +44,6 @@
         crossorigin="anonymous"></script>
 
 </div>
-{% load static %}
-<script src="{% static "frontend/index.js" %}"></script>
+
+<script src="index.js"></script>
 </html>
