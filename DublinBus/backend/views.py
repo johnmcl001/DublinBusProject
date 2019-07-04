@@ -10,6 +10,9 @@ from rest_framework import views
 from rest_framework.response import Response
 import pymysql
 import json
+import os
+
+dirname = os.path.dirname(__file__)
 
 from .serializers import *
 from .models import *
@@ -69,7 +72,8 @@ class SearchByStop(views.APIView):
         Input: bus stop number as a string
         Output: List of Routes that server that bus stop as list
         """
-        with open('/home/niamh/github/DublinBusProject/DublinBus/backend/frontEndBusInfo.json') as json_file:
+        filename = os.path.join(dirname, "frontEndBusInfo.json")
+        with open(filename) as json_file:
                     busStopInfo = json.load(json_file)
         busStopInfo = busStopInfo[stop_number]['routes'][0]
         return busStopInfo
