@@ -1,7 +1,5 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import axios from "axios";
-
 class DataProvider extends Component {
   static propTypes = {
     endpoint: PropTypes.string.isRequired,
@@ -13,14 +11,12 @@ class DataProvider extends Component {
     placeholder: "Loading..."
   };
   componentDidMount() {
-    axios({
-      method: "get",
-      url: this.props.endpoint,
-    }).then(response => {
+    fetch(this.props.endpoint)
+      .then(response => {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-        return response.data;
+        return response.json();
       })
       .then(data => this.setState({ data: data, loaded: true }));
   }
