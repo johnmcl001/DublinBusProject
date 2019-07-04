@@ -11,7 +11,14 @@ class DataProvider extends Component {
     placeholder: "Loading..."
   };
   componentDidMount() {
+<<<<<<< HEAD
     fetch(this.props.endpoint)
+=======
+    axios({
+      method: "get",
+      url: this.props.endpoint
+    })
+>>>>>>> Frontend stuff integrated with django for the most part, missing an img, not functional
       .then(response => {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
