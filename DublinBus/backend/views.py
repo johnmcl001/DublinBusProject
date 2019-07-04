@@ -10,6 +10,8 @@ from rest_framework import views
 from rest_framework.response import Response
 import json
 import os
+from rest_framework import generics
+
 
 dirname = os.path.dirname(__file__)
 
@@ -43,7 +45,28 @@ class SearchByStop(views.APIView):
         # results_sorted = self.sort_results(results)
         # results_json = jsonify_results(results)
         # return Response(results_json)
-        return HttpResponse("SearchByStop")
+        return Response([
+   {
+      "route":"145",
+      "arrival_time":"1"
+   },
+   {
+      "route":"39a",
+      "arrival_time":"2"
+   },
+   {
+      "route":"46a",
+      "arrival_time":"4"
+   },
+   {
+      "route":"155",
+      "arrival_time":"6"
+   },
+   {
+      "route":"46a",
+      "arrival_time":"8"
+   }
+])
 
     def get_params(self, target):
         """
@@ -117,6 +140,7 @@ class SearchByStop(views.APIView):
             machine_learning_inputs)
         return machine_learning_inputs.data
 
+
     def get_arrival_times(self, machine_learning_inputs):
         """
         Input: machine learning inputs as json
@@ -125,6 +149,8 @@ class SearchByStop(views.APIView):
         """
         results = []
         return results
+
+
 
     def sort_results(self, results):
         """
@@ -162,4 +188,9 @@ class SearchByDestination(SearchByStop):
 
     def get(self, request):
         return HttpResponse("<h1>SearchByDestination</h1>")
+
+class RouteView(generics.ListCreateAPIView):
+    queryset = Routes.objects.all()
+    serializer_class = RouteSerializer
+
 
