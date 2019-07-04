@@ -8,15 +8,14 @@ from django.shortcuts import HttpResponse
 from rest_framework import viewsets
 from rest_framework import views
 from rest_framework.response import Response
-import pymysql
-from datetime import datetime, timedelta
+import json
+import os
 
-
+dirname = os.path.dirname(__file__)
 
 from .serializers import *
 from .models import *
 
-from .permissions import ApiPermissions
 
 class SearchByStop(views.APIView):
     """
@@ -33,8 +32,8 @@ class SearchByStop(views.APIView):
         time = self.get_params("time")
         day = self.get_params("day")
         weather = self.get_weather(time, day)
-        # routes = self.get_routes(stop_number) # Done by Niamh
-        # direction = self.get_direction(stop_number, routes) # Done by Niamh
+        routes = self.get_routes(stop_number)
+        direction = self.get_direction(stop_number, routes)
         machine_learning_inputs = serialize_machine_learning_input(stop_number,
                                                                    weather,
                                                                    routes,
@@ -54,47 +53,36 @@ class SearchByStop(views.APIView):
 
     def get_weather(self, time, date):
         """
-        Input: time and date
+        Input: time and date as strings
         Output: weather conditions for prediction as json or dictionary
         """
-        def hour_rounder(t):
-            """
-            Rounds to nearest hour by adding a timedelta hour if minute >= 30
-            Input: DateTime
-            Output: DateTime Rounded
-            """
-            return (t.replace(second=0, minute=0, hour=t.hour)
-                       +timedelta(hours=t.minute//30))
-
-        datetime = datetime.strptime(date+" "+time, '%d-%m-%Y %H:%M')
-        datetime=(hour_rounder(datetime))
-        date=datetime.strftime("%d-%m-%Y")
-        time=datetime.strftime("%H:%M")
-
-        sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
-        db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
-        cursor = db.cursor()
-        cursor.execute(sql)
-        weather = cursor.fetchall()
-        cursor.close()
-
+        sql = "SELECT * FROM website.forecast where date=%s and start_time<=%s and (end_time>%s or end_time='00:00');"
         return weather
 
     def get_routes(self, stop_number):
         """
-        Input: bus stop number
+        Input: bus stop number as a string
         Output: List of Routes that server that bus stop as list
         """
-        routes = "select all routes from routes where stop = bus_stop_number"
-        return routes
+        filename = os.path.join(dirname, "frontEndBusInfo.json")
+        with open(filename) as json_file:
+                    busStopInfo = json.load(json_file)
+        busStopInfo = busStopInfo[stop_number]['routes'][0]
+        return busStopInfo
 
     def get_direction(self, route_number, stop_number):
         """
         Input: bus stop number and route_number
-        Output: Direction of route as int
-        Note: Only have to do this for 1 route since it's same for each
+        Output: Direction of route as int and headsign label
         """
-        direction = "select direction from stops/routes where route = route_number and stop = stop_number"
+        sql = ("SELECT distinct t.direction_id, t.trip_headsign "\
+        "FROM website.routes as r, website.trips as t, "\
+        "website.stops as s, website.stop_times as st "\
+        "where r.route_id=t.route_id  and r.route_short_name=%s"\
+        " and s.stopID_short=%s and s.stop_id=st.stop_id "\
+        "and t.trip_id=st.trip_id")
+        cursor.close()
+
         return direction
 
     def serialize_machine_learning_input(self, stop_number, weather, routes, direction):
@@ -170,10 +158,8 @@ class StopsView(viewsets.ModelViewSet):
     """
 
       # Define which serializer to use
-    permission_classes = (ApiPermissions, )
     serializer_class = StopSerializer
     queryset = Stops.objects.all()
-    serializer_class = StopsSerializer
 
 
 class RoutesView(viewsets.ModelViewSet):
@@ -181,7 +167,7 @@ class RoutesView(viewsets.ModelViewSet):
     Shows routes table
     """
     queryset = Routes.objects.all()
-    serializer_class = RoutesSerializer
+    serializer_class = RouteSerializer
 
 
 class StopTimesView(viewsets.ModelViewSet):
@@ -189,7 +175,7 @@ class StopTimesView(viewsets.ModelViewSet):
     Shows stoptimes table
     """
     queryset = StopTimes.objects.all()
-    serializer_class = StopTimesSerializer
+    serializer_class = StopTimeSerializer
 
 
 class TripsView(viewsets.ModelViewSet):
@@ -197,4 +183,4 @@ class TripsView(viewsets.ModelViewSet):
     shows trips table
     """
     queryset = Trips.objects.all()
-    serializer_class = TripsSerializer
+    serializer_class = TripSerializer

@@ -27,7 +27,7 @@ class MachineLearningInputSerializer(serializers.Serializer):
     direction = serializers.IntegerField(min_value=0, max_value=1)
 
 
-class StopsSerializer(serializers.ModelSerializer):
+class StopSerializer(serializers.ModelSerializer):
     """
     Convert stop data from gtfs to json
     """
@@ -39,7 +39,7 @@ class StopsSerializer(serializers.ModelSerializer):
         # Return more specific fields when we know what we want
         fields = "__all__"
 
-class RoutesSerializer(serializers.ModelSerializer):
+class RouteSerializer(serializers.ModelSerializer):
     """
     Convert route data from gtfs to json
     """
@@ -50,7 +50,7 @@ class RoutesSerializer(serializers.ModelSerializer):
         model = Routes
         fields = "__all__"
 
-class StopTimesSerializer(serializers.ModelSerializer):
+class StopTimeSerializer(serializers.ModelSerializer):
     """
     Convert route data from gtfs to json
     """
@@ -61,7 +61,7 @@ class StopTimesSerializer(serializers.ModelSerializer):
         model = StopTimes
         fields = "__all__"
 
-class TripsSerializer(serializers.ModelSerializer):
+class TripSerializer(serializers.ModelSerializer):
     """
     Convert route data from gtfs to json
     """
