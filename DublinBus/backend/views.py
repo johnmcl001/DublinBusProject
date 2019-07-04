@@ -34,6 +34,7 @@ class SearchByStop(views.APIView):
         Output: Machine learning output as json
         Note: Main logic implemented here using the methods below
         """
+        """
         stop_number = self.get_params("stopnumber")
         time = self.get_params("time")
         day = self.get_params("day")
@@ -44,10 +45,10 @@ class SearchByStop(views.APIView):
                                                                    weather,
                                                                    routes,
                                                                    direction)
-        # results = self.get_arrival_times(machine_learning_inputs)
+        results = self.get_arrival_times(machine_learning_inputs)
         results_sorted = self.sort_results(results)
-        # results_json = jsonify_results(results)
-
+        results_json = jsonify_results(results)
+        """
         return Response([
    {
       "route":"145",

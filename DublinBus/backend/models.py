@@ -8,62 +8,22 @@
 from django.db import models
 
 
-class Routes(models.Model):
-    route_id = models.CharField(primary_key=True, max_length=45)
-    route_type = models.IntegerField(blank=True, null=True)
-    agency_id = models.CharField(max_length=45, blank=True, null=True)
-    route_short_name = models.CharField(max_length=45, blank=True, null=True)
-
-    class Meta:
-        db_table = 'routes'
-
-
-class StopTimes(models.Model):
-    trip_id = models.CharField(primary_key=True, max_length=45)
-    arrival_time = models.TimeField(blank=True, null=True)
-    departure_time = models.TimeField(blank=True, null=True)
-    stop_id = models.CharField(max_length=45, blank=True, null=True)
-    stop_sequence = models.IntegerField()
-    stop_headsign = models.CharField(max_length=45, blank=True, null=True)
-    shape_dist_traveled = models.CharField(max_length=45, blank=True, null=True)
-
-    class Meta:
-        db_table = 'stop_times'
-        unique_together = (('trip_id', 'stop_sequence'),)
-
-
-class Stops(models.Model):
-    index = models.BigIntegerField(blank=True, primary_key=True)
-    stop_lat = models.FloatField(blank=True, null=True)
-    zone_id = models.FloatField(blank=True, null=True)
-    stop_lon = models.FloatField(blank=True, null=True)
-    stop_id = models.TextField(blank=True, null=True)
-    stop_name = models.TextField(blank=True, null=True)
-    location_type = models.BigIntegerField(blank=True, null=True)
-
-    class Meta:
-        db_table = 'stops'
-
-
-class Trips(models.Model):
-    route_id = models.CharField(primary_key=True, max_length=45)
-    direction_id = models.IntegerField()
-    trip_headsign = models.CharField(max_length=100, blank=True, null=True)
-    shape_id = models.CharField(max_length=45, blank=True, null=True)
-    service_id = models.CharField(max_length=45, blank=True, null=True)
-    trip_id = models.CharField(max_length=45)
-
-    class Meta:
-        db_table = 'trips'
-        unique_together = (('route_id', 'direction_id', 'trip_id'),)
-
-
 class Apikeys(models.Model):
     api_key = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'ApiKeys'
+
+
+class Agency(models.Model):
+    agency_url = models.TextField(blank=True, null=True)
+    agency_name = models.TextField(blank=True, null=True)
+    agency_timezone = models.CharField(max_length=45, blank=True, null=True)
+    agency_id = models.CharField(primary_key=True, max_length=45)
+    agency_lang = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'agency'
 
 
 class AuthGroup(models.Model):
@@ -132,6 +92,32 @@ class AuthUserUserPermissions(models.Model):
         unique_together = (('user', 'permission'),)
 
 
+class Calendar(models.Model):
+    service_id = models.CharField(primary_key=True, max_length=45)
+    start_date = models.TextField(blank=True, null=True)
+    end_date = models.TextField(blank=True, null=True)
+    monday = models.TextField(blank=True, null=True)
+    tuesday = models.TextField(blank=True, null=True)
+    wednesday = models.TextField(blank=True, null=True)
+    thursday = models.TextField(blank=True, null=True)
+    friday = models.TextField(blank=True, null=True)
+    saturday = models.TextField(blank=True, null=True)
+    sunday = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'calendar'
+
+
+class CalendarDates(models.Model):
+    service = models.ForeignKey(Calendar, models.DO_NOTHING, primary_key=True)
+    date = models.CharField(max_length=45)
+    exception_type = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'calendar_dates'
+        unique_together = (('service', 'date'),)
+
+
 class DjangoAdminLog(models.Model):
     action_time = models.DateTimeField()
     object_id = models.TextField(blank=True, null=True)
@@ -174,3 +160,82 @@ class DjangoSession(models.Model):
     class Meta:
         managed = False
         db_table = 'django_session'
+
+
+class Forecast(models.Model):
+    date = models.CharField(primary_key=True, max_length=30)
+    start_time = models.CharField(max_length=30)
+    end_time = models.TextField(blank=True, null=True)
+    temperature = models.TextField(blank=True, null=True)
+    cloud_percent = models.TextField(blank=True, null=True)
+    rain = models.TextField(blank=True, null=True)
+    description = models.TextField(db_column='Description', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        db_table = 'forecast'
+        unique_together = (('date', 'start_time'),)
+
+
+class Routes(models.Model):
+    route_id = models.CharField(primary_key=True, max_length=45)
+    route_type = models.IntegerField(blank=True, null=True)
+    agency = models.ForeignKey(Agency, models.DO_NOTHING, blank=True, null=True)
+    route_short_name = models.CharField(max_length=45, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'routes'
+
+
+class RoutesPerStop(models.Model):
+    route_id = models.CharField(primary_key=True, max_length=45)
+    stop_id = models.CharField(max_length=45)
+
+    class Meta:
+        managed = False
+        db_table = 'routes_per_stop'
+        unique_together = (('route_id', 'stop_id'),)
+
+
+class StopTimes(models.Model):
+    trip_id = models.CharField(primary_key=True, max_length=45)
+    arrival_time = models.TimeField(blank=True, null=True)
+    departure_time = models.TimeField(blank=True, null=True)
+    stop = models.ForeignKey('Stops', models.DO_NOTHING, blank=True, null=True)
+    stop_sequence = models.IntegerField()
+    stop_headsign = models.CharField(max_length=45, blank=True, null=True)
+    shape_dist_traveled = models.CharField(max_length=45, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'stop_times'
+        unique_together = (('trip_id', 'stop_sequence'),)
+
+
+class Stops(models.Model):
+    index = models.BigIntegerField(blank=True, null=True)
+    stop_lat = models.FloatField(blank=True, null=True)
+    zone_id = models.FloatField(blank=True, null=True)
+    stop_lon = models.FloatField(blank=True, null=True)
+    stop_id = models.CharField(primary_key=True, max_length=60)
+    stop_name = models.TextField(blank=True, null=True)
+    location_type = models.BigIntegerField(blank=True, null=True)
+    stopid_short = models.IntegerField(db_column='stopID_short', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'stops'
+
+
+class Trips(models.Model):
+    route = models.ForeignKey(Routes, models.DO_NOTHING, primary_key=True)
+    direction_id = models.IntegerField()
+    trip_headsign = models.CharField(max_length=100, blank=True, null=True)
+    shape_id = models.CharField(max_length=45, blank=True, null=True)
+    service = models.ForeignKey(Calendar, models.DO_NOTHING, blank=True, null=True)
+    trip = models.ForeignKey(StopTimes, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'trips'
+        unique_together = (('route', 'direction_id', 'trip'),)

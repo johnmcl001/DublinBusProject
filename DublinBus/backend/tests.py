@@ -11,7 +11,7 @@ import datetime
 # Create your tests here.
 
 
-class SeactByStopTest(TestCase):
+class SearchByStopTest(TestCase):
     """
     UnitTests for SearchByStops Feature
     """
@@ -20,24 +20,77 @@ class SeactByStopTest(TestCase):
         """
         Setup fake models for testing
         """
-        Stops.objects.create(
-            index=1,
-            stop_lat=53,
-            zone_id=0,
-            stop_lon=-6,
-            stop_id="12315403365",
-            stop_name="Abberley",
-            location_type=0,
+        Forecast.objects.create(
+            date = '02-2-2019',
+            start_time = '22:00',
+            end_time = '23:00',
+            temperature = '19',
+            cloud_percent = '11',
+            rain = '2',
+            description='Sunny',
         )
 
         Trips.objects.create(
-            route_id="60-1-b12-1",
-            direction_id=0,
-            trip_headsign="Shanard Road (Shanard Avenue) - Saint John's Road East",
-            shape_id="60-1-b12-1.1.O",
-            service_id="2_merged_7780 ",
-            trip_id="14733.2.60-1-b12-1.1.O"
+            route = Routes.objects.create(
+                route_id='7b long',
+                route_type=2,
+                agency=Agency.objects.create(
+                    agency_url = '04',
+                    agency_name = 'DB',
+                    agency_timezone = 'Dublin/Europe',
+                    agency_id = '03',
+                    agency_lang='en'
+                ),
+                route_short_name='7d',
+            ),
+            direction_id = 1,
+            trip_headsign = 'towards town',
+            shape_id = 'ascd',
+            service = Calendar.objects.create(
+                service_id = "12345",
+                start_date = "20190303",
+                end_date = "20190615",
+                monday = "1",
+                tuesday = "0",
+                wednesday = "0",
+                thursday = "0",
+                friday = "0",
+                saturday = "0",
+                sunday = "0"
+            ),
+            trip = StopTimes.objects.create(
+                    trip_id = "1.1.60-79-b12-1.346.I",
+                    arrival_time = "07:30:00 ",
+                    departure_time = "07:30:00",
+                    stop = Stops.objects.create(
+                        index = 12,
+                        stop_lat = 123,
+                        zone_id = 123,
+                        stop_lon = 123,
+                        stop_id = 'big7556',
+                        stop_name = 'testname',
+                        location_type = 0,
+                        stopid_short ='7556',
+                    ),
+                    stop_sequence = "1",
+                    stop_headsign = "Aston Quay",
+                    shape_dist_traveled = None,
+            ),
         )
+
+        Routes.objects.create(
+            route_id='7d long',
+            route_type=2,
+            agency=Agency.objects.create(
+                agency_url = '03',
+                agency_name = 'DB',
+                agency_timezone = 'Dublin/Europe',
+                agency_id = '04',
+                agency_lang='en'
+            ),
+            route_short_name='7d',
+        )
+
         self.factory = RequestFactory()
         self.request = self.factory.get("/api/stop/?stop=2007&time=14:00:00&day=wed")
         self.test_view = self.setup_view(SearchByStop(), self.request)
@@ -69,6 +122,15 @@ class SeactByStopTest(TestCase):
         """
         self.assertEqual(self.test_view.get_params("day"), "wed")
 
+    def test_get_weather(self):
+        self.assertEqual(self.test_view.get_weather("23:39", '02-2-2019').description, 'Sunny')
+
+    def test_get_routes(self):
+        self.assertEqual(self.test_view.get_routes("7556"), ['7D', '7B'])
+
+    def test_get_direction(self):
+        self.assertEqual(self.test_view.get_direction('7d',7556 ), {'direction_id': 1, 'trip_headsign': 'towards town'})
+
     def test_serialize_machine_learning_input(self):
         """
         Should return machine learning inputs as json type
@@ -88,6 +150,12 @@ class SeactByStopTest(TestCase):
             weather,
             routes,
             direction), result)
+
+    def test_get_arrival_times(self):
+        """
+        Should return route number, arrival time and travel time
+        """
+        pass
 
     def test_sort_results(self):
         """
@@ -109,12 +177,3 @@ class SeactByStopTest(TestCase):
         ]
         self.assertEqual(self.test_view.sort_results(test_input), test_output)
 
-    def test_get_routes(self):
-        self.assertEqual(self.test_view.get_routes("7556"), ['7D', '7B'])
-
-    def test_get_weather(self):
-        self.assertEqual(len(self.test_view.get_weather("23:39", datetime.datetime.now().strftime("%d-%m-%Y") )[0]), 7)
-
-    def test_get_direction(self):
-        self.assertEqual(self.test_view.get_direction('7d',7556 )[0][0], 1)
-        self.assertEqual(self.test_view.get_direction('7d',7556 )[0][1], 'Castle Street - Mountjoy Square Nth')
