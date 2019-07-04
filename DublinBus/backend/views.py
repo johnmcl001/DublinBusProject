@@ -31,17 +31,19 @@ class SearchByStop(views.APIView):
         stop_number = self.get_params("stopnumber")
         time = self.get_params("time")
         day = self.get_params("day")
-        weather = self.get_weather(time, day)
-        routes = self.get_routes(stop_number)
-        direction = self.get_direction(stop_number, routes)
-        machine_learning_inputs = serialize_machine_learning_input(stop_number,
-                                                                   weather,
-                                                                   routes,
-                                                                   direction)
+        # weather = self.get_weather(time, day)
+        # routes = self.get_routes(stop_number) # Done by Niamh
+        # direction = self.get_direction(stop_number, routes) # Done by Niamh
+        # machine_learning_inputs = self. serialize_machine_learning_input(
+        #                                                        stop_number,
+        #                                                        weather,
+        #                                                        routes,
+        #                                                        direction)
         # results = self.get_arrival_times(machine_learning_inputs)
-        results_sorted = self.sort_results(results)
+        # results_sorted = self.sort_results(results)
         # results_json = jsonify_results(results)
         # return Response(results_json)
+        return HttpResponse("SearchByStop")
 
     def get_params(self, target):
         """
@@ -57,7 +59,23 @@ class SearchByStop(views.APIView):
         Output: weather conditions for prediction as json or dictionary
         """
         sql = "SELECT * FROM website.forecast where date=%s and start_time<=%s and (end_time>%s or end_time='00:00');"
-        return weather
+
+        def hour_rounder(t):
+            """
+            Rounds to nearest hour by adding a timedelta hour if minute >= 30
+            Input: DateTime
+            Output: DateTime Rounded
+            """
+            return (t.replace(second=0, minute=0, hour=t.hour)
+                       +timedelta(hours=t.minute//30))
+        """
+        datetime = datetime.strptime(date+" "+time, '%d-%m-%Y %H:%M')
+        datetime=(hour_rounder(datetime))
+        date=datetime.strftime("%d-%m-%Y")
+        time=datetime.strftime("%H:%M")
+
+        sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
+        """
 
     def get_routes(self, stop_number):
         """
@@ -145,42 +163,3 @@ class SearchByDestination(SearchByStop):
     def get(self, request):
         return HttpResponse("<h1>SearchByDestination</h1>")
 
-# Just lets us view the data base in a web ui
-# Also useful for testing sometimes
-# Get list with localhost:8000/api
-
-# Will probably remove at the end
-
-
-class StopsView(viewsets.ModelViewSet):
-    """
-    Shows stops table
-    """
-
-      # Define which serializer to use
-    serializer_class = StopSerializer
-    queryset = Stops.objects.all()
-
-
-class RoutesView(viewsets.ModelViewSet):
-    """
-    Shows routes table
-    """
-    queryset = Routes.objects.all()
-    serializer_class = RouteSerializer
-
-
-class StopTimesView(viewsets.ModelViewSet):
-    """
-    Shows stoptimes table
-    """
-    queryset = StopTimes.objects.all()
-    serializer_class = StopTimeSerializer
-
-
-class TripsView(viewsets.ModelViewSet):
-    """
-    shows trips table
-    """
-    queryset = Trips.objects.all()
-    serializer_class = TripSerializer
