@@ -8,7 +8,6 @@ from django.shortcuts import HttpResponse
 from rest_framework import viewsets
 from rest_framework import views
 from rest_framework.response import Response
-import pymysql
 import json
 import os
 
@@ -58,13 +57,6 @@ class SearchByStop(views.APIView):
         Output: weather conditions for prediction as json or dictionary
         """
         sql = "SELECT * FROM website.forecast where date=%s and start_time<=%s and (end_time>%s or end_time='00:00');"
-        db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
-        cursor = db.cursor()
-        val=(date, time, time)
-        cursor.execute(sql, (val),)
-        weather = cursor.fetchall()
-        cursor.close()
-
         return weather
 
     def get_routes(self, stop_number):
@@ -89,11 +81,6 @@ class SearchByStop(views.APIView):
         "where r.route_id=t.route_id  and r.route_short_name=%s"\
         " and s.stopID_short=%s and s.stop_id=st.stop_id "\
         "and t.trip_id=st.trip_id")
-        db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
-        cursor = db.cursor()
-        val=(route_number, stop_number)
-        cursor.execute(sql, (val),)
-        direction = cursor.fetchall()
         cursor.close()
 
         return direction
