@@ -8,14 +8,11 @@ from django.shortcuts import HttpResponse
 from rest_framework import viewsets
 from rest_framework import views
 from rest_framework.response import Response
-<<<<<<< HEAD
 import json
 import os
 from rest_framework import generics
-=======
 #import pymysql
 from datetime import datetime, timedelta
->>>>>>> Got it working in windows
 
 
 dirname = os.path.dirname(__file__)
@@ -23,10 +20,7 @@ dirname = os.path.dirname(__file__)
 from .serializers import *
 from .models import *
 
-<<<<<<< HEAD
-=======
 #from .permissions import ApiPermissions
->>>>>>> Got it working in windows
 
 class SearchByStop(views.APIView):
     """
@@ -106,10 +100,10 @@ class SearchByStop(views.APIView):
         date=datetime.strftime("%d-%m-%Y")
         time=datetime.strftime("%H:%M")
 
-<<<<<<< HEAD
+
         sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
         """
-=======
+
         #sql = "SELECT * FROM website.forecast where date='s' and time='%s'"(%date, %time)
         db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
         cursor = db.cursor()
@@ -118,7 +112,6 @@ class SearchByStop(views.APIView):
         cursor.close()
 
         return weather
->>>>>>> Got it working in windows
 
     def get_routes(self, stop_number):
         """
@@ -209,34 +202,6 @@ class SearchByDestination(SearchByStop):
     def get(self, request):
         return HttpResponse("<h1>SearchByDestination</h1>")
 
-<<<<<<< HEAD
 class RouteView(generics.ListCreateAPIView):
-=======
-# Just lets us view the data base in a web ui
-# Also useful for testing sometimes
-# Get list with localhost:8000/api
-
-# Will probably remove at the end
-
-
-class StopsView(viewsets.ModelViewSet):
-    """
-    Shows stops table
-    """
-
-      # Define which serializer to use
-   # permission_classes = (ApiPermissions, )
-    serializer_class = StopsSerializer
-    queryset = Stops.objects.all()
-    serializer_class = StopsSerializer
-
-
-class RoutesView(viewsets.ModelViewSet):
-    """
-    Shows routes table
-    """
->>>>>>> Got it working in windows
     queryset = Routes.objects.all()
     serializer_class = RouteSerializer
-
-

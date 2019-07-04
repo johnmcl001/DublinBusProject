@@ -1,14 +1,6 @@
 import React, {Component} from 'react';
 import ReactDOM from "react-dom";
-<<<<<<< HEAD
-import DataProvider from "./DataProvider";
-import Table from "./Table";
-const App = () => (
-  <DataProvider endpoint="api/stop/" render={data => <Table data={data} />} />
-);
-const wrapper = document.getElementById("app");
-wrapper ? ReactDOM.render(<App />, wrapper) : null;
-=======
+
 import Header from "./Components/Header"
 import Footer from "./Components/Footer"
 import Map from './Components/Map'
@@ -40,4 +32,3 @@ import SearchByRoute from './Components/SearchByRoute'
 //     position: 'relative'
 // }
 ReactDOM.render(<App />, document.getElementById("app"));
->>>>>>> Frontend stuff integrated with django for the most part, missing an img, not functional
