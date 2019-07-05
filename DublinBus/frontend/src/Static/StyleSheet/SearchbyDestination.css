@@ -1,0 +1,39 @@
+.SearchByDestinationBox {
+    height: 680px;
+}
+.SearchByDestinationBox form{
+    height: 320px;
+
+}
+
+.RouteNumber{
+    margin: auto;
+}
+.SearchByDestinationForm input[type=text], select, textarea {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+    height: 30px;
+}
+
+.SearchByDestinationBox label {
+    width: 100%;
+    width: 100%;
+    font-size: 18px;
+    /*padding: 6px 6px 6px 0;*/
+    text-align: center;
+    color: white;
+}
+.NotificationButton{
+    margin-top: 15px;
+}
+
+@media screen and (min-width: 600px) {
+  .EntireBox{
+      width: 420px;
+  }
+}
+
+/*https://reactdatepicker.com/#example-7 timepicker*/

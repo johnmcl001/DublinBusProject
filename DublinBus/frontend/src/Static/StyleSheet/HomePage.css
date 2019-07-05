@@ -1,0 +1,18 @@
+.HomePageInner {
+    height: 250px;
+
+}
+
+#WeatherWidget{
+    height: 120px;
+    margin: auto;
+}
+
+.HomePage button{
+    margin: auto;
+    height: 50px;
+    width: 65%;
+    margin-top:15px ;
+    margin-bottom: 15px;
+}
+

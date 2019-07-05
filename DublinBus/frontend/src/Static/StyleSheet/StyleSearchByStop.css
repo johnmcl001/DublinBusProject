@@ -1,0 +1,43 @@
+#SearchByStopForm {
+    margin-bottom: 30px;
+    height: 120px;
+    padding-top:2.5vh;
+}
+
+
+
+.EntireBox {
+    top: 30px;
+    left: 20px;
+    border: black; /* etc.. */
+height: 500px;
+}
+
+
+#SubmitButton{
+   display: block;
+    margin: auto;
+}
+
+
+.SearchByStop input {
+    display: block;
+    margin: auto;
+}
+
+.SearchByStop label{
+    /*display: block;*/
+    color: white;
+    font-size: 20px;
+    /*left: 400px;*/
+}
+.SearchByStop form{
+     margin-left: 20%;
+    margin-right:25%;
+        width: 50%;
+
+}
+#formColor{
+    background-color : #32CD32;
+}
+

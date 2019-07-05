@@ -1,0 +1,67 @@
+
+
+* {
+  box-sizing: border-box;
+}
+
+.SearchByRouteBox{
+        /*Height of the Viewport , need to move into App.css later.*/
+        height: 500px;
+
+}
+
+.SearchByRoute input[type=text], select, textarea {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.SearchByRoute label {
+    width: 100%;
+    width: 100%;
+    font-size: 18px;
+    padding: 6px 6px 6px 0;
+    text-align: center;
+    color: white;
+}
+
+.SearchByRoute input {
+
+  background-color: white;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+}
+
+.SearchByRoute form{
+    margin: 15px;
+    height: 200px;
+}
+
+
+.row_first{
+    margin-top: 10px;
+}
+.rowSpace{
+    margin-top: 20px;
+
+}
+.inputBox{
+    margin: auto;
+
+}
+/* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
+
+@media screen and (min-width: 360px) {
+ .SearchByRoute label {
+    width: 100%;
+    width: 100%;
+    font-size: 16px;
+    padding: 4px 4px 4px 0;
+}
+
+}
