@@ -1,4 +1,4 @@
-.SearchByRoute
+
 
 * {
   box-sizing: border-box;
@@ -6,7 +6,7 @@
 
 .SearchByRouteBox{
         /*Height of the Viewport , need to move into App.css later.*/
-        height: 65vh;
+        height: 500px;
 
 }
 
@@ -43,30 +43,19 @@
 }
 
 
-
-.RouteNumber{
-
-    margin-top: 20px;
-
-}
-
-.row{
-    margin-top: 10px;
-}
 .row_first{
     margin-top: 10px;
 }
+.rowSpace{
+    margin-top: 20px;
 
+}
 .inputBox{
     margin: auto;
 
 }
 /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
-@media screen and (min-width: 600px) {
-  .SearchByRoute{
-      width: 450px;
-  }
-}
+
 @media screen and (min-width: 360px) {
  .SearchByRoute label {
     width: 100%;

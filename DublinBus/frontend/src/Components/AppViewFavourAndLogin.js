@@ -1,10 +1,10 @@
 import React, { Component } from "react";
-//import  './AppViewFavourAndLogin.css';
+import "../Static/StyleSheet/AppViewFavourAndLogin.css";
 
 class AppViewFavourAndLogin extends Component {
   render() {
     return (
-      <div className="container" id="appViewHeader">
+      <div className="container" style={appViewHeader}>
         <div className="row">
           <div
             className="col-3 "
@@ -26,7 +26,11 @@ class AppViewFavourAndLogin extends Component {
     );
   }
 }
-
+const appViewHeader = {
+  marginTop: "15px",
+  marginBottom: "15px",
+  backgroundColor: "white"
+};
 const appViewLoginStyle = {
   fontSize: "30px",
 

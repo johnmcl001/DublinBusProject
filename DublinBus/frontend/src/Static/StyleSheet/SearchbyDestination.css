@@ -1,14 +1,11 @@
 .SearchByDestinationBox {
-    height: 80vh;
+    height: 680px;
 }
 .SearchByDestinationBox form{
-    height: 50vh;
+    height: 320px;
 
 }
 
-.row{
-    height: 40px;
-}
 .RouteNumber{
     margin: auto;
 }
@@ -18,6 +15,7 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   resize: vertical;
+    height: 30px;
 }
 
 .SearchByDestinationBox label {
@@ -28,11 +26,13 @@
     text-align: center;
     color: white;
 }
-
+.NotificationButton{
+    margin-top: 15px;
+}
 
 @media screen and (min-width: 600px) {
-  .SearchByDestinationBox{
-      width: 450px;
+  .EntireBox{
+      width: 420px;
   }
 }
 

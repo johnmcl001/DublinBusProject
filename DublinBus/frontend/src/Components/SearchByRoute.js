@@ -1,30 +1,28 @@
 import React, { Component } from "react";
-//import './SearchByRoute.css'
+import "../Static/StyleSheet/SearchByRoute.css";
 import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 
 class SearchByRoute extends Component {
   render() {
     return (
-      <div
-        className="SearchByRoute container col-md-12  position-absolute"
-        id="EntireBox"
-      >
+      <div className=" EntireBox SearchByRoute container col-md-12  position-absolute">
         <div className="container SearchByRouteBox bg-light">
           <AppViewHeader />
           <AppViewFavourAndLogin />
           <div id="formColor">
             <form>
-              <div className="row row_first">
-                <div className="col-5 RouteNumber container_1 ">
+              <div className="row row_first"></div>
+              <div className="row rowSpace border border-primary">
+                <div className="col-5 RouteNumber  border border-primary">
                   <label htmlFor="fname"> Route Number :</label>
                 </div>
-                <div className="col-7 RouteNumber ">
+                <div className="col-7 RouteNumber inputBox">
                   <input type="text" />
                 </div>
               </div>
 
-              <div className="row ">
+              <div className="row rowSpace border border-primary">
                 <div className="col-5  ">
                   <label htmlFor="Towards">Towards :</label>
                 </div>
@@ -36,7 +34,7 @@ class SearchByRoute extends Component {
                 </div>
               </div>
 
-              <div className="row ">
+              <div className="row rowSpace border border-primary">
                 <div className="col-5 ">
                   <label htmlFor="fname"> Departure :</label>
                 </div>

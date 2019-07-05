@@ -1,12 +1,11 @@
 import React, { Component } from "react";
-import ReactDOM from "react-dom";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
 import Map from "./Components/Map";
 import SearchByStop from "./Components/SearchByStop";
 import SearchbyDestination from "./Components/SearchbyDestination";
+import HomePage from "./Components/HomePage";
 import SearchByRoute from "./Components/SearchByRoute";
-
 class App extends Component {
   render() {
     return (
@@ -15,9 +14,10 @@ class App extends Component {
         <div className="container-fluid position-relative">
           <Map />
           {/*<SearchbyDestination/>*/}
-          <SearchByRoute/>
-          {/*<SearchByStop />*/}
+          {/*<SearchByRoute/>*/}
+          {/*<SearchByStop/>*/}
           {/*<AppView/>*/}
+          <HomePage />
         </div>
         <Footer />
       </div>
@@ -28,4 +28,4 @@ class App extends Component {
 // const x = {
 //     position: 'relative'
 // }
-ReactDOM.render(<App />, document.getElementById("app"));
+export default App;

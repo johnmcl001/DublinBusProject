@@ -1,6 +1,4 @@
 #SearchByStopForm {
-
-    margin-top: 30px;
     margin-bottom: 30px;
     height: 120px;
     padding-top:2.5vh;
@@ -8,18 +6,13 @@
 
 
 
-#EntireBox {
+.EntireBox {
     top: 30px;
     left: 20px;
     border: black; /* etc.. */
+height: 500px;
 }
 
-#innerContainer{
-        /*Height of the Viewport , need to move into App.css later.*/
-        height: 70vh;
-
-
-}
 
 #SubmitButton{
    display: block;
@@ -47,3 +40,4 @@
 #formColor{
     background-color : #32CD32;
 }
+

@@ -1,16 +1,14 @@
 import React, { Component } from "react";
-//import "./SearchbyDestination.css";
+import "../Static/StyleSheet/SearchbyDestination.css";
 import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
-//import DatePicker from "react-datepicker";
+
+// import DatePicker from 'react-datepicker';
 class SearchbyDestination extends Component {
   render() {
     return (
       <div>
-        <div
-          className="SearchByDestinationBox bg-light container col-md-12  position-absolute"
-          id="EntireBox"
-        >
+        <div className="EntireBox SearchByDestinationBox bg-light container col-md-12  position-absolute">
           <div className="container ">
             <AppViewHeader />
             <AppViewFavourAndLogin />
@@ -98,17 +96,19 @@ class SearchbyDestination extends Component {
                       {/*/>*/}
                     </div>
                   </div>
+                  <div className="row NotificationButton border border-secondary">
+                    <p>NotificationButton locate here</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-warning col-7"
+                    id="SubmitButton"
+                  >
+                    Submit
+                  </button>
                 </div>
               </form>
             </div>
-
-            <button
-              type="button"
-              className="btn btn-warning col-7"
-              id="SubmitButton"
-            >
-              Submit
-            </button>
           </div>
         </div>
       </div>
