@@ -39,13 +39,16 @@ class SearchByStop(views.APIView):
         time = self.get_params("time")
         date = self.get_params("date")
         weather = self.get_weather(time, date)
-        routes = self.get_routes(stop_number)
+        bus_stop_info = self.get_bus_stop_info(stop_number)
+        routes = bus_stop_info["routes"][0]
         directions = self.get_direction(routes, stop_number)
+        return Response(directions)
         machine_learning_inputs = self.serialize_machine_learning_input(
                                                                 stop_number,
                                                                 weather,
                                                                 routes,
                                                                 directions)
+        return Response(machine_learning_inputs)
         results = self.get_arrival_times(machine_learning_inputs)
         results = self.sort_results(results)
         return Response(results)
@@ -72,7 +75,7 @@ class SearchByStop(views.APIView):
         }
         return forecast
 
-    def get_routes(self, stop_number):
+    def get_bus_stop_info(self, stop_number):
         """
         Input: bus stop number as a string
         Output: List of Routes that server that bus stop as list
@@ -80,7 +83,7 @@ class SearchByStop(views.APIView):
         filename = os.path.join(dirname, "frontEndBusInfo.json")
         with open(filename) as json_file:
                     busStopInfo = json.load(json_file)
-        busStopInfo = busStopInfo[stop_number]['routes'][0]
+        busStopInfo = busStopInfo[stop_number]
         return busStopInfo
 
     def get_direction(self, route_numbers, stop_number):
@@ -93,7 +96,10 @@ class SearchByStop(views.APIView):
         directions = {}
         for route in route_numbers:
             allRoutes=Trips.objects.filter(route__route_short_name=route, trip__in=allTrips).values('direction_id', 'trip_headsign').distinct()
-            directions[route] = allRoutes[0]
+            # This query sometimes returns empty, even in mysql
+            # Need to investigate further
+            if len(allRoutes) > 0:
+                directions[route] = allRoutes[0]
         return directions
 
     def serialize_machine_learning_input(self, stop_number, weather, routes, directions):
@@ -119,22 +125,27 @@ class SearchByStop(views.APIView):
         """
         results =    [
            {
+              "stop": "2007",
               "route":"46a",
               "arrival_time":"4"
            },
            {
+              "stop": "2007",
               "route":"39a",
               "arrival_time":"2"
            },
            {
+              "stop": "2007",
               "route":"145",
               "arrival_time":"1"
            },
            {
+              "stop": "2007",
               "route":"46a",
               "arrival_time":"8"
            },
            {
+              "stop": "2007",
               "route":"155",
               "arrival_time":"6"
            },
@@ -152,13 +163,43 @@ class SearchByStop(views.APIView):
         return results_sorted
 
 class SearchByRoute(SearchByStop):
-    """
-    Search by route feature
-    Inherits from search by stop
-    """
+        """
+        Input: HTTP request
+        Output: Machine learning output as json
+        Note: Main logic implemented here using the methods below
+        """
+        def get(self, request):
+            start = self.get_params("start")
+            route = self.get_params("route")
+            time = self.get_params("time")
+            date = self.get_params("date")
 
-    def get(self, request):
-        return HttpResponse("<h1>SearchByRoute</h1>")
+            weather = self.get_weather(time, date)
+            stops = self.get_stops(start)
+            stops = self.sort_stops_by_distance(stops)
+            direction = self.get_direction([route], stops)
+            machine_learning_inputs = self.serialize_machine_learning_input(
+                                                                    stops,
+                                                                    weather,
+                                                                    route,
+                                                                    direction)
+            results = self.get_arrival_times(machine_learning_inputs)
+            results = self.sort_results(results)
+            return Response(results)
+
+        def get_stops(self, start):
+            """
+            Input: starting point as string
+            Output: stops near starting point and walking distance as dict
+            """
+            return "stops"
+
+        def sort_stops_by_distance(self, stops):
+            """
+            Input: stops and distances as dictionary
+            Output: stops sorted by increasing distance
+            """
+            return "stops sorted"
 
 
 class SearchByDestination(SearchByStop):

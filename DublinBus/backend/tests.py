@@ -101,7 +101,7 @@ class SearchByStopTest(TestCase):
         )
 
         self.factory = RequestFactory()
-        self.request = self.factory.get("/api/stop/?stop=2007&time=14:00:00&day=wed")
+        self.request = self.factory.get("/api/stop/?stop=2007&time=14:00:00&date=06-07-2019")
         self.test_view = self.setup_view(SearchByStop(), self.request)
 
     def setup_view(self, view, request, *args, **kwargs):
@@ -125,13 +125,16 @@ class SearchByStopTest(TestCase):
         """
         self.assertEqual(self.test_view.get_params("time"), "14:00:00")
 
-    def test_get_params_day(self):
+    def test_get_params_date(self):
         """
         Should return day as a string
         """
-        self.assertEqual(self.test_view.get_params("day"), "wed")
+        self.assertEqual(self.test_view.get_params("date"), "06-07-2019")
 
     def test_get_weather(self):
+        """
+        Should return weather forecast as dictionary
+        """
         expected_results = {
             "temperature": '19',
             "cloud_percent": '11',
@@ -140,10 +143,27 @@ class SearchByStopTest(TestCase):
         }
         self.assertEqual(self.test_view.get_weather("23:39", '02-2-2019'), expected_results)
 
-    def test_get_routes(self):
-        self.assertEqual(self.test_view.get_routes("7556"), ['7D', '7B'])
+    def test_get_bus_stop_info(self):
+        """
+        Should return info for a stop as a dictionary
+        """
+        expected_result = {
+          "lat":53.2480439849,
+          "long":-6.12315403365,
+          "name":"Abberley",
+          "routes":[
+             [
+                "7D",
+                "7B"
+             ]
+          ]
+       }
+        self.assertEqual(self.test_view.get_bus_stop_info("7556"), expected_result)
 
     def test_get_direction(self):
+        """
+        Should return direction per route per stop as a dictionary
+        """
         expected_results = {"7d": {"direction_id": 1, "trip_headsign": "towards town"}}
         self.assertEqual(self.test_view.get_direction(['7d'], "7556"), expected_results)
 
@@ -193,3 +213,126 @@ class SearchByStopTest(TestCase):
         ]
         self.assertEqual(self.test_view.sort_results(test_input), test_output)
 
+class SearchByRouteTest(TestCase):
+    """
+    UnitTests for SearchByStops Feature
+    """
+
+    def setUp(self):
+        """
+        Setup fake models for testing
+        """
+        Forecast.objects.create(
+            date = '02-2-2019',
+            start_time = '22:00',
+            end_time = '23:00',
+            temperature = '19',
+            cloud_percent = '11',
+            rain = '2',
+            description='Sunny',
+        )
+        Forecast.objects.create(
+            date = '03-2-2019',
+            start_time = '21:00',
+            end_time = '22:00',
+            temperature = '19',
+            cloud_percent = '11',
+            rain = '2',
+            description='Sunny',
+        )
+
+        Trips.objects.create(
+            route = Routes.objects.create(
+                route_id='7b long',
+                route_type=2,
+                agency=Agency.objects.create(
+                    agency_url = '04',
+                    agency_name = 'DB',
+                    agency_timezone = 'Dublin/Europe',
+                    agency_id = '03',
+                    agency_lang='en'
+                ),
+                route_short_name='7d',
+            ),
+            direction_id = 1,
+            trip_headsign = 'towards town',
+            shape_id = 'ascd',
+            service = Calendar.objects.create(
+                service_id = "12345",
+                start_date = "20190303",
+                end_date = "20190615",
+                monday = "1",
+                tuesday = "0",
+                wednesday = "0",
+                thursday = "0",
+                friday = "0",
+                saturday = "0",
+                sunday = "0"
+            ),
+            trip = StopTimes.objects.create(
+                    trip_id = "1.1.60-79-b12-1.346.I",
+                    arrival_time = "07:30:00 ",
+                    departure_time = "07:30:00",
+                    stop = Stops.objects.create(
+                        index = 12,
+                        stop_lat = 123,
+                        zone_id = 123,
+                        stop_lon = 123,
+                        stop_id = 'big7556',
+                        stop_name = 'testname',
+                        location_type = 0,
+                        stopid_short ='7556',
+                    ),
+                    stop_sequence = "1",
+                    stop_headsign = "Aston Quay",
+                    shape_dist_traveled = None,
+            ),
+        )
+
+        Routes.objects.create(
+            route_id='7d long',
+            route_type=2,
+            agency=Agency.objects.create(
+                agency_url = '03',
+                agency_name = 'DB',
+                agency_timezone = 'Dublin/Europe',
+                agency_id = '04',
+                agency_lang='en'
+            ),
+            route_short_name='7d',
+        )
+
+        self.factory = RequestFactory()
+        self.request = self.factory.get("/api/route/?start=ucd&route=46A&time=14:00:00&date=06-07-2019")
+        self.test_view = self.setup_view(SearchByRoute(), self.request)
+
+    def setup_view(self, view, request, *args, **kwargs):
+        """
+        Sets up view so its methods can be called and tested
+        """
+        view.request = request
+        view.args = args
+        view.kwargs = kwargs
+        return view
+
+    def test_get_params_start(self):
+        """
+        Should return starting point as string
+        """
+        self.assertEqual(self.test_view.get_params("start"), "ucd")
+
+    def test_get_stops(self):
+        """
+        Should return stops and distance to user as dictionary
+        """
+        expected_result = []
+        self.assertEqual(self.test_view.get_stops("ucd"), expected_result)
+
+    def test_sort_stops_by_distance(self):
+        """
+        Should return stops sorted by distance
+        """
+        expected_result = []
+        stops = []
+        self.assertEqual(self.test_view.sort_stops_by_distance(stops),
+                                                        expected_result)
