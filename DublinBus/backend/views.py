@@ -34,43 +34,21 @@ class SearchByStop(views.APIView):
         Output: Machine learning output as json
         Note: Main logic implemented here using the methods below
         """
-        """
+
         stop_number = self.get_params("stopnumber")
         time = self.get_params("time")
-        day = self.get_params("day")
-        weather = self.get_weather(time, day)
+        date = self.get_params("date")
+        weather = self.get_weather(time, date)
         routes = self.get_routes(stop_number)
-        direction = self.get_direction(stop_number, routes)
-        machine_learning_inputs = serialize_machine_learning_input(stop_number,
-                                                                   weather,
-                                                                   routes,
-                                                                   direction)
+        directions = self.get_direction(routes, stop_number)
+        machine_learning_inputs = self.serialize_machine_learning_input(
+                                                                stop_number,
+                                                                weather,
+                                                                routes,
+                                                                directions)
         results = self.get_arrival_times(machine_learning_inputs)
-        results_sorted = self.sort_results(results)
-        results_json = jsonify_results(results)
-        """
-        return Response([
-   {
-      "route":"145",
-      "arrival_time":"1"
-   },
-   {
-      "route":"39a",
-      "arrival_time":"2"
-   },
-   {
-      "route":"46a",
-      "arrival_time":"4"
-   },
-   {
-      "route":"155",
-      "arrival_time":"6"
-   },
-   {
-      "route":"46a",
-      "arrival_time":"8"
-   }
-])
+        results = self.sort_results(results)
+        return Response(results)
 
     def get_params(self, target):
         """
@@ -85,8 +63,14 @@ class SearchByStop(views.APIView):
         Input: time and date as strings
         Output: weather conditions for prediction as json or dictionary
         """
-        weatherResult=Forecast.objects.get(date=date, start_time__lte=time, end_time__lt=time )
-        return weatherResult
+        weatherResult=Forecast.objects.get(date=date, start_time__lte=time, end_time__gt=time)
+        forecast = {
+            "temperature": weatherResult.temperature,
+            "cloud": weatherResult.cloud_percent,
+            "rain": weatherResult.rain,
+            "description": weatherResult.description,
+        }
+        return forecast
 
     def get_routes(self, stop_number):
         """
@@ -99,17 +83,20 @@ class SearchByStop(views.APIView):
         busStopInfo = busStopInfo[stop_number]['routes'][0]
         return busStopInfo
 
-    def get_direction(self, route_number, stop_number):
+    def get_direction(self, route_numbers, stop_number):
         """
         Input: bus stop number and route_number
         Output: Direction of route as int and headsign label
         """
         stop_number=Stops.objects.get(stopid_short=stop_number)
-        allTrips=StopTimes.objects.filter(stop=stop_number.stop_id)
-        allRoutes=Trips.objects.filter(route__route_short_name='7d', trip__in=allTrips).values('direction_id', 'trip_headsign').distinct()
-        return allRoutes[0]
+        allTrips=StopTimes.objects.filter(stop=stop_number)
+        directions = {}
+        for route in route_numbers:
+            allRoutes=Trips.objects.filter(route__route_short_name=route, trip__in=allTrips).values('direction_id', 'trip_headsign').distinct()
+            directions[route] = allRoutes[0]
+        return directions
 
-    def serialize_machine_learning_input(self, stop_number, weather, routes, direction):
+    def serialize_machine_learning_input(self, stop_number, weather, routes, directions):
         """
         Input: weather data as json/dict, routes as list, direction as int
         Output: machine learning inputs as json
@@ -118,7 +105,7 @@ class SearchByStop(views.APIView):
         machine_learning_inputs = MachineLearningInputs(stop_number,
                                                         weather,
                                                         routes,
-                                                        direction)
+                                                        directions)
         machine_learning_inputs = MachineLearningInputSerializer(
             machine_learning_inputs)
         return machine_learning_inputs.data
@@ -130,7 +117,28 @@ class SearchByStop(views.APIView):
         Output: machine learning predictions as dictionary/json
         Note: output format depends on if we serialize here or somewhere else
         """
-        results = []
+        results =    [
+           {
+              "route":"46a",
+              "arrival_time":"4"
+           },
+           {
+              "route":"39a",
+              "arrival_time":"2"
+           },
+           {
+              "route":"145",
+              "arrival_time":"1"
+           },
+           {
+              "route":"46a",
+              "arrival_time":"8"
+           },
+           {
+              "route":"155",
+              "arrival_time":"6"
+           },
+        ]
         return results
 
 
@@ -142,16 +150,6 @@ class SearchByStop(views.APIView):
         """
         results_sorted = sorted(results, key=lambda k: k["arrival_time"])
         return results_sorted
-
-    def jsonify_results(self, results):
-        """
-        Input: Serialized machine learning results
-        Output: Machine Learning results as json
-        Note: Not sure if we can just do this in the previous function
-        """
-        results_jsonified = ResultsJsonifier(results)
-        return results_jsonified.data
-
 
 class SearchByRoute(SearchByStop):
     """

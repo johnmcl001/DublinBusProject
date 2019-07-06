@@ -29,6 +29,15 @@ class SearchByStopTest(TestCase):
             rain = '2',
             description='Sunny',
         )
+        Forecast.objects.create(
+            date = '03-2-2019',
+            start_time = '21:00',
+            end_time = '22:00',
+            temperature = '19',
+            cloud_percent = '11',
+            rain = '2',
+            description='Sunny',
+        )
 
         Trips.objects.create(
             route = Routes.objects.create(
@@ -123,13 +132,20 @@ class SearchByStopTest(TestCase):
         self.assertEqual(self.test_view.get_params("day"), "wed")
 
     def test_get_weather(self):
-        self.assertEqual(self.test_view.get_weather("23:39", '02-2-2019').description, 'Sunny')
+        expected_results = {
+            "temperature": '19',
+            "cloud_percent": '11',
+            "rain": '2',
+            "description": 'Sunny',
+        }
+        self.assertEqual(self.test_view.get_weather("23:39", '02-2-2019'), expected_results)
 
     def test_get_routes(self):
         self.assertEqual(self.test_view.get_routes("7556"), ['7D', '7B'])
 
     def test_get_direction(self):
-        self.assertEqual(self.test_view.get_direction('7d',7556 ), {'direction_id': 1, 'trip_headsign': 'towards town'})
+        expected_results = {"7d": {"direction_id": 1, "trip_headsign": "towards town"}}
+        self.assertEqual(self.test_view.get_direction(['7d'], "7556"), expected_results)
 
     def test_serialize_machine_learning_input(self):
         """
@@ -138,18 +154,18 @@ class SearchByStopTest(TestCase):
         stop_number = "2007"
         weather = {"temp": "20", "precipitation": "34%", "wind": "23"}
         routes = ["7b", "7d", "46a", "47", "84x", "116", "145", "155"]
-        direction = 1
+        directions = {"7d": "1"}
         result = {
             "stop_number": stop_number,
             "weather": weather,
             "routes": routes,
-            "direction": direction
+            "directions": directions
         }
         self.assertEqual(self.test_view.serialize_machine_learning_input(
             stop_number,
             weather,
             routes,
-            direction), result)
+            directions), result)
 
     def test_get_arrival_times(self):
         """
