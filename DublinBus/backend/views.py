@@ -175,7 +175,7 @@ class SearchByRoute(SearchByStop):
             date = self.get_params("date")
 
             weather = self.get_weather(time, date)
-            stops = self.get_stops(start)
+            stops = self.get_stops(start, route)
             stops = self.sort_stops_by_distance(stops)
             direction = self.get_direction([route], stops)
             machine_learning_inputs = self.serialize_machine_learning_input(
@@ -187,7 +187,7 @@ class SearchByRoute(SearchByStop):
             results = self.sort_results(results)
             return Response(results)
 
-        def get_stops(self, start):
+        def get_stops(self, start, route):
             """
             Input: starting point as string
             Output: stops near starting point and walking distance as dict
