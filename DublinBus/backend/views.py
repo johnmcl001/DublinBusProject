@@ -210,6 +210,7 @@ class SearchByRoute(SearchByStop):
                 data=data['Res']['Stations']['Stn']
                 stations={}
                 for i in len(data):
+                    #HERE API returns stop ids which do not match DublinBus-Must convert
                     id=Stops.objects.filter(stop_name__contains=data[i]['name')
                     #sometimes the search for name returns more than 1 result
                     if len(id)!=1:
