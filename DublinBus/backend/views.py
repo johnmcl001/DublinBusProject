@@ -9,6 +9,7 @@ from rest_framework import viewsets
 from rest_framework import views
 from rest_framework.response import Response
 import json
+import requests
 import os
 from rest_framework import generics
 
@@ -173,7 +174,9 @@ class SearchByRoute(SearchByStop):
             route = self.get_params("route")
             time = self.get_params("time")
             date = self.get_params("date")
+            address=self.get_params("address")
 
+            #coordinates=self.get_coordinates(address)
             weather = self.get_weather(time, date)
             stops = self.get_stops(start, route)
             stops = self.sort_stops_by_distance(stops)
@@ -189,17 +192,58 @@ class SearchByRoute(SearchByStop):
 
         def get_stops(self, start, route):
             """
-            Input: starting point as string
-            Output: stops near starting point and walking distance as dict
+            Input: starting point as coordinates in a dict{lat: v, lon:v}
+            Output: stops near starting point and walking distance, duration and routes served as dict
             """
-            return "stops"
+            while True:
+                default_radius=350
+                api='https://transit.api.here.com/v3/stations/by_geocoord.json?center='+start['lat']+'%2C'+start['lon']+'&radius='+default_radius+'&app_id='+SECRET+'&app_code='+SECRET
+                response=requests.get(api)
+                if response.status_code != 200:
+                    return("This service is currently unavailable")
+                else:
+                    data = response.json()
+                    if 'Stations' in data['Res'].keys():
+                        break
+                    else:
+                        default_radius+=100
+                data=data['Res']['Stations']['Stn']
+                stations={}
+                for i in len(data):
+                    id=Stops.objects.filter(stop_name__contains=data[i]['name')
+                    #sometimes the search for name returns more than 1 result
+                    if len(id)!=1:
+                        #search by lat and long
+                        id=Stops.objects.filter(stop_lon__contains=data[i]['x'], stop_lat__contains=data[i]['y'])
+                        if len(id)!=0:
+                            #search by a shorter lat long string
+                            id=Stops.objects.filter(stop_lon__contains=data[i]['x'][:-1], stop_lat__contains=data[i]['y'][:-1])
+                    stations[id.stopid_short]={'name':data[i]['name'], 'distance':data[i]['distance'], 'duration':data[i]['duration'], 'Transport':data[i]['Transports']}
+
+            return stations
 
         def sort_stops_by_distance(self, stops):
             """
             Input: stops and distances as dictionary
             Output: stops sorted by increasing distance
             """
+            #already returned in order of shortest walking distance
             return "stops sorted"
+
+        def get_stops_for_route(self, route, direction):
+            """
+            Input: direction as a 0 or 1
+            Output: a dictionary with stops as keys and their values a list
+                    containing their coordinates and name
+            """
+            route=Routes.objects.get(route_short_name=route)
+            trips=Trips.objects.filter(route_id=route, direction_id=direction).values('trip_id')
+            stops=StopTimes.objects.filter(trip_id__in=trips).values('stop_id').distinct()
+            stopObj=Stops.objects.filter(stop_id__in=stops)
+            stops={}
+            for stop in stopObj:
+                stops[stop.stopid_short]=[stop.stop_name, stop.stop_lat, stop.stop_lon]
+            return stops
 
 
 class SearchByDestination(SearchByStop):
