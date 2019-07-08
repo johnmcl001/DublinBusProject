@@ -1,10 +1,31 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import DataProvider from "./Components/DataProvider";
-import Table from "./Components/Table";
+import React, { Component } from "react";
+import Header from "./Components/Header";
+import Footer from "./Components/Footer";
+import Map from "./Components/Map";
+import SearchByStop from "./Components/SearchByStop";
+import SearchbyDestination from "./Components/SearchbyDestination";
+import HomePage from "./Components/HomePage";
+import SearchByRoute from "./Components/SearchByRoute";
+class App extends Component {
+  render() {
+    return (
+      <div className="App">
+        <Header />
+        <div className="container-fluid position-relative">
+          <Map />
+          {/*<SearchbyDestination/>*/}
+          <SearchByRoute/>
+          {/*<SearchByStop/>*/}
+          {/*<AppView/>*/}
+          <HomePage />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+}
 
-const App = () => (
-  <DataProvider endpoint="stop" render={data => <Table data={data} />} />
-);
-const wrapper = document.getElementById("root");
-wrapper ? ReactDOM.render(<App />, wrapper) : null;
+// const x = {
+//     position: 'relative'
+// }
+export default App;
