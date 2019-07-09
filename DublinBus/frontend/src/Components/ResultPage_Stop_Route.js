@@ -4,7 +4,7 @@ import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import ResultPageButton from "./ResultPageButton";
 import "../Static/StyleSheet/ResultPage_Stop_Route.css";
 import DataProvider from "./DataProvider";
-import Table from "./Table";
+import ResultTable_StopRoute from "./ResultTable_StopRoute";
 
 //This is Result Page Component for Search for Stop and Route
 class ResultPage_Stop_Route extends Component {
@@ -37,38 +37,19 @@ class ResultPage_Stop_Route extends Component {
                 <p id="ArrivalLabel">Estimate arrival </p>
               </div>
             </div>
-
-            <div className="row resultRows">
-              <div className="col-4 busNumber">
-                <p>39A</p>
-              </div>
-              <div className="col-6 busArrivalTime ">
-                <p>6 mins</p>
-              </div>
-            </div>
-            <div className="row resultRows">
-              <div className="col-4 busNumber">
-                <p>39A</p>
-              </div>
-              <div className="col-6 busArrivalTime ">
-                <p>16 mins</p>
-              </div>
-            </div>
-
-            <div className="row resultRows" id="resultRowsLastRaw">
-              <div className="col-4 busNumber">
-                <p>39A</p>
-              </div>
-              <div className="col-6 busArrivalTime ">
-                <p>21 mins</p>
-              </div>
-            </div>
-          </form>
-          <DataProvider
+                      <DataProvider
             endpoint="stop"
             stopnumber={this.props.match.params.stopnumber}
-            render={data => <Table data={data} />}
+            render={data => <ResultTable_StopRoute data={data} />}
           />
+
+      <DataProvider
+            endpoint="stop"
+            stopnumber={this.props.match.params.stopnumber}
+            render={data => <ResultTable_StopRoute data={data} />}
+          />
+          </form>
+
         </div>
         <ResultPageButton />
       </div>
