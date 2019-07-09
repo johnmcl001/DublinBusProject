@@ -188,7 +188,7 @@ class SearchByStop(views.APIView):
         Input: Machine learning results as json
         Output: Machine learning results sorted by departure time as json
         """
-        results_sorted = sorted(results, key=lambda k: k["arrival_time"])
+        results_sorted = sorted(results, key=lambda k: k["estimate_arrival"])
         return results_sorted
 
 

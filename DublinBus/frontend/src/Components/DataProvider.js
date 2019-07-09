@@ -4,8 +4,16 @@ import axios from "axios";
 
 class DataProvider extends Component {
   static propTypes = {
+    render: PropTypes.func.isRequired,
     endpoint: PropTypes.string.isRequired,
-    render: PropTypes.func.isRequired
+    stopnumber: PropTypes.string,
+    route: PropTypes.string,
+    towards: PropTypes.string,
+    departure: PropTypes.string,
+    startpoint: PropTypes.string,
+    destination: PropTypes.string,
+    time: PropTypes.string,
+    date: PropTypes.string
   };
   state = {
     data: [],
@@ -18,9 +26,14 @@ class DataProvider extends Component {
       method: "get",
       url: this.state.proxy + this.props.endpoint + "/",
       params: {
-        stopnumber: "2007",
-        time: "14:00",
-        date: "06-07-2019"
+        stopnumber: this.props.stopnumber,
+        route: this.props.route,
+        towards: this.props.towards,
+        departure: this.props.departure,
+        startpoint: this.props.startpoint,
+        destination: this.props.destination,
+        time: this.props.time,
+        date: this.props.date
       }
     })
       .then(response => {
