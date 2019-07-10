@@ -12,9 +12,11 @@ import json
 import requests
 import os
 from rest_framework import generics
+from geopy.geocoders import Nominatim
+from .HereManager import HereManager
 
 #import pymysql
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 
 dirname = os.path.dirname(__file__)
@@ -36,45 +38,58 @@ class SearchByStop(views.APIView):
         Note: Main logic implemented here using the methods below
         """
 
-        stop_number = self.get_params("stopnumber")
-        time = self.get_params("time")
-        date = self.get_params("date")
-        weather = self.get_weather(time, date)
+        stop_number = self.request.GET.get("stopnumber")
+        time = self.get_time()
+        day_info = self.get_day_and_date()
+        weather = self.get_weather(time, day_info["date"])
         bus_stop_info = self.get_bus_stop_info(stop_number)
-        routes = bus_stop_info["routes"][0]
+        routes = self.get_routes(bus_stop_info)
         directions = self.get_direction(routes, stop_number)
-        return Response(directions)
         machine_learning_inputs = self.serialize_machine_learning_input(
-                                                                stop_number,
-                                                                weather,
-                                                                routes,
-                                                                directions)
-        return Response(machine_learning_inputs)
+                                                            time,
+                                                            day_info["day"],
+                                                            day_info["date"],
+                                                            stop_number,
+                                                            weather,
+                                                            routes,
+                                                            directions)
         results = self.get_arrival_times(machine_learning_inputs)
         results = self.sort_results(results)
         return Response(results)
 
-    def get_params(self, target):
+    def get_time(self):
         """
-        input: params from url
-        output: desired param as string
+        input: None
+        output: either time specified in url or time now as string
         """
-        param = self.request.GET.get(target, None)
-        return param
+        now = datetime.now().strftime("%H:%M")
+        return self.request.GET.get("time", now)
+
+    def get_day_and_date(self):
+        """
+        input: None
+        output: return day and date in dict
+        """
+        date = self.request.GET.get("date",
+                                    datetime.today().strftime('%d-%m-%Y'))
+        day = datetime.strptime(date, '%d-%m-%Y').strftime('%a')
+        return {"date": date, "day": day}
 
     def get_weather(self, time, date):
         """
         Input: time and date as strings
         Output: weather conditions for prediction as json or dictionary
         """
-        weatherResult=Forecast.objects.get(date=date, start_time__lte=time, end_time__gt=time)
-        forecast = {
-            "temperature": weatherResult.temperature,
-            "cloud": weatherResult.cloud_percent,
-            "rain": weatherResult.rain,
-            "description": weatherResult.description,
-        }
-        return forecast
+        weatherResult=Forecast.objects.filter(date=date)
+        for result in weatherResult:
+            if datetime.strptime(result.start_time, "%H:%M") <= datetime.strptime(time, "%H:%M") < datetime.strptime(result.end_time, "%H:%M"):
+                forecast = {
+                    "temperature": result.temperature,
+                    "cloud": result.cloud_percent,
+                    "rain": result.rain,
+                    "description": result.description,
+                }
+                return forecast
 
     def get_bus_stop_info(self, stop_number):
         """
@@ -86,6 +101,17 @@ class SearchByStop(views.APIView):
                     busStopInfo = json.load(json_file)
         busStopInfo = busStopInfo[stop_number]
         return busStopInfo
+
+    def get_routes(self, bus_stop_info):
+        """
+        Input: Http request, bus_stop_info
+        Ouput: route(s) as list
+        """
+        if self.request.GET.get("route") != None:
+            routes = [self.request.GET.get("route")]
+        else:
+            routes = bus_stop_info["routes"][0]
+        return routes
 
     def get_direction(self, route_numbers, stop_number):
         """
@@ -103,13 +129,16 @@ class SearchByStop(views.APIView):
                 directions[route] = allRoutes[0]
         return directions
 
-    def serialize_machine_learning_input(self, stop_number, weather, routes, directions):
+    def serialize_machine_learning_input(self, time, day, date, stop_number, weather, routes, directions):
         """
         Input: weather data as json/dict, routes as list, direction as int
         Output: machine learning inputs as json
 
         """
-        machine_learning_inputs = MachineLearningInputs(stop_number,
+        machine_learning_inputs = MachineLearningInputs(time,
+                                                        day,
+                                                        date,
+                                                        stop_number,
                                                         weather,
                                                         routes,
                                                         directions)
@@ -154,7 +183,6 @@ class SearchByStop(views.APIView):
         return results
 
 
-
     def sort_results(self, results):
         """
         Input: Machine learning results as json
@@ -162,89 +190,6 @@ class SearchByStop(views.APIView):
         """
         results_sorted = sorted(results, key=lambda k: k["arrival_time"])
         return results_sorted
-
-class SearchByRoute(SearchByStop):
-        """
-        Input: HTTP request
-        Output: Machine learning output as json
-        Note: Main logic implemented here using the methods below
-        """
-        def get(self, request):
-            start = self.get_params("start")
-            route = self.get_params("route")
-            time = self.get_params("time")
-            date = self.get_params("date")
-            address=self.get_params("address")
-
-            #coordinates=self.get_coordinates(address)
-            weather = self.get_weather(time, date)
-            stops = self.get_stops(start, route)
-            stops = self.sort_stops_by_distance(stops)
-            direction = self.get_direction([route], stops)
-            machine_learning_inputs = self.serialize_machine_learning_input(
-                                                                    stops,
-                                                                    weather,
-                                                                    route,
-                                                                    direction)
-            results = self.get_arrival_times(machine_learning_inputs)
-            results = self.sort_results(results)
-            return Response(results)
-
-        def get_stops(self, start, route):
-            """
-            Input: starting point as coordinates in a dict{lat: v, lon:v}
-            Output: stops near starting point and walking distance, duration and routes served as dict
-            """
-            while True:
-                default_radius=350
-                api='https://transit.api.here.com/v3/stations/by_geocoord.json?center='+start['lat']+'%2C'+start['lon']+'&radius='+default_radius+'&app_id='+SECRET+'&app_code='+SECRET
-                response=requests.get(api)
-                if response.status_code != 200:
-                    return("This service is currently unavailable")
-                else:
-                    data = response.json()
-                    if 'Stations' in data['Res'].keys():
-                        break
-                    else:
-                        default_radius+=100
-                data=data['Res']['Stations']['Stn']
-                stations={}
-                for i in len(data):
-                    #HERE API returns stop ids which do not match DublinBus-Must convert
-                    id=Stops.objects.filter(stop_name__contains=data[i]['name')
-                    #sometimes the search for name returns more than 1 result
-                    if len(id)!=1:
-                        #search by lat and long
-                        id=Stops.objects.filter(stop_lon__contains=data[i]['x'], stop_lat__contains=data[i]['y'])
-                        if len(id)!=0:
-                            #search by a shorter lat long string
-                            id=Stops.objects.filter(stop_lon__contains=data[i]['x'][:-1], stop_lat__contains=data[i]['y'][:-1])
-                    stations[id.stopid_short]={'name':data[i]['name'], 'distance':data[i]['distance'], 'duration':data[i]['duration'], 'Transport':data[i]['Transports']}
-
-            return stations
-
-        def sort_stops_by_distance(self, stops):
-            """
-            Input: stops and distances as dictionary
-            Output: stops sorted by increasing distance
-            """
-            #already returned in order of shortest walking distance
-            return "stops sorted"
-
-        def get_stops_for_route(self, route, direction):
-            """
-            Input: direction as a 0 or 1
-            Output: a dictionary with stops as keys and their values a list
-                    containing their coordinates and name
-            """
-            route=Routes.objects.get(route_short_name=route)
-            trips=Trips.objects.filter(route_id=route, direction_id=direction).values('trip_id')
-            stops=StopTimes.objects.filter(trip_id__in=trips).values('stop_id').distinct()
-            stopObj=Stops.objects.filter(stop_id__in=stops)
-            stops={}
-            for stop in stopObj:
-                stops[stop.stopid_short]=[stop.stop_name, stop.stop_lat, stop.stop_lon]
-            return stops
 
 
 class SearchByDestination(SearchByStop):

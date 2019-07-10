@@ -11,7 +11,6 @@ from .views import *
 urlpatterns = [
     path("lead/", RouteView.as_view()),
     path("stop/", SearchByStop.as_view()),
-    path("route/", SearchByRoute.as_view()),
-    path("destination/", SearchByDestination.as_view())
+    path("destination/", SearchByDestination.as_view()),
 
 ]
