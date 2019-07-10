@@ -10,7 +10,10 @@ class MachineLearningInputs(object):
     """
     Create inputs objects for serialization
     """
-    def __init__(self, stop_number, weather, routes, directions):
+    def __init__(self, time, day, date,stop_number, weather, routes, directions):
+        self.time = time
+        self.day = day
+        self.date = date
         self.stop_number = stop_number
         self.weather = weather
         self.routes = routes
@@ -21,6 +24,9 @@ class MachineLearningInputSerializer(serializers.Serializer):
     """
     Serialize input data for machine learning
     """
+    time = serializers.TimeField()
+    day = serializers.CharField(max_length=10)
+    date= serializers.DateField()
     stop_number = serializers.CharField(max_length=200)
     weather = serializers.DictField()
     routes = serializers.ListField(child=serializers.CharField(max_length=5))

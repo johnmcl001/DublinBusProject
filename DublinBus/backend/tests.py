@@ -5,8 +5,7 @@ Tests for django backend
 from django.test import RequestFactory, TestCase
 
 from .views import *
-import datetime
-
+from datetime import datetime, timedelta, date
 
 # Create your tests here.
 
@@ -21,7 +20,7 @@ class SearchByStopTest(TestCase):
         Setup fake models for testing
         """
         Forecast.objects.create(
-            date = '02-2-2019',
+            date = '02-07-2019',
             start_time = '22:00',
             end_time = '23:00',
             temperature = '19',
@@ -101,8 +100,15 @@ class SearchByStopTest(TestCase):
         )
 
         self.factory = RequestFactory()
-        self.request = self.factory.get("/api/stop/?stop=2007&time=14:00:00&day=wed")
-        self.test_view = self.setup_view(SearchByStop(), self.request)
+        self.request_specific = self.factory.get("/api/stop/?stop=2007&route=7D&time=14:00&date=02-07-2019")
+        self.request_not_specific = self.factory.get("/api/stop/?stop=2007")
+        self.test_view_specific = self.setup_view(SearchByStop(),
+                                                  self.request_specific)
+        self.test_view_not_specific = self.setup_view(SearchByStop(),
+                                                  self.request_not_specific)
+
+        def tearDown(self):
+            del self.test_view
 
     def setup_view(self, view, request, *args, **kwargs):
         """
@@ -113,55 +119,141 @@ class SearchByStopTest(TestCase):
         view.kwargs = kwargs
         return view
 
-    def test_get_params_stop(self):
+    def test_get_time_now(self):
         """
-        Should return time as a string
+        Should return time now as a string
         """
-        self.assertEqual(self.test_view.get_params("stop"), "2007")
+        now = datetime.now().strftime("%H:%M")
+        self.assertEqual(self.test_view_not_specific.get_time(), now)
 
-    def test_get_params_time(self):
+    def test_get_time_specified(self):
         """
-        Should return stop number as a string
+        Should return time specified in url as a string
         """
-        self.assertEqual(self.test_view.get_params("time"), "14:00:00")
+        self.assertEqual(self.test_view_specific.get_time(), "14:00")
 
-    def test_get_params_day(self):
+    def test_get_day_today(self):
         """
-        Should return day as a string
+        Should return today as a string
         """
-        self.assertEqual(self.test_view.get_params("day"), "wed")
+        today = datetime.now().strftime("%a")
+        self.assertEqual(self.test_view_not_specific.get_day_and_date()["day"],             today)
+
+    def test_get_day_specified(self):
+        """
+        Should return day specified in url as a string
+        """
+        self.assertEqual(self.test_view_specific.get_day_and_date()["day"], "Tue")
+
+    def test_get_date_today(self):
+        """
+        Should return date now as a string
+        """
+        today = datetime.now().strftime("%d-%m-%Y")
+        self.assertEqual(self.test_view_not_specific.get_day_and_date()["date"], today)
+
+    def test_get_date_specified(self):
+        """
+        Should return date specified in url as a string
+        """
+        self.assertEqual(self.test_view_specific.get_day_and_date()["date"], "02-07-2019")
 
     def test_get_weather(self):
+        """
+        Should return weather forecast as dictionary
+        """
         expected_results = {
             "temperature": '19',
-            "cloud_percent": '11',
+            "cloud": '11',
             "rain": '2',
             "description": 'Sunny',
         }
-        self.assertEqual(self.test_view.get_weather("23:39", '02-2-2019'), expected_results)
+        self.assertEqual(self.test_view_specific.get_weather("22:39", '02-07-2019'), expected_results)
 
-    def test_get_routes(self):
-        self.assertEqual(self.test_view.get_routes("7556"), ['7D', '7B'])
+    def test_get_bus_stop_info(self):
+        """
+        Should return info for a stop as a dictionary
+        """
+        expected_result = {
+          "lat":53.2480439849,
+          "long":-6.12315403365,
+          "name":"Abberley",
+          "routes":[
+             [
+                "7D",
+                "7B"
+             ]
+          ]
+       }
+        self.assertEqual(self.test_view_specific.get_bus_stop_info("7556"), expected_result)
+
+    def test_get_routes_none_specified(self):
+        """
+        Should return route info
+        """
+        bus_stop_info = {
+          "lat":53.2480439849,
+          "long":-6.12315403365,
+          "name":"Abberley",
+          "routes":[
+             [
+                "7D",
+                "7B"
+             ]
+          ]
+        }
+        self.assertEqual(self.test_view_not_specific.get_routes(bus_stop_info),
+                                                    ["7D", "7B"])
+
+    def test_get_routes_specified(self):
+        """
+        Should return route info
+        """
+        bus_stop_info = {
+          "lat":53.2480439849,
+          "long":-6.12315403365,
+          "name":"Abberley",
+          "routes":[
+             [
+                "7D",
+                "7B"
+             ]
+          ]
+        }
+        self.assertEqual(self.test_view_specific.get_routes(bus_stop_info),
+                                                    ["7D"])
 
     def test_get_direction(self):
+        """
+        Should return direction per route per stop as a dictionary
+        """
         expected_results = {"7d": {"direction_id": 1, "trip_headsign": "towards town"}}
-        self.assertEqual(self.test_view.get_direction(['7d'], "7556"), expected_results)
+        self.assertEqual(self.test_view_specific.get_direction(['7d'], "7556"), expected_results)
 
     def test_serialize_machine_learning_input(self):
         """
         Should return machine learning inputs as json type
         """
+        time = "23:39"
+        day = "Tue"
+        date = "02-07-2019"
         stop_number = "2007"
         weather = {"temp": "20", "precipitation": "34%", "wind": "23"}
         routes = ["7b", "7d", "46a", "47", "84x", "116", "145", "155"]
         directions = {"7d": "1"}
         result = {
+            "time": time,
+            "day": day,
+            "date": date,
             "stop_number": stop_number,
             "weather": weather,
             "routes": routes,
             "directions": directions
         }
-        self.assertEqual(self.test_view.serialize_machine_learning_input(
+        self.assertEqual(self.test_view_specific.serialize_machine_learning_input(
+            time,
+            day,
+            date,
             stop_number,
             weather,
             routes,
@@ -191,5 +283,5 @@ class SearchByStopTest(TestCase):
             {"route": "155", "arrival_time": 6, "travel_time": None},
             {"route": "46a", "arrival_time": 8, "travel_time": None},
         ]
-        self.assertEqual(self.test_view.sort_results(test_input), test_output)
+        self.assertEqual(self.test_view_specific.sort_results(test_input), test_output)
 
