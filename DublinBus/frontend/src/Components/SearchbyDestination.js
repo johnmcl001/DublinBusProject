@@ -1,16 +1,18 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import "../Static/StyleSheet/SearchbyDestination.css";
 import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 
 // import DatePicker from 'react-datepicker';
+//This Component is Search by Destination at the mobile view ports
 class SearchbyDestination extends Component {
   render() {
     return (
       <div>
         <div className="EntireBox SearchByDestinationBox bg-light container col-md-12  position-absolute">
           <div className="container ">
-            <AppViewHeader />
+            <AppViewHeader SearchState={"Search By Destination"} />
             <AppViewFavourAndLogin />
             <div id="formColor">
               <form>
@@ -99,13 +101,16 @@ class SearchbyDestination extends Component {
                   <div className="row NotificationButton border border-secondary">
                     <p>NotificationButton locate here</p>
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn-warning col-7"
-                    id="SubmitButton"
-                  >
-                    Submit
-                  </button>
+                  <Link to={"./ResultPageDestination"}>
+                    {" "}
+                    <button
+                      type="button"
+                      className="btn btn-warning col-7"
+                      id="SubmitButton"
+                    >
+                      Submit
+                    </button>
+                  </Link>
                 </div>
               </form>
             </div>

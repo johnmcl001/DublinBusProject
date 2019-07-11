@@ -1,5 +1,8 @@
 .SearchByDestinationBox {
-    height: 680px;
+     top: 30px;
+    left: 20px;
+    border: black;
+    height: 620px;
 }
 .SearchByDestinationBox form{
     height: 320px;
@@ -22,7 +25,6 @@
     width: 100%;
     width: 100%;
     font-size: 18px;
-    /*padding: 6px 6px 6px 0;*/
     text-align: center;
     color: white;
 }
@@ -30,10 +32,5 @@
     margin-top: 15px;
 }
 
-@media screen and (min-width: 600px) {
-  .EntireBox{
-      width: 420px;
-  }
-}
 
 /*https://reactdatepicker.com/#example-7 timepicker*/

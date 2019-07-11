@@ -71,7 +71,6 @@ class SearchByStopTest(TestCase):
                     arrival_time = "07:30:00 ",
                     departure_time = "07:30:00",
                     stop = Stops.objects.create(
-                        index = 12,
                         stop_lat = 123,
                         zone_id = 123,
                         stop_lon = 123,

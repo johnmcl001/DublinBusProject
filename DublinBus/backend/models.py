@@ -213,7 +213,6 @@ class StopTimes(models.Model):
 
 
 class Stops(models.Model):
-    index = models.BigIntegerField(blank=True, null=True)
     stop_lat = models.FloatField(blank=True, null=True)
     zone_id = models.FloatField(blank=True, null=True)
     stop_lon = models.FloatField(blank=True, null=True)

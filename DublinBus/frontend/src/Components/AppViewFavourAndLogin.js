@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "../Static/StyleSheet/AppViewFavourAndLogin.css";
 
+//This Component is the login and favour icon at the mobile view ports
 class AppViewFavourAndLogin extends Component {
   render() {
     return (
@@ -29,7 +30,7 @@ class AppViewFavourAndLogin extends Component {
 const appViewHeader = {
   marginTop: "15px",
   marginBottom: "15px",
-  backgroundColor: "white"
+  backgroundColor: "light"
 };
 const appViewLoginStyle = {
   fontSize: "30px",

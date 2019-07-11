@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 
+//This is a Login icon
 class Login extends Component {
   render() {
     return (

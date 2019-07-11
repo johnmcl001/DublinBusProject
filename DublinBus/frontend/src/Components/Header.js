@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import logo from "./Route13-log.png";
 import Login from "./Login";
 import FavourPage from "./FavourPage";
+import { Link } from "react-router-dom";
 
 class Header extends Component {
   render() {
@@ -17,9 +18,12 @@ class Header extends Component {
             {/*Margin right*/}
             <ul className="navbar-nav ">
               <li className="nav-item active ">
-                <a className="nav-link" href="#">
-                  Home
-                </a>
+                <Link to={"/"}>
+                  {" "}
+                  <a className="nav-link" href="#">
+                    Home
+                  </a>
+                </Link>
               </li>
               <li className="nav-item ">
                 <a className="nav-link" href="#">
