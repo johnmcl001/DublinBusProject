@@ -14,10 +14,10 @@ const ResultTable_StopRoute = props => {
             <div className="row resultRows"  >
 
                 <div className="col-4 busNumber">
-                    <p>{x.bus}</p>
+                    <p>{x.route}</p>
                 </div>
                 <div className="col-6 busArrivalTime ">
-                    <p>{x.estimate_arrival} mins</p>
+                    <p>{x.arrival_time} mins</p>
                 </div>
             </div>
             )}
