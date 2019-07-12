@@ -4,6 +4,22 @@ import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import { Link } from "react-router-dom";
 
+/*
+  SQL Query Template
+  select distinct s.stopID_short, s.stop_name
+  from stops s, stop_times st, trips t, routes r, calendar c
+  where s.stop_id = st.stop_id and
+  st.trip_id = t.trip_id and
+  t.route_id = r.route_id and
+  t.service_id = c.service_id and
+  r.route_short_name = <route> and
+  st.stop_headsign = <direction> and
+  c.<day> = 1;
+  Example route: 46a
+  Example direction: Phoenix Pk
+  Example day: monday
+*/
+
 //This Component is Search by Route at the mobile view ports
 class SearchByRoute extends Component {
   state = { SearchState: "Search By Route" };
