@@ -37,16 +37,11 @@ class ResultPage_Stop_Route extends Component {
                 <p id="ArrivalLabel">Estimate arrival </p>
               </div>
             </div>
-            <DataProvider
-              endpoint="stop"
-              stopnumber={this.props.match.params.stopnumber}
-              render={data => <ResultTable_StopRoute data={data} />}
-            />
 
             <DataProvider
               endpoint="stop"
               stopnumber={this.props.match.params.stopnumber}
-              render={data => <ResultTable_StopRoute data={data} />}
+              render={data => <ResultTable_StopRoute />}
             />
           </form>
         </div>
