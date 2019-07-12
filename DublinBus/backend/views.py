@@ -220,6 +220,10 @@ class SearchByDestination(SearchByStop):
         return station_list
 
     def get_relevant_routes_for_stop(stop, day, time):
+        """
+        Input: bus stop, day and time
+        Output: routes that serve that bus stop that leave around the time given
+        """
         day=datetime.now().strftime("%A").lower()
         #get time 15 minutes before hand to allow for prediction model difference
         start_time=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=15)).strftime('%H:%M:%S')
@@ -252,7 +256,7 @@ class SearchByDestination(SearchByStop):
         """
         Input: start poition as lat long, end position as lat long
                day of the week(optional, today if null), time(optional, now if null)
-        Output: 3 routes from start to stop order by closest arrival time at dest
+        Output: 10 routes from start to stop order by stop_ids(for future walking calc)
         """
         inputs={}
         start_stations=list(self.get_stations_nearby(start_coord))
@@ -278,13 +282,14 @@ class SearchByDestination(SearchByStop):
 
         #checks that trip will leave within the time frame given, the two stops are in the same trip,
         #the service runs on the correct day and the destination stop comes after the start stop
+        #
         trips=StopTimes.objects.raw("SELECT distinct t.trip_headsign, t.route_id, st1.trip_id, st1.departure_time, st1.stop_id, "\
         +"st1.stop_sequence, st1.shape_dist_traveled,st2.arrival_time, st2.stop_id, st2.stop_sequence,"\
         +" st2.shape_dist_traveled FROM website.stop_times as st1, website.stop_times as st2, website.trips "\
         +"as t, website.calendar as c where st1.stop_id in %(start_stations)s and st2.stop_id in %(end_stations)s"\
         +" and st1.stop_sequence<st2.stop_sequence and st1.departure_time>=%(start_time)s and st1.departure_time<=%(end_time)s and st2.departure_time>%(start_time)s"\
         +" and st1.trip_id=t.trip_id and t.service_id=c.service_id and c.friday=1 and st1.trip_id=st2.trip_id"\
-        +" and c.start_date<=%(date)s and c.end_date>=%(date)s order by st2.arrival_time limit 10;",inputs)
+        +" and c.start_date<=%(date)s and c.end_date>=%(date)s order by st1.stop_id limit 10;",inputs)
 
         #each object contains its headsign, route_id, trip_id, departure_time, start stop_id, start stop_sequence,
         #start shape_dist_traveled, dest arrival_time, dest stop_id, dest stop_sequence, dest shape_dist_traveled
