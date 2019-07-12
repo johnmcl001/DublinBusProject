@@ -208,7 +208,9 @@ class SearchByDestination(SearchByStop):
         """
         default_radius=1 #km
         station_list=[]
-        while default_radius<5 and len(station_list)==0:
+        #for results that are not null, the more stations we check the better
+        #trade off-response time
+        while default_radius<5 and len(station_list)<5:
             station_list=Stops.objects.raw('SELECT stop_id, stopID_short,'\
             +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
             + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\
@@ -217,7 +219,21 @@ class SearchByDestination(SearchByStop):
             default_radius+=1
         if (len(list(station_list))==0):
             return None
-        return station_list
+        station_dict={}
+        for station in station_list:
+            station_dict[station.stop_id]=station.distance
+        return station_dict
+    def walking_time(distance, speed=4):
+        """
+        Input: distance from stop, speed is by default 4km/hr
+        Output: time(in hours) needed to walk to the bus stops
+        """
+        return float(distance)/float(speed)
+
+    def valid_route_check(leave_time, walking_time):
+        if (datetime.now() + timedelta(hours=walking_time)).strftime('%H:%M')<leave_time-buffer:
+            return True
+        return False
 
     def get_relevant_routes_for_stop(stop, day, time):
         """
@@ -225,8 +241,8 @@ class SearchByDestination(SearchByStop):
         Output: routes that serve that bus stop that leave around the time given
         """
         day=datetime.now().strftime("%A").lower()
-        #get time 15 minutes before hand to allow for prediction model difference
-        start_time=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=15)).strftime('%H:%M:%S')
+        #get time 30 minutes before hand to allow for prediction model difference
+        start_time=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=30)).strftime('%H:%M:%S')
         end_time=(datetime.strptime(self.get_time(),"%H:%M")+timedelta(minutes=60)).strftime('%H:%M:%S')
         services=Calendar.objects.filter(**{day:1})
         trips=StopTimes.objects.filter(departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short=stop).values('trip_id')
@@ -238,13 +254,13 @@ class SearchByDestination(SearchByStop):
     def get_relevant_trips_per_route_and_stop(route, stop, day, time):
         """
         Input: short route id, time(optional)
-        Filters trips that run for the given day, 15 mins before the time and upto
+        Filters trips that run for the given day, 30 mins before the time and upto
         one hour after the time given.
         Output: list of trips objects
         """
         day=datetime.now().strftime("%A").lower()
-        #get time 15 minutes before hand to allow for prediction model difference
-        start_time=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=15)).strftime('%H:%M:%S')
+        #get time 30 minutes before hand to allow for prediction model difference
+        start_time=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=30)).strftime('%H:%M:%S')
         end_time=(datetime.strptime(self.get_time(),"%H:%M")+timedelta(minutes=60)).strftime('%H:%M:%S')
         services=Calendar.objects.filter(**{day:1})
         long_ids=Routes.objects.filter(route_short_name=route)
@@ -252,47 +268,59 @@ class SearchByDestination(SearchByStop):
         trips=StopTimes.objects.filter(trip_id__in=trips, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short=stop)
         return trips
 
-    def find_route(start_coord, end_coord, day, time):
+    def find_direct_route(start_coord, end_coord, day, time):
         """
         Input: start poition as lat long, end position as lat long
                day of the week(optional, today if null), time(optional, now if null)
         Output: 10 routes from start to stop order by stop_ids(for future walking calc)
         """
         inputs={}
-        start_stations=list(self.get_stations_nearby(start_coord))
-        end_stations=list(self.get_stations_nearby(end_coord))
+        start_stations=self.get_stations_nearby(start_coord))
+        end_stations=self.get_stations_nearby(end_coord))
         if start_stations==None or end_stations==None:
             return "There are no direct routes within a 5km walk"
         #convert list to tuples with stop ids for query
         ss=[]
-        for stop in range(0, len(start_stations)):
-            ss+=start_stations[stop].stop_id,
+        for stop in start_stations.keys():
+            ss+=stop,
         input['start_stations']=tuple(ss)
         se=[]
-        for stop in range(0, len(end_stations)):
-            se+=end_stations[stop].stop_id,
+        for stop in start_stations.keys()):
+            se+=stop,
         input['end_stations']=tuple(se)
 
         day=datetime.now().strftime("%A").lower()
         inputs[day]=1
         inputs['date']=datetime.now().strftime('%Y%m%d')
-        #get time 15 minutes before hand to allow for prediction model difference
-        inputs['start_time']=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=15)).strftime('%H:%M:%S')
+        #get time 30 minutes before hand to allow for prediction model difference
+        inputs['start_time']=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=30)).strftime('%H:%M:%S')
         inputs['end_time']=(datetime.strptime(self.get_time(),"%H:%M")+timedelta(minutes=60)).strftime('%H:%M:%S')
 
         #checks that trip will leave within the time frame given, the two stops are in the same trip,
         #the service runs on the correct day and the destination stop comes after the start stop
         #
-        trips=StopTimes.objects.raw("SELECT distinct t.trip_headsign, t.route_id, st1.trip_id, st1.departure_time, st1.stop_id, "\
-        +"st1.stop_sequence, st1.shape_dist_traveled,st2.arrival_time, st2.stop_id, st2.stop_sequence,"\
-        +" st2.shape_dist_traveled FROM website.stop_times as st1, website.stop_times as st2, website.trips "\
+        trips=StopTimes.objects.raw("SELECT distinct t.trip_headsign, t.route_id, st1.trip_id, st1.departure_time, st1.stop_id as start_stop_id, "\
+        +"st1.stop_sequence as start_num, st1.shape_dist_traveled as start_dist,st2.arrival_time, st2.stop_id as end_stop_id, st2.stop_sequence as end_num ,"\
+        +" st2.shape_dist_traveled as end_dist FROM website.stop_times as st1, website.stop_times as st2, website.trips "\
         +"as t, website.calendar as c where st1.stop_id in %(start_stations)s and st2.stop_id in %(end_stations)s"\
         +" and st1.stop_sequence<st2.stop_sequence and st1.departure_time>=%(start_time)s and st1.departure_time<=%(end_time)s and st2.departure_time>%(start_time)s"\
         +" and st1.trip_id=t.trip_id and t.service_id=c.service_id and c.friday=1 and st1.trip_id=st2.trip_id"\
-        +" and c.start_date<=%(date)s and c.end_date>=%(date)s order by st1.stop_id limit 10;",inputs)
+        +" and c.start_date<=%(date)s and c.end_date>=%(date)s order by st1.stop_id limit 20;",inputs)
 
-        #each object contains its headsign, route_id, trip_id, departure_time, start stop_id, start stop_sequence,
-        #start shape_dist_traveled, dest arrival_time, dest stop_id, dest stop_sequence, dest shape_dist_traveled
+        routes=[]
+        for trip in trips:
+            #run machine learning model to get start_time
+            #trip.departure_time=start_time
+            start_walk_time=walking_time(start_station(trip.start_stop_id))
+            if valid_route_check(leavetime, start_walk_time):
+                #run machine learning to predict arrival time
+                #trip.arrival_time=arrival_time
+                end_walk_time=walking_time(end_station(trip.end_stop_id))
+                routes+=[start_walk_time,trip,end_walk_time]
+
+        #each object contains the walking distance to stop, its headsign, route_id, trip_id, departure_time, start stop_id, start stop_sequence,
+        #start shape_dist_traveled, dest arrival_time, dest stop_id, dest stop_sequence, dest shape_dist_traveled and walking dist to destination
+        return routes
 
     def get(self, request):
         return Response([
