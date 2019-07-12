@@ -12,12 +12,8 @@ import json
 import requests
 import os
 from rest_framework import generics
-from geopy.geocoders import Nominatim
 from .HereManager import HereManager
-
-#import pymysql
 from datetime import datetime, timedelta, date
-
 
 dirname = os.path.dirname(__file__)
 
@@ -53,6 +49,7 @@ class SearchByStop(views.APIView):
                                                             weather,
                                                             routes,
                                                             directions)
+        #return Response(machine_learning_inputs)
         results = self.get_arrival_times(machine_learning_inputs)
         results = self.sort_results(results)
         return Response(results)
@@ -203,6 +200,95 @@ class SearchByDestination(SearchByStop):
     Search by destination feature
     Inherits from search by stop
     """
+
+    def get_stations_nearby(dest_lat, dest_lon):
+        """
+        Input: Centre point coordinates
+        Output: List of stop objects with attributes id and distance from centre point
+        """
+        default_radius=1 #km
+        station_list=[]
+        while default_radius<5 and len(station_list)==0:
+            station_list=Stops.objects.raw('SELECT stop_id, stopID_short,'\
+            +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
+            + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\
+            +' * sin( radians( stop_lat ) ) ) ) AS distance FROM website.stops HAVING distance < '\
+            +'%(default_radius)s ORDER BY distance LIMIT 0 , 10;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(default_radius)})
+            default_radius+=1
+        if (len(list(station_list))==0):
+            return None
+        return station_list
+
+    def get_relevant_routes_for_stop(stop, day, time):
+        day=datetime.now().strftime("%A").lower()
+        #get time 15 minutes before hand to allow for prediction model difference
+        start_time=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=15)).strftime('%H:%M:%S')
+        end_time=(datetime.strptime(self.get_time(),"%H:%M")+timedelta(minutes=60)).strftime('%H:%M:%S')
+        services=Calendar.objects.filter(**{day:1})
+        trips=StopTimes.objects.filter(departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short=stop).values('trip_id')
+        long_ids=Trips.objects.filter(service_id__in=services, trip_id__in=trips).values('route_id').distinct()
+        routes=Routes.objects.filter(route_id__in=long_ids).values('route_short_name')
+        return routes
+
+
+    def get_relevant_trips_per_route_and_stop(route, stop, day, time):
+        """
+        Input: short route id, time(optional)
+        Filters trips that run for the given day, 15 mins before the time and upto
+        one hour after the time given.
+        Output: list of trips objects
+        """
+        day=datetime.now().strftime("%A").lower()
+        #get time 15 minutes before hand to allow for prediction model difference
+        start_time=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=15)).strftime('%H:%M:%S')
+        end_time=(datetime.strptime(self.get_time(),"%H:%M")+timedelta(minutes=60)).strftime('%H:%M:%S')
+        services=Calendar.objects.filter(**{day:1})
+        long_ids=Routes.objects.filter(route_short_name=route)
+        trips=Trips.objects.filter(route_id__in=long_ids, service_id__in=services).values('trip_id')
+        trips=StopTimes.objects.filter(trip_id__in=trips, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short=stop)
+        return trips
+
+    def find_route(start_coord, end_coord, day, time):
+        """
+        Input: start poition as lat long, end position as lat long
+               day of the week(optional, today if null), time(optional, now if null)
+        Output: 3 routes from start to stop order by closest arrival time at dest
+        """
+        inputs={}
+        start_stations=list(self.get_stations_nearby(start_coord))
+        end_stations=list(self.get_stations_nearby(end_coord))
+        if start_stations==None or end_stations==None:
+            return "There are no direct routes within a 5km walk"
+        #convert list to tuples with stop ids for query
+        ss=[]
+        for stop in range(0, len(start_stations)):
+            ss+=start_stations[stop].stop_id,
+        input['start_stations']=tuple(ss)
+        se=[]
+        for stop in range(0, len(end_stations)):
+            se+=end_stations[stop].stop_id,
+        input['end_stations']=tuple(se)
+
+        day=datetime.now().strftime("%A").lower()
+        inputs[day]=1
+        inputs['date']=datetime.now().strftime('%Y%m%d')
+        #get time 15 minutes before hand to allow for prediction model difference
+        inputs['start_time']=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=15)).strftime('%H:%M:%S')
+        inputs['end_time']=(datetime.strptime(self.get_time(),"%H:%M")+timedelta(minutes=60)).strftime('%H:%M:%S')
+
+        #checks that trip will leave within the time frame given, the two stops are in the same trip,
+        #the service runs on the correct day and the destination stop comes after the start stop
+        trips=StopTimes.objects.raw("SELECT distinct t.trip_headsign, t.route_id, st1.trip_id, st1.departure_time, st1.stop_id, "\
+        +"st1.stop_sequence, st1.shape_dist_traveled,st2.arrival_time, st2.stop_id, st2.stop_sequence,"\
+        +" st2.shape_dist_traveled FROM website.stop_times as st1, website.stop_times as st2, website.trips "\
+        +"as t, website.calendar as c where st1.stop_id in %(start_stations)s and st2.stop_id in %(end_stations)s"\
+        +" and st1.stop_sequence<st2.stop_sequence and st1.departure_time>=%(start_time)s and st1.departure_time<=%(end_time)s and st2.departure_time>%(start_time)s"\
+        +" and st1.trip_id=t.trip_id and t.service_id=c.service_id and c.friday=1 and st1.trip_id=st2.trip_id"\
+        +" and c.start_date<=%(date)s and c.end_date>=%(date)s order by st2.arrival_time limit 10;",inputs)
+
+        #each object contains its headsign, route_id, trip_id, departure_time, start stop_id, start stop_sequence,
+        #start shape_dist_traveled, dest arrival_time, dest stop_id, dest stop_sequence, dest shape_dist_traveled
+
     def get(self, request):
         return Response([
            {
