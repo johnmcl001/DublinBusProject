@@ -1,70 +1,42 @@
-import React, { Component } from "react";
-import "../Static/StyleSheet/AppViewHeader.css";
+import React, {Component} from 'react';
+import '../Static/StyleSheet/AppViewHeader.css'
+import DropDownINav from './DropDownNav'
 
 // This Component is a header at the mobile view
 
 class AppViewHeader extends Component {
-  render() {
-    return (
-      <div className="container AppViewHeader">
-        <div className="row ">
-          <div className="col-2">
-            {/*Return to previous component */}
-            <a id="returnButton" onClick={() => window.history.go(-1)}>
-              <i className="fas fa-arrow-left"></i>
-            </a>
-          </div>
 
-          <div className="col-8 border border-danger ">
-            <h5>{this.props.SearchState}</h5>
-          </div>
 
-          <div className="col-2 border border-danger position-relative ">
-            {/*// <!--Navbar-->*/}
-            <nav className="navbar navbar-light light-blue lighten-4 ">
-              {/*// <!-- Collapse button -->*/}
-              <button
-                className="navbar-toggler toggler-example d-block d-sm-none"
-                type="button"
-                data-toggle="collapse"
-                data-target="#navbarSupportedContent1"
-                aria-controls="navbarSupportedContent1"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-              >
-                <span className="dark-blue-text">
-                  <i className="fas fa-bars fa-1x"></i>
-                </span>
-              </button>
+    render() {
 
-              {/*// <!-- Dropdown Contents-->*/}
-              <div
-                className="collapse navbar-collapse dropdown-menu dropdown-menu-right"
-                id="navbarSupportedContent1"
-              >
-                {/*// <!-- Links -->*/}
-                <a className="dropdown-item  " href="#">
-                  Action
-                </a>
-                <a className="dropdown-item" href="#">
-                  Another action
-                </a>
-                <a className="dropdown-item" href="#">
-                  Something else here
-                </a>
-                <div className="dropdown-divider"></div>
-                <a className="dropdown-item" href="#">
-                  Separated link
-                </a>
-                {/*// <!-- Links -->*/}
-              </div>
-              {/*https://codedaily.io/tutorials/63/Create-a-Dropdown-in-React-that-Closes-When-the-Body-is-Clicked*/}
-            </nav>
-          </div>
-        </div>
-      </div>
-    );
-  }
+        return (
+
+            <div className='container AppViewHeader '>
+
+                <div className="row ">
+
+                    <div className="col-2 ">
+                        {/*Return to previous component */}
+                        <a id='returnButton' onClick={() => (window.history.go(-1))}><i
+                            className="fas fa-arrow-left"></i></a>
+                    </div>
+
+                    <div className="col-8  ccc">
+
+                        <h5>{this.props.SearchState}</h5>
+                    </div>
+
+                    <div className="col-2 container  " id='AppViewDropDown'>
+
+                        <DropDownINav/>
+
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
 }
+
 
 export default AppViewHeader;

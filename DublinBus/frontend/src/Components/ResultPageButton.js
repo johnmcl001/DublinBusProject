@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import ResultPageButton from "../Static/StyleSheet/ResultPageButton.css";
+import "../Static/StyleSheet/ResultPageButton.css";
 
 //This the Submit button for the Result page of the Search by Destination
 class ButtonAtResultPage extends Component {
