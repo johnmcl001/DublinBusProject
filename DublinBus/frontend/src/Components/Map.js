@@ -1,9 +1,11 @@
-import { Map, GoogleApiWrapper } from "google-maps-react";
+import { Map, GoogleApiWrapper, Marker } from "google-maps-react";
 import React, { Component } from "react";
 import "../Static/StyleSheet/Map.css";
+import * as stationData from "./stop_info.json";
 
 class MapContainer extends Component {
   render() {
+    //{ console.log([stationData][0]) }
     return (
       <div id="map">
         <div className="d-none d-lg-block d-md-none">
@@ -15,7 +17,16 @@ class MapContainer extends Component {
               google={this.props.google}
               zoom={8}
               initialCenter={{ lat: 53.3501, lng: -6.2661 }}
-            />
+            >
+            {Object.keys([stationData][0]).map((station) => (
+              //console.log(stationData[station].lat);
+              //console.log(stationData[station].long);
+              <Marker
+                key={stationData[station].stop}
+                position={{ lat: stationData[station].lat, lng: stationData[station].long}}/>
+              ))}
+
+            </Map>
           </div>
         </div>
       </div>
