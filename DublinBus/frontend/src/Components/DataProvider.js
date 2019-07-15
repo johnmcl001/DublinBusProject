@@ -10,8 +10,8 @@ class DataProvider extends Component {
     route: PropTypes.string,
     towards: PropTypes.string,
     departure: PropTypes.string,
-    startpoint: PropTypes.string,
-    destination: PropTypes.string,
+    startpoint: PropTypes.object,
+    destination: PropTypes.object,
     time: PropTypes.string,
     date: PropTypes.string
   };

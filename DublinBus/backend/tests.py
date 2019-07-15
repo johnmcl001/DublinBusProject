@@ -284,3 +284,114 @@ class SearchByStopTest(TestCase):
         ]
         self.assertEqual(self.test_view_specific.sort_results(test_input), test_output)
 
+class SearchByDestinationTest(TestCase):
+    """
+    UnitTests for SearchByDestination Feature
+    """
+
+    def setUp(self):
+        """
+        Setup fake models for testing
+        """
+        Forecast.objects.create(
+            date = '02-07-2019',
+            start_time = '22:00',
+            end_time = '23:00',
+            temperature = '19',
+            cloud_percent = '11',
+            rain = '2',
+            description='Sunny',
+        )
+        Forecast.objects.create(
+            date = '03-2-2019',
+            start_time = '21:00',
+            end_time = '22:00',
+            temperature = '19',
+            cloud_percent = '11',
+            rain = '2',
+            description='Sunny',
+        )
+
+        Trips.objects.create(
+            route = Routes.objects.create(
+                route_id='7b long',
+                route_type=2,
+                agency=Agency.objects.create(
+                    agency_url = '04',
+                    agency_name = 'DB',
+                    agency_timezone = 'Dublin/Europe',
+                    agency_id = '03',
+                    agency_lang='en'
+                ),
+                route_short_name='7d',
+            ),
+            direction_id = 1,
+            trip_headsign = 'towards town',
+            shape_id = 'ascd',
+            service = Calendar.objects.create(
+                service_id = "12345",
+                start_date = "20190303",
+                end_date = "20190615",
+                monday = "1",
+                tuesday = "0",
+                wednesday = "0",
+                thursday = "0",
+                friday = "0",
+                saturday = "0",
+                sunday = "0"
+            ),
+            trip = StopTimes.objects.create(
+                    trip_id = "1.1.60-79-b12-1.346.I",
+                    arrival_time = "07:30:00 ",
+                    departure_time = "07:30:00",
+                    stop = Stops.objects.create(
+                        stop_lat = 123,
+                        zone_id = 123,
+                        stop_lon = 123,
+                        stop_id = 'big7556',
+                        stop_name = 'testname',
+                        location_type = 0,
+                        stopid_short ='7556',
+                    ),
+                    stop_sequence = "1",
+                    stop_headsign = "Aston Quay",
+                    shape_dist_traveled = None,
+            ),
+        )
+
+        Routes.objects.create(
+            route_id='7d long',
+            route_type=2,
+            agency=Agency.objects.create(
+                agency_url = '03',
+                agency_name = 'DB',
+                agency_timezone = 'Dublin/Europe',
+                agency_id = '04',
+                agency_lang='en'
+            ),
+            route_short_name='7d',
+        )
+
+        self.factory = RequestFactory()
+        self.request = self.factory.get("/api/stop/?startpoint={'lat': 3, 'lon': 4}")
+        self.test_view = self.setup_view(SearchByDestination(), self.request)
+
+        def tearDown(self):
+            del self.test_view
+
+    def setup_view(self, view, request, *args, **kwargs):
+        """
+        Sets up view so its methods can be called and tested
+        """
+        view.request = request
+        view.args = args
+        view.kwargs = kwargs
+        return view
+
+    def test_get_coords(self):
+        """
+        Should return coords as dict
+        """
+        expected = {"lat": 3, "lon": 4}
+        self.assertEqual(self.test_view.get_coords("startpoint"), expected)
+
