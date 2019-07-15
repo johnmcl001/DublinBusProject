@@ -126,7 +126,6 @@ class SearchByRoute extends Component {
                   />
                 </div>
               </div>
-              <input type="submit" value="Submit" />
             </form>
           </div>
 

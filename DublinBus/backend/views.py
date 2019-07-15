@@ -50,7 +50,6 @@ class SearchByStop(views.APIView):
                                                             weather,
                                                             routes,
                                                             directions)
-        #return Response(machine_learning_inputs)
         results = self.get_arrival_times(machine_learning_inputs)
         results = self.sort_results(results)
         return Response(results)
