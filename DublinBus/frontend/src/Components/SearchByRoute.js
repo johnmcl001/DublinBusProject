@@ -5,22 +5,8 @@ import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import { Link } from "react-router-dom";
 import Autocomplete from "./Autocomplete";
 import DropDown from "./DropDown";
+import axios from "axios";
 
-/*
-  SQL Query Template
-  select distinct s.stopID_short, s.stop_name
-  from stops s, stop_times st, trips t, routes r, calendar c
-  where s.stop_id = st.stop_id and
-  st.trip_id = t.trip_id and
-  t.route_id = r.route_id and
-  t.service_id = c.service_id and
-  r.route_short_name = <route> and
-  st.stop_headsign = <direction> and
-  c.<day> = 1;
-  Example route: 46a
-  Example direction: Phoenix Pk
-  Example day: monday
-*/
 
 var routeList = require("../Json/routes_directions.json");
 
@@ -35,7 +21,7 @@ class SearchByRoute extends Component {
       direction: "Direction",
       directionAutocomplete: [],
       stopNumber: "Stop",
-      stopsAutocomplete: ""
+      stopsAutocomplete: []
     };
     this.updateRoute = this.updateRoute.bind(this);
     this.updateDirection = this.updateDirection.bind(this);
@@ -64,11 +50,29 @@ class SearchByRoute extends Component {
   }
 
   updateStopAutocomplete(e) {
-    this.setState({ stopNumber: e });
+    this.state.stopsAutocomplete = axios({
+      method: "get",
+      url: "http://localhost:8000/api/stopsautocomplete/",
+      params: {
+        route: this.state.routeNumber,
+        direction: this.state.direction,
+      }
+    })
+      .then(response => {
+        if (response.status !== 200) {
+          return this.setState({ placeholder: "Something went wrong" });
+        }
+        {console.log("here")}
+        return response.data;
+      })
+      .then(data => this.setState({ stopsAutocomplete: data, loaded: true }));
   }
 
+
   handleSubmit(e) {
-    alert(this.state.direction);
+    {
+      /*alert(new Date().toLocaleString('en-us', {  weekday: 'long' }).toLowerCase());*/
+    }
     e.preventDefault();
   }
 
@@ -118,6 +122,7 @@ class SearchByRoute extends Component {
                   <Autocomplete
                     suggestions={this.state.stopsAutocomplete}
                     updateState={this.updateStop}
+                    updateAutocomplete={this.handleSubmit}
                   />
                 </div>
               </div>
