@@ -223,6 +223,7 @@ class SearchByDestination(SearchByStop):
         for station in station_list:
             station_dict[station.stop_id]=station.distance
         return station_dict
+
     def walking_time(distance, speed=4):
         """
         Input: distance from stop, speed is by default 4km/hr
@@ -235,10 +236,10 @@ class SearchByDestination(SearchByStop):
             return True
         return False
 
-    def get_relevant_routes_for_stop(stop, day, time):
+    """def get_relevant_routes_for_stop(stop, day, time):
         """
-        Input: bus stop, day and time
-        Output: routes that serve that bus stop that leave around the time given
+        #Input: bus stop, day and time
+        #Output: routes that serve that bus stop that leave around the time given
         """
         day=datetime.now().strftime("%A").lower()
         #get time 30 minutes before hand to allow for prediction model difference
@@ -249,14 +250,14 @@ class SearchByDestination(SearchByStop):
         long_ids=Trips.objects.filter(service_id__in=services, trip_id__in=trips).values('route_id').distinct()
         routes=Routes.objects.filter(route_id__in=long_ids).values('route_short_name')
         return routes
+    """
 
-
-    def get_relevant_trips_per_route_and_stop(route, stop, day, time):
+    """def get_relevant_trips_per_route_and_stop(route, stop, day, time):
         """
-        Input: short route id, time(optional)
-        Filters trips that run for the given day, 30 mins before the time and upto
-        one hour after the time given.
-        Output: list of trips objects
+        #Input: short route id, time(optional)
+        #Filters trips that run for the given day, 30 mins before the time and upto
+        #one hour after the time given.
+        #Output: list of trips objects
         """
         day=datetime.now().strftime("%A").lower()
         #get time 30 minutes before hand to allow for prediction model difference
@@ -267,6 +268,7 @@ class SearchByDestination(SearchByStop):
         trips=Trips.objects.filter(route_id__in=long_ids, service_id__in=services).values('trip_id')
         trips=StopTimes.objects.filter(trip_id__in=trips, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short=stop)
         return trips
+    """
 
     def find_direct_route(start_coord, end_coord, day, time):
         """
