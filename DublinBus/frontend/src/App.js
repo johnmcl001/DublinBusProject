@@ -32,11 +32,15 @@ class App extends Component {
                 path="/ResultPage_Stop_Route/:stopnumber"
                 component={ResultPage_Stop_Route}
               />
+
+
+
               <Route
-                path="/ResultPageDestination"
+                path="/ResultPageDestination/:startDateToBackEnd,:startTimeToBackEnd,:startCoordinates,
+                :destinationCoordinates"
                 component={ResultPageDestination}
               />
-              <Route component={NoPathToRender_ThenThisPage} />
+              {/*<Route component={NoPathToRender_ThenThisPage} />*/}
             </Switch>
           </div>
           <Footer />
