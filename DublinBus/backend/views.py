@@ -53,7 +53,6 @@ class SearchByStop(views.APIView):
                                                             weather,
                                                             routes,
                                                             directions)
-        return Response(machine_learning_inputs)
         results = self.get_arrival_times(machine_learning_inputs)
         results = self.sort_results(results)
         return Response(results)
@@ -64,6 +63,8 @@ class SearchByStop(views.APIView):
         output: either time specified in url or time now as string
         """
         now = datetime.now().strftime("%H:%M")
+        if self.request.GET.get("time", now) == "null":
+            return now
         return self.request.GET.get("time", now)
 
     def get_day_and_date(self):
@@ -71,8 +72,12 @@ class SearchByStop(views.APIView):
         input: None
         output: return day and date in dict
         """
-        date = self.request.GET.get("date",
-                                    datetime.today().strftime('%d-%m-%Y'))
+        date = datetime.today().strftime('%d-%m-%Y')
+        if self.request.GET.get("date") == "null" or self.request.GET.get("date") is None:
+            day = datetime.strptime(date, '%d-%m-%Y').strftime('%a')
+            return {"date": date, "day": day}
+
+        date = self.request.GET.get("date", None)
         day = datetime.strptime(date, '%d-%m-%Y').strftime('%a')
         return {"date": date, "day": day}
 
@@ -198,9 +203,34 @@ class SearchByDestination(SearchByStop):
     Search by destination feature
     Inherits from search by stop
     """
-
     def get(self, request):
-        return HttpResponse("<h1>SearchByDestination</h1>")
+        return Response([
+           {
+              "stop": "2007",
+              "route":"46a",
+              "arrival_time":"4"
+           },
+           {
+              "stop": "2007",
+              "route":"39a",
+              "arrival_time":"2"
+           },
+           {
+              "stop": "2007",
+              "route":"145",
+              "arrival_time":"1"
+           },
+           {
+              "stop": "2007",
+              "route":"46a",
+              "arrival_time":"8"
+           },
+           {
+              "stop": "2007",
+              "route":"155",
+              "arrival_time":"6"
+           },
+        ])
 
 class RouteView(generics.ListCreateAPIView):
     """

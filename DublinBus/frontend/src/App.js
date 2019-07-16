@@ -33,11 +33,8 @@ class App extends Component {
                 component={ResultPage_Stop_Route}
               />
 
-
-
               <Route
-                path="/ResultPageDestination/:startDateToBackEnd,:startTimeToBackEnd,:startCoordinates,
-                :destinationCoordinates"
+                path="/ResultPageDestination/:startCoordinates/:destinationCoordinates/:startDateToBackEnd/:startTimeToBackEnd"
                 component={ResultPageDestination}
               />
               {/*<Route component={NoPathToRender_ThenThisPage} />*/}
