@@ -3,10 +3,78 @@ import "../Static/StyleSheet/SearchByRoute.css";
 import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import { Link } from "react-router-dom";
+import Autocomplete from "./Autocomplete";
+import DropDown from "./DropDown";
+import axios from "axios";
+
+
+var routeList = require("../Json/routes_directions.json");
 
 //This Component is Search by Route at the mobile view ports
 class SearchByRoute extends Component {
-  state = { SearchState: "Search By Route" };
+  constructor(props) {
+    super(props);
+    this.state = {
+      SearchState: "Search By Route",
+      routeNumber: "Route Number",
+      routeAutocomplete: Object.keys(routeList),
+      direction: "Direction",
+      directionAutocomplete: [],
+      stopNumber: "Stop",
+      stopsAutocomplete: []
+    };
+    this.updateRoute = this.updateRoute.bind(this);
+    this.updateDirection = this.updateDirection.bind(this);
+    this.updateStop = this.updateStop.bind(this);
+    this.updateDirectionAutocomplete = this.updateDirectionAutocomplete.bind(
+      this
+    );
+    this.updateStopAutocomplete = this.updateStopAutocomplete.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  updateRoute(e) {
+    this.setState({ routeNumber: e });
+  }
+
+  updateDirection(e) {
+    this.setState({ direction: e });
+  }
+
+  updateStop(e) {
+    this.setState({ stopNumber: e });
+  }
+
+  updateDirectionAutocomplete(e) {
+    this.setState({ directionAutocomplete: routeList[e] });
+  }
+
+  updateStopAutocomplete(e) {
+    this.state.stopsAutocomplete = axios({
+      method: "get",
+      url: "http://localhost:8000/api/stopsautocomplete/",
+      params: {
+        route: this.state.routeNumber,
+        direction: this.state.direction,
+      }
+    })
+      .then(response => {
+        if (response.status !== 200) {
+          return this.setState({ placeholder: "Something went wrong" });
+        }
+        {console.log("here")}
+        return response.data;
+      })
+      .then(data => this.setState({ stopsAutocomplete: data, loaded: true }));
+  }
+
+
+  handleSubmit(e) {
+    {
+      /*alert(new Date().toLocaleString('en-us', {  weekday: 'long' }).toLowerCase());*/
+    }
+    e.preventDefault();
+  }
 
   render() {
     return (
@@ -18,14 +86,18 @@ class SearchByRoute extends Component {
           <AppViewHeader SearchState={this.state.SearchState} />
           <AppViewFavourAndLogin />
           <div id="formColor">
-            <form>
+            <form onSubmit={this.handleSubmit}>
               <div className="row row_first"></div>
               <div className="row rowSpace ">
                 <div className="col-5 RouteNumber  ">
                   <label htmlFor="fname"> Route Number :</label>
                 </div>
                 <div className="col-7 RouteNumber inputBox">
-                  <input type="text" />
+                  <Autocomplete
+                    suggestions={this.state.routeAutocomplete}
+                    updateState={this.updateRoute}
+                    updateAutocomplete={this.updateDirectionAutocomplete}
+                  />
                 </div>
               </div>
 
@@ -34,10 +106,11 @@ class SearchByRoute extends Component {
                   <label htmlFor="Towards">Towards :</label>
                 </div>
                 <div className="col-7 inputBox">
-                  <select id="towards" name="towards">
-                    <option value="australia"> </option>
-                    <option value="canada"> ss</option>
-                  </select>
+                  <DropDown
+                    suggestions={this.state.directionAutocomplete}
+                    updateState={this.updateDirection}
+                    updateAutocomplete={this.updateStopAutocomplete}
+                  />
                 </div>
               </div>
 
@@ -46,7 +119,11 @@ class SearchByRoute extends Component {
                   <label htmlFor="fname"> Departure :</label>
                 </div>
                 <div className="col-7  inputBox">
-                  <input type="text" />
+                  <Autocomplete
+                    suggestions={this.state.stopsAutocomplete}
+                    updateState={this.updateStop}
+                    updateAutocomplete={this.handleSubmit}
+                  />
                 </div>
               </div>
             </form>

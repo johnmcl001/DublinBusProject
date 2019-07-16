@@ -11,7 +11,7 @@ const Autocomplete = props => {
     {
       /*
       Input: target element
-      Output: input, filteredSuggestions, showSuggestions, parent stopnumber updated
+      Output: parent state and autocomplete updated
     */
     }
     const input = e.currentTarget.value;
@@ -21,35 +21,37 @@ const Autocomplete = props => {
     updateFilteredSuggestions(filteredSuggestions);
     updateShowSuggestions(true);
     updateUserInput(input);
-    props.onUpdateStop(e.currentTarget.value);
+    props.updateState(e.currentTarget.value);
   };
 
   const onClick = e => {
     {
       /*
         Input: target element, user click
-        Output: input, filteredSuggestions, showSuggestions, activeSuggestion reset; parent stopnumber updated
+        Output: parent state and autocomplete updated
     */
     }
     updateActiveSuggestion(0);
     updateFilteredSuggestions([]);
     updateShowSuggestions(false);
     updateUserInput(e.currentTarget.innerText);
-    props.onUpdateStop(e.currentTarget.innerText);
+    props.updateState(e.currentTarget.innerText);
+    props.updateAutocomplete(e.currentTarget.innerText);
   };
 
   const onKeyDown = e => {
     {
       /*
         Input: target element, user keyboard press
-        Output: input, filteredSuggestions, showSuggestions, activeSuggestion reset; parent stopnumber updated
+        Output: parent state and autocomplete updated
     */
     }
     if (e.keyCode === 13) {
       updateActiveSuggestion(0);
       updateShowSuggestions(false);
       updateUserInput(filteredSuggestions[activeSuggestion]);
-      props.onUpdateStop(filteredSuggestions[activeSuggestion]);
+      props.updateState(filteredSuggestions[activeSuggestion]);
+      props.updateAutocomplete(filteredSuggestions[activeSuggestion]);
     } else if (e.keyCode === 38) {
       if (activeSuggestion === 0) {
         return;
@@ -76,7 +78,6 @@ const Autocomplete = props => {
       suggestionList = (
         <ul>
           {filteredSuggestions.map((suggestionName, index) => {
-            let className;
             if (index === activeSuggestion) {
             }
             return <li onClick={onClick}>{suggestionName}</li>;

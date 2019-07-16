@@ -42,7 +42,8 @@ class SearchByStop extends Component {
             {/*Pass updateStop function so that child updates parent*/}
             <Autocomplete
               suggestions={this.state.stopsautocomplete}
-              onUpdateStop={this.updateStop}
+              updateState={this.updateStop}
+              updateAutocomplete={this.handleSubmit}
             />
           </form>
         </div>

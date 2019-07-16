@@ -284,9 +284,11 @@ class SearchByStopTest(TestCase):
         ]
         self.assertEqual(self.test_view_specific.sort_results(test_input), test_output)
 
-class SearchByDestinationTest(TestCase):
+
+
+class StopsAutoCompleteTest(TestCase):
     """
-    UnitTests for SearchByDestination Feature
+    UnitTests for StopsAutoComplete
     """
 
     def setUp(self):
@@ -373,8 +375,10 @@ class SearchByDestinationTest(TestCase):
         )
 
         self.factory = RequestFactory()
-        self.request = self.factory.get("/api/stop/?startpoint={'lat': 3, 'lon': 4}")
-        self.test_view = self.setup_view(SearchByDestination(), self.request)
+
+        self.request = self.factory.get("/api/stop/?route=46a&day=monday&direction=Dun Laoghaire")
+        self.test_view = self.setup_view(StopsAutocomplete(),
+                                                  self.request)
 
         def tearDown(self):
             del self.test_view
@@ -388,10 +392,13 @@ class SearchByDestinationTest(TestCase):
         view.kwargs = kwargs
         return view
 
-    def test_get_coords(self):
+    def test_get_params(self):
         """
-        Should return coords as dict
+        Should return url params as dict
         """
-        expected = {"lat": 3, "lon": 4}
-        self.assertEqual(self.test_view.get_coords("startpoint"), expected)
+        expected = {
+            "route": "46a",
+            "direction": "Dun Laoghaire",
+        }
+        self.assertEqual(self.test_view.get_params(), expected)
 
