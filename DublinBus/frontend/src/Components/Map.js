@@ -9,18 +9,24 @@ class MapContainer extends Component {
   constructor(props) {
       super(props);
       this.state = {
+        //Holds InfoWindow Information
         showingInfoWindow: false,
         activeMarker: {},
         selectedPlace: {},
+        //Holds markers we need to mark route/stops
         markers: markerslist[0][0],
 
       };
+      //Holds coordinates to draw route on map
       this.polyCoords= [];
     }
+
+    //only update if route/stop is updated
     shouldComponentUpdate(nextProps, nextState) {
        return nextState.markers != this.markers;
         }
 
+    //sets state, opend infowindow when marker is clicked
     onMarkerClick = (props, marker, e) =>{
         this.setState({
           selectedPlace: props,
@@ -28,7 +34,7 @@ class MapContainer extends Component {
           showingInfoWindow: true
         });
     }
-
+    //closes info window if map is clicked
     onMapClicked = (props) => {
     if (this.state.showingInfoWindow) {
       this.setState({
@@ -37,6 +43,8 @@ class MapContainer extends Component {
       });
     }
   };
+
+  //adds coordinates from markers to polyline array
   addPolyline=(props)=>{
     this.polyCoords.push(props);
   }
@@ -56,6 +64,9 @@ class MapContainer extends Component {
               zoom={11}
               initialCenter={{ lat: 53.3501, lng: -6.2661 }}
             >
+
+             {/* Creates the marker if it is in the markers array(state)
+               We only want this to update when markers state is updated.*/}
             {this.state.markers.map((station) => {
               //console.log(stationkeys[station]['name']);
               this.addPolyline({ lat: stationkeys[station]['lat'], lng: stationkeys[station]['long']});
@@ -67,6 +78,8 @@ class MapContainer extends Component {
                 onClick={this.onMarkerClick}
                 />
               })}
+
+              {/* Sets Infowindow functionality and state */}
               <InfoWindow
         marker={this.state.activeMarker}
         visible={this.state.showingInfoWindow}>
@@ -74,7 +87,7 @@ class MapContainer extends Component {
             <p>{this.state.selectedPlace.name}</p>
           </div>
       </InfoWindow>
-
+      {/* Draws the polyline on the map based on the elements of the polCoords array*/}
       <Polyline
           path={this.polyCoords}
           strokeColor="#0000FF"
