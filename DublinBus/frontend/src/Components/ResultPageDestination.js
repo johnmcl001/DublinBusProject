@@ -3,6 +3,9 @@ import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import ResultPageButton from "./ResultPageButton";
 import "../Static/StyleSheet/ResultPageDestination.css";
+import DataProvider from "./DataProvider";
+import Table from "./Table";
+
 
 //This Component is the Result page of Search By Destination
 class ResultPageDestination extends Component {
@@ -71,53 +74,14 @@ class ResultPageDestination extends Component {
                 role="tabpanel"
                 aria-labelledby="pills-home-tab"
               >
-                {/*From here down can be delete*/}
-                <div className="row resultRows" id="resultRowsLastRaw">
-                  <div className="col-4 busNumber">
-                    <p>Bus 3</p>
-                  </div>
-                  <div className="col-6 busArrivalTime ">
-                    <p>xxx mins</p>
-                  </div>
-                </div>
-
-                <div className="row resultRows" id="resultRowsLastRaw">
-                  <div className="col-4 busNumber">
-                    <p>Bus 3</p>
-                  </div>
-                  <div className="col-6 busArrivalTime ">
-                    <p>xxx mins</p>
-                  </div>
-                </div>
-
-                <div className="row resultRows" id="resultRowsLastRaw">
-                  <div className="col-4 busNumber">
-                    <p>Bus 3</p>
-                  </div>
-                  <div className="col-6 busArrivalTime ">
-                    <p>xxx mins</p>
-                  </div>
-                </div>
-
-                <div className="row resultRows" id="resultRowsLastRaw">
-                  <div className="col-4 busNumber">
-                    <p>Bus 3</p>
-                  </div>
-                  <div className="col-6 busArrivalTime ">
-                    <p>xxx mins</p>
-                  </div>
-                </div>
-
-                <div className="row resultRows" id="resultRowsLastRaw">
-                  <div className="col-4 busNumber">
-                    <p>Bus 3</p>
-                  </div>
-                  <div className="col-6 busArrivalTime ">
-                    <p>xxx mins</p>
-                  </div>
-                </div>
-
-                {/*Delete Till here*/}
+      <DataProvider
+        endpoint="destination"
+        startpoint={this.props.match.params.startCoordinates}
+        destination={this.props.match.params.startCoordinates}
+        time={this.props.match.params.startTimeToBackEnd}
+        date={this.props.match.params.startDateToBackEnd}
+        render={data => <Table data={data} />}
+      />
               </div>
               <div
                 className="tab-pane fade"
@@ -143,5 +107,6 @@ class ResultPageDestination extends Component {
     );
   }
 }
+
 
 export default ResultPageDestination;

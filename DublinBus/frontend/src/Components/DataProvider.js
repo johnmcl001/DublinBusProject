@@ -21,6 +21,7 @@ class DataProvider extends Component {
     placeholder: "Loading...",
     proxy: "http://localhost:8000/api/"
   };
+
   componentDidMount() {
     axios({
       method: "get",
