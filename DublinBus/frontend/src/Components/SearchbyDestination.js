@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import "../Static/StyleSheet/SearchbyDestination.css";
 import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
+import Map from "./Map";
 
 import GoogleAddressSearch from "./GoogleAddressSearch";
 
