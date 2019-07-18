@@ -13,11 +13,11 @@ class Map extends Component {
         //openInfoWindowMarkerId: '',
         //Holds markers we need to mark route/stops
         markers: markerslist[0][0],
-        openInfoWindowMarkerId: '',
       };
       //Holds coordinates to draw route on map
       this.polyCoords= [];
     }
+
 
     //adds coordinates from markers to polyline array
     addPolyline=(props)=>{
