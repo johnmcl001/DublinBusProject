@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { withGoogleMap, GoogleMap, Marker } from 'react-google-maps';
+import { withGoogleMap, GoogleMap, Marker, InfoWindow, Polyline } from 'react-google-maps';
 import "../Static/StyleSheet/Map.css";
-//import * as stationData from "./stop_info.json";
+import InfoWindowMap from './InfoWindow.js';
 import * as stationkeys from "./frontEndBusInfo.json";
 import * as markerslist from "./oneRoute.json";
 
@@ -10,48 +10,82 @@ class Map extends Component {
       super(props);
       this.state = {
         //Holds InfoWindow Information
-        showingInfoWindow: false,
-        activeMarker: {},
-        selectedPlace: {},
+        //openInfoWindowMarkerId: '',
         //Holds markers we need to mark route/stops
         markers: markerslist[0][0],
-
+        openInfoWindowMarkerId: '',
       };
       //Holds coordinates to draw route on map
       this.polyCoords= [];
     }
+
     //adds coordinates from markers to polyline array
     addPolyline=(props)=>{
       this.polyCoords.push(props);
     }
-   render() {
-   const MapWithAMarker = withGoogleMap(props => (
+    //only update if route/stop is updated
+    shouldComponentUpdate(nextProps, nextState) {
+       return nextState.markers != this.markers;
+        }
 
-     <GoogleMap
-       defaultZoom={11}
-       defaultCenter={{ lat: 53.3501, lng: -6.2661 }}
-     >
+
+   render() {
+
      {/* Creates the marker if it is in the markers array(state)
        We only want this to update when markers state is updated.*/}
-    {this.state.markers.map((station) => {
+
+
+       //const markersList = markerslist[0][0];
+       let markers;
+       if (this.state.markers !== null) {
+       markers=this.state.markers.map((station) => {
       //console.log(stationkeys[station]['name']);
       this.addPolyline({ lat: stationkeys[station]['lat'], lng: stationkeys[station]['long']});
+      return (
 
-      return <Marker
-        key={station}
-        name={stationkeys[station]['name']}
-        position={{ lat: stationkeys[station]['lat'], lng: stationkeys[station]['long']}}
-        onClick={this.onMarkerClick}
-        />
-      })}
-     </GoogleMap>
-   ));
+						<InfoWindowMap
+							key={station}
+              name={stationkeys[station]['name']}
+							lat={stationkeys[station]['lat']}
+							lng={stationkeys[station]['long']}
+              index={station}
+							/>
+
+				)
+			})
+		} else {
+			console.log('true');
+			//markers = <Marker position={{ lat: Number(latCurrentLocation), lng: Number(lngCurrentLocation)}}/>
+		}
+const MapWithAMarker = withGoogleMap(props =>
+        <GoogleMap
+          defaultZoom={11}
+          defaultCenter={{ lat: 53.3501, lng: -6.2661 }}
+        >
+        {markers}
+        {/* Draws the polyline on the map based on the elements of the polCoords array*/}
+        <Polyline
+        path={this.polyCoords}
+        strokeColor="#0000FF"
+        strokeOpacity={0.8}
+        strokeWeight={2} />
+        </GoogleMap>
+      );
 
    return(
+     <div id="map">
+        <div className="d-none d-lg-block d-md-none">
+          <div
+            id="map-container-google-1 "
+            className="z-depth-1-half map-container border border-primary"
+          >
      <MapWithAMarker
-     containerElement={<div style={{ height: `400px` }} />}
-     mapElement={<div style={{ height: `100%` }} />}
+     containerElement={<div style={{ height: `100vh` }} />}
+     mapElement={<div style={{ height: `100vh` }} />}
    />
+   </div>
+</div>
+</div>
    );
    }
 };
