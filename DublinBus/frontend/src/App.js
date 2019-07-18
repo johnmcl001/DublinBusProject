@@ -16,6 +16,7 @@ class App extends Component {
   render() {
     return (
       <Router>
+      <Map/>
         <div className="App">
           <Header />
           <div className="container-fluid position-relative">
