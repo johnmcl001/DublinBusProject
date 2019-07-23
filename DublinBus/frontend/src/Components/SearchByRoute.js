@@ -83,7 +83,7 @@ class SearchByRoute extends Component {
         id="EntireBox_SearchRoute"
       >
         <div className="container SearchByRouteBox bg-light">
-          <AppViewHeader SearchState={this.state.SearchState} />
+                    <AppViewHeader SearchState={this.state.SearchState} Return="toHomePage" />
           <AppViewFavourAndLogin />
           <div id="formColor">
             <form onSubmit={this.handleSubmit}>
@@ -105,7 +105,7 @@ class SearchByRoute extends Component {
                 <div className="col-5  ">
                   <label htmlFor="Towards">Towards :</label>
                 </div>
-                <div className="col-7 inputBox">
+                <div className="col-7 inputBox  ">
                   <DropDown
                     suggestions={this.state.directionAutocomplete}
                     updateState={this.updateDirection}
@@ -128,16 +128,17 @@ class SearchByRoute extends Component {
               </div>
             </form>
           </div>
-
+<div   className="col-8  bottomClass">
           <Link to={"/ResultPage_Stop_Route"}>
             <button
               type="button"
-              className="btn btn-warning col-7"
+              className="btn btn-warning  "
               id="SubmitButton"
             >
               Submit
             </button>
           </Link>
+</div>
         </div>
       </div>
     );

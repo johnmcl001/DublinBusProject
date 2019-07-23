@@ -24,8 +24,8 @@ class SearchByStop extends Component {
     this.setState({ stopnumber: e });
   }
 
-  handleSubmit(event) {
-    event.preventDefault();
+  handleSubmit() {
+    // event.preventDefault();
   }
 
   render() {
@@ -34,7 +34,7 @@ class SearchByStop extends Component {
         className="EntireBox SearchByStop container position-absolute col-md-12 bg-light"
         id="EntireBox_SearchStop"
       >
-        <AppViewHeader SearchState="Search by Stop Number" />
+        <AppViewHeader SearchState="Search by Stop Number" Return="toHomePage" />
         <AppViewFavourAndLogin />
         <div className="col-12" id="formColor">
           <form id="SearchByStopForm" onSubmit={this.handleSubmit}>
@@ -47,15 +47,18 @@ class SearchByStop extends Component {
             />
           </form>
         </div>
+
+        <div   className="col-8  bottomClass">
         <Link to={`/ResultPage_Stop_Route/${this.state.stopnumber}`}>
           <button
             type="button"
-            className="btn btn-warning col-7"
+            className="btn btn-warning "
             id="SubmitButton"
           >
             Submit
           </button>
         </Link>
+        </div>
       </div>
     );
   }
