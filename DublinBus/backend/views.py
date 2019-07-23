@@ -273,7 +273,7 @@ class SearchByDestination(SearchByStop):
     def get(self, request):
         route = self.get_route()
         route_segments = self.get_route_segments(route)
-        return Response(route)
+        return Response(route_segments)
 
         time = self.get_time()
         day_info = self.get_day_and_date()
