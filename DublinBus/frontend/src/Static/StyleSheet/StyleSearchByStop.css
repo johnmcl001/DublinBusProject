@@ -27,6 +27,8 @@
 .SearchByStop input {
     display: block;
     margin: auto;
+    width: 122%;
+     font-size: 18px;
 }
 
 .SearchByStop label {
@@ -46,3 +48,4 @@
 #formColor {
     background-color: #32CD32;
 }
+

@@ -1,32 +1,54 @@
-import React, { Component } from "react";
-import "../Static/StyleSheet/AppViewHeader.css";
-import DropDownINav from "./DropDownNav";
+import React, {Component} from 'react';
+import '../Static/StyleSheet/AppViewHeader.css'
+import DropDownINav from './DropDownNav'
 
 // This Component is a header at the mobile view
 
 class AppViewHeader extends Component {
-  render() {
-    return (
-      <div className="container AppViewHeader ">
-        <div className="row ">
-          <div className="col-2 ">
-            {/*Return to previous component */}
-            <a id="returnButton" onClick={() => window.history.go(-1)}>
-              <i className="fas fa-arrow-left"></i>
-            </a>
-          </div>
+  constructor(props) {
+    super(props);
+     this.returnBack = this.returnBack.bind(this);
 
-          <div className="col-8  ccc">
-            <h5>{this.props.SearchState}</h5>
-          </div>
-
-          <div className="col-2 container  " id="AppViewDropDown">
-            <DropDownINav />
-          </div>
-        </div>
-      </div>
-    );
   }
+returnBack(){
+      //Return to previous page and ensure the weather widget to load.
+      if (this.props.Return==="toHomePage"){
+          return window.location.replace("./")
+      }else{
+          return window.history.go(-1)
+
+      }
 }
+    render() {
+
+        return (
+
+            <div className='container AppViewHeader '>
+
+                <div className="row ">
+
+                    <div className="col-2 ">
+                        {/*Return to previous component */}
+                        <a id='returnButton' onClick={this.returnBack}><i
+                            className="fas fa-arrow-left"></i></a>
+                    </div>
+
+                    <div className="col-8  ccc">
+
+                        <h5>{this.props.SearchState}</h5>
+                    </div>
+
+                    <div className="col-2 container  " id='AppViewDropDown'>
+
+                        <DropDownINav/>
+
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+}
+
 
 export default AppViewHeader;
