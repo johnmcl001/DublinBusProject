@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
+import decodePolyline from "decode-google-map-polyline";
+
 
 class DataProvider extends Component {
   static propTypes = {
@@ -38,6 +40,7 @@ class DataProvider extends Component {
       }
     })
       .then(response => {
+        this.props.updatePolyline(decodePolyline(response.data[0].polyline).concat(decodePolyline(response.data[1].polyline)).concat(decodePolyline(response.data[2].polyline)))
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }

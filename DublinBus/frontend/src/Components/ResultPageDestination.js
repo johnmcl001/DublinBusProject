@@ -21,10 +21,7 @@ class ResultPageDestination extends Component {
                 <div>
              <DataProvider
                     endpoint="destination"
-                    startpoint={this.props.match.params.startCoordinates}
-                    destination={this.props.match.params.startCoordinates}
-                    time={this.props.match.params.startTimeToBackEnd}
-                    date={this.props.match.params.startDateToBackEnd}
+                    updatePolyline={this.props.updatePolyline}
                     render={data => <Table data={data}/>}
                     />
                 </div>

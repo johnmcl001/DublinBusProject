@@ -1,5 +1,6 @@
 import React, {
-  Component
+  Component,
+  setState
 } from 'react';
 import {
   withGoogleMap,
@@ -12,6 +13,7 @@ import "../Static/StyleSheet/Map.css";
 import MarkerContainer from './MarkerContainer.js';
 import * as stationkeys from "./frontEndBusInfo.json";
 import * as markerslist from "./oneRoute.json";
+import MapContext from "./MapContext";
 
 class Map extends Component {
   constructor(props) {
@@ -19,8 +21,9 @@ class Map extends Component {
     this.state = {
       //Holds markers we need to mark route/stops
       markers: markerslist[0][0],
+      path: this.props.path
     };
-    this.polyCoords = [];
+    this.polyCoords = this.props.path;
   }
   addPolyline = (props) => {
     this.polyCoords.push(props);
@@ -30,7 +33,12 @@ class Map extends Component {
     return nextState.markers != this.markers;
   }
 
-
+  componentWillReceiveProps({props}) {
+  this.setState({
+    path: this.props.path
+  })
+  console.log(this.state.path)
+}
 
   render() {
 
@@ -40,7 +48,7 @@ class Map extends Component {
       }
     this.state.markers.map((station) => {
      //console.log(stationkeys[station]['name']);
-     this.addPolyline({ lat: stationkeys[station]['lat'], lng: stationkeys[station]['long']});})
+     })
       const MapWithAMarker = withGoogleMap(props =>
         <
         GoogleMap defaultZoom = {
@@ -52,13 +60,10 @@ class Map extends Component {
             lng: -6.2661
           }
         } >
-        <
-        MarkerContainer markers = {
-          this.state.markers
-        }
-        />
+        {console.log("here")}
+        {console.log(this.state.path)}
         <Polyline
-        path={this.polyCoords}
+        path={this.state.path}
         strokeColor="#0000FF"
         strokeOpacity={0.8}
         strokeWeight={2} />

@@ -6,7 +6,7 @@ import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import YourLocationOrSearch from "./YourLocationOrSearch"
 import GoogleAddressSearch from './GoogleAddressSearch';
 import {FaMapMarkerAlt} from 'react-icons/fa';
-
+import MapContext from "./MapContext";
 // import Map from "./Map";
 
 
@@ -117,7 +117,6 @@ class SearchbyDestination extends Component {
 
         return (
             <div>
-
                 <div className='EntireBox  SearchByDestinationBox bg-light container col-md-12  position-absolute  '>
                     {/*<div className='container '>*/}
                     <AppViewHeader SearchState={'Search By Destination'} Return="toHomePage"/>
