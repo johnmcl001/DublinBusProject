@@ -15,6 +15,9 @@ from rest_framework import generics
 from .HereManager import HereManager
 from datetime import datetime, timedelta, date
 from ast import literal_eval
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv(), override=True)
 
 dirname = os.path.dirname(__file__)
 
@@ -202,6 +205,10 @@ class SearchByDestination(SearchByStop):
     """
 
     def get(self, request):
+        route = self.get_route()
+        route_segments = self.get_route_segments(route)
+        return Response(route)
+
         time = self.get_time()
         day_info = self.get_day_and_date()
         weather = self.get_weather(time, day_info["date"])
@@ -221,11 +228,53 @@ class SearchByDestination(SearchByStop):
         coords = self.request.GET.get(point)
         return literal_eval(coords)
 
+    def get_route(self):
+        """
+        Input: origin coords as string, destination coords as string
+        Output: route as json
+        """
+        key = os.getenv("GOOGLE")
+        call = "https://maps.googleapis.com/maps/api/directions/json?origin=ucd&destination=dun+laoghaire&key=" + key + "&mode=transit&transit_mode=bus&alternatives=true&region=ie"
+        response = requests.get(call)
+
+        if response.status_code == 200:
+            route = json.loads(response.text)
+        elif response.status_code == 400:
+            route = "not found"
+        return route
+
+    def get_route_segments(self, route):
+        """
+        Input: route as json
+        Ouput: route segments as json
+        """
+        steps = route["routes"][0]["legs"][0]["steps"]
+        segments = []
+        for step in steps:
+            segment = {}
+            segment["time"] = step["duration"]["value"]
+            segment["instruction"] = step["html_instructions"]
+            segment["start_lat"] = step["start_location"]["lat"]
+            segment["start_lon"] = step["start_location"]["lng"]
+            segment["end_lat"] = step["end_location"]["lat"]
+            segment["end_lon"] = step["end_location"]["lng"]
+            segment["polyline"] = step["polyline"]["points"]
+            segment["travel_mode"] = step["travel_mode"]
+            if segment["travel_mode"] == "TRANSIT":
+                segment["route"] = step["transit_details"]["line"]["short_name"]
+                segment["num_stops"] = step["transit_details"]["num_stops"]
+                segment["arrival_stop"] = step["transit_details"]["arrival_stop"]["name"]
+                segment["departure_stop"] = step["transit_details"]["departure_stop"]["name"]
+            segments += [segment]
+        return segments
+
+
     def get_arrival_time(self, ):
         """
         Input
         Output
         """
+        pass
 
     def get_stations_nearby(self, dest_lat, dest_lon):
         """
@@ -356,34 +405,6 @@ class SearchByDestination(SearchByStop):
         #start shape_dist_traveled, dest arrival_time, dest stop_id, dest stop_sequence, dest shape_dist_traveled and walking dist to destination
         return routes
 
-    def get(self, request):
-        return Response([
-           {
-              "stop": "2007",
-              "route":"46a",
-              "arrival_time":"4"
-           },
-           {
-              "stop": "2007",
-              "route":"39a",
-              "arrival_time":"2"
-           },
-           {
-              "stop": "2007",
-              "route":"145",
-              "arrival_time":"1"
-           },
-           {
-              "stop": "2007",
-              "route":"46a",
-              "arrival_time":"8"
-           },
-           {
-              "stop": "2007",
-              "route":"155",
-              "arrival_time":"6"
-           },
-        ])
 
 class StopsAutocomplete(views.APIView):
 
