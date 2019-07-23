@@ -1,0 +1,23 @@
+#BrandName{
+    font-size: 25px;
+    font-weight: bold;
+    color: Maroon;
+    margin-left: 10px;
+    margin-right: 40px;
+    font-family:  Times, serif;
+}
+
+.mr-auto ul li {
+    font-size: 20px;
+    color: grey !important;
+    margin: 0 15px;
+
+
+}
+
+.mr-auto ul li :hover {
+    font-size: 21px;
+    color: black;
+
+ text-decoration: underline;
+}

@@ -1,0 +1,42 @@
+.AppViewHeader{
+    position: relative;
+
+
+}
+
+.AppViewHeader .row{
+       height: 70px;
+
+   }
+#returnButton {
+    position: absolute;
+     margin-top:5px ;
+    font-size: 24px;
+    padding-top: 10px;
+    color:white;
+}
+#AppViewDropDown{
+   margin: auto;
+  width: 50%;
+
+}
+.AppViewHeader{
+    margin: auto;
+    background-color: #3577CE;
+}
+.AppViewHeader h5{
+
+    margin-top: 13px;
+    color: white;
+    text-align: center;
+}
+
+@media only screen and (min-width: 600px) {
+.AppViewHeader h5{
+
+    margin-top: 20px;
+    color: white;
+    text-align: center;
+}
+
+}

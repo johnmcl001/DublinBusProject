@@ -1,0 +1,95 @@
+/*This will apply to all Input form container */
+@media screen and (min-width: 600px) {
+    .EntireBox {
+        width: 420px;
+    }
+}
+
+
+#EntireBox_HomePage {
+    top: 30px;
+    left: 20px;
+    border: black;
+    height: auto;
+    padding-bottom: 50px;
+    position: relative;
+
+}
+
+.HomePage  {
+
+    background-image: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.2)),url("../img/img3.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    animation: slide 12s infinite ;
+}
+
+
+
+
+.HomePageInner {
+    height: 250px;
+
+}
+
+
+.WeatherWidget {
+    height: 100px;
+
+}
+
+.WeatherWidget a {
+    height: 120px;
+    margin: auto;
+    font-size: 10px;
+    max-height: 100%;
+
+}
+
+
+.HomePageInner {
+    margin: auto;
+}
+
+.HomePage Button {
+
+    margin: auto;
+    height: 50px;
+    width: 65%;
+    margin-left: 17%;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-size: 19px;
+}
+
+.LinkCss {
+    margin: auto;
+    width: 100%;
+}
+
+@media only screen and (max-width: 390px) {
+    .HomePage Button {
+        font-size: 14px;
+    }
+
+    .WeatherWidget {
+        height: 120px;
+
+    }
+
+}
+
+@keyframes slide {
+    0%{
+        background-image: url("../img/img3.jpg");
+    }
+
+        33%{
+        background-image: url("../img/img1.jpg");
+    }
+        67%{
+        background-image: url("../img/img2.jpg");
+    }
+
+}
