@@ -15,9 +15,15 @@ from rest_framework import generics
 from .HereManager import HereManager
 from datetime import datetime, timedelta, date
 from ast import literal_eval
+
+import pickle
+from sklearn.linear_model import LinearRegression
+import pandas as pd
+
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv(), override=True)
+
 
 dirname = os.path.dirname(__file__)
 
@@ -44,15 +50,20 @@ class SearchByStop(views.APIView):
         weather = self.get_weather(time, day_info["date"])
         bus_stop_info = self.get_bus_stop_info(stop_number)
         routes = self.get_routes(bus_stop_info)
-        directions = self.get_direction(routes, stop_number)
+        trips=self.get_relevant_trips_per_route_and_stop(stop_number, routes, day_info['day_long'], time, day_info["date"])
+        directions = self.get_direction(day_info['day_long'], day_info["date"], routes, stop_number)
         machine_learning_inputs = self.serialize_machine_learning_input(
                                                             time,
                                                             day_info["day"],
+                                                            day_info["month"],
                                                             day_info["date"],
                                                             stop_number,
                                                             weather,
                                                             routes,
+                                                            trips,
                                                             directions)
+        #return Response(machine_learning_inputs)
+
         results = self.get_arrival_times(machine_learning_inputs)
         results = self.sort_results(results)
         return Response(results)
@@ -62,7 +73,7 @@ class SearchByStop(views.APIView):
         input: None
         output: either time specified in url or time now as string
         """
-        now = datetime.now().strftime("%H:%M")
+        now = datetime.now().strftime("%H:%M:%S")
         if self.request.GET.get("time", now) == "null":
             return now
         return self.request.GET.get("time", now)
@@ -74,12 +85,16 @@ class SearchByStop(views.APIView):
         """
         date = datetime.today().strftime('%d-%m-%Y')
         if self.request.GET.get("date") == "null" or self.request.GET.get("date") is None:
-            day = datetime.strptime(date, '%d-%m-%Y').strftime('%a')
-            return {"date": date, "day": day}
+            day = datetime.strptime(date, '%d-%m-%Y').weekday()
+            month=int(datetime.strptime(date, '%d-%m-%Y').strftime('%m'))
+            day_long=datetime.strptime(date, '%d-%m-%Y').strftime('%A').lower()
+            return {"date": date, "day": day, 'month': month, 'day_long':day_long}
 
         date = self.request.GET.get("date", None)
-        day = datetime.strptime(date, '%d-%m-%Y').strftime('%a')
-        return {"date": date, "day": day}
+        day = datetime.strptime(date, '%d-%m-%Y').weekday()
+        day_long=datetime.strptime(date, '%d-%m-%Y').strftime('%A').lower()
+        month=int(datetime.strptime(date, '%d-%m-%Y').strftime('%m'))
+        return {"date": date, "day": day, 'month': month, 'day_long':day_long}
 
     def get_weather(self, time, date):
         """
@@ -87,15 +102,27 @@ class SearchByStop(views.APIView):
         Output: weather conditions for prediction as json or dictionary
         """
         weatherResult=Forecast.objects.filter(date=date)
+        #print(weatherResult)
         for result in weatherResult:
-            if datetime.strptime(result.start_time, "%H:%M") <= datetime.strptime(time, "%H:%M") < datetime.strptime(result.end_time, "%H:%M"):
-                forecast = {
-                    "temperature": result.temperature,
-                    "cloud": result.cloud_percent,
-                    "rain": result.rain,
-                    "description": result.description,
-                }
-                return forecast
+            if result.end_time=="00:00":
+                result.end_time="24:00"
+                if result.start_time <= (datetime.strptime(self.get_time(),"%H:%M:%S")+timedelta(minutes=60)).strftime("%H:%M") < result.end_time:
+                    forecast = {
+                        "temperature": result.temperature,
+                        "cloud": result.cloud_percent,
+                        "rain": result.rain,
+                        "description": result.description,
+                    }
+                    return forecast
+            else:
+                if datetime.strptime(result.start_time, "%H:%M") <= (datetime.strptime(self.get_time(),"%H:%M:%S")+timedelta(minutes=60)) < datetime.strptime(result.end_time, "%H:%M"):
+                    forecast = {
+                        "temperature": result.temperature,
+                        "cloud": result.cloud_percent,
+                        "rain": result.rain,
+                        "description": result.description,
+                    }
+                    return forecast
 
     def get_bus_stop_info(self, stop_number):
         """
@@ -119,23 +146,49 @@ class SearchByStop(views.APIView):
             routes = bus_stop_info["routes"][0]
         return routes
 
-    def get_direction(self, route_numbers, stop_number):
+    def get_relevant_trips_per_route_and_stop(self, stop, route_numbers, day, time, date):
+        """
+        #Input: short route id, time(optional)
+        #Filters trips that run for the given day, 30 mins before the time and upto
+        #one hour after the time given.
+        #Output: list of trips objects
+        """
+        date=(datetime.strptime(date,"%d-%m-%Y")).strftime('%Y%m%d')
+        #print(date)
+        #get time 30 minutes before hand to allow for prediction model difference
+        start_time=(datetime.strptime(self.get_time(),"%H:%M:%S")-timedelta(minutes=30)).strftime('%H:%M:%S')
+        end_time=(datetime.strptime(self.get_time(),"%H:%M:%S")+timedelta(minutes=60)).strftime('%H:%M:%S')
+        services=Calendar.objects.filter(**{day:1}, start_date__lte=date, end_date__gte=date)
+        long_ids=Routes.objects.filter(route_short_name__in=route_numbers)
+        trips=Trips.objects.filter(route_id__in=long_ids, service_id__in=services).values('trip_id')
+        trips=StopTimes.objects.filter(trip_id__in=trips, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short=stop).order_by('departure_time')
+        #print(trips)
+        info={}
+        for trip in trips:
+            route_short=trip.trips_set.get().route.route_short_name
+            if route_short not in info:
+                info[route_short]=[trip.arrival_time, trip.stop_sequence],
+            else:
+                info[route_short]+=[trip.arrival_time, trip.stop_sequence],
+        return info
+
+
+    def get_direction(self, day, date, route_numbers, stop_number):
         """
         Input: bus stop number and route_number
         Output: Direction of route as int and headsign label
         """
         stop_number=Stops.objects.get(stopid_short=stop_number)
         allTrips=StopTimes.objects.filter(stop=stop_number)
+        services=Calendar.objects.filter(**{day:1}, start_date__lte=date, end_date__gte=date)
         directions = {}
         for route in route_numbers:
-            allRoutes=Trips.objects.filter(route__route_short_name=route, trip__in=allTrips).values('direction_id', 'trip_headsign').distinct()
-            # This query sometimes returns empty, even in mysql
-            # Need to investigate further
+            allRoutes=Trips.objects.filter(route__route_short_name=route, trip__in=allTrips, service_id__in=services).values('direction_id', 'trip_headsign').distinct()
             if len(allRoutes) > 0:
                 directions[route] = allRoutes[0]
         return directions
 
-    def serialize_machine_learning_input(self, time, day, date, stop_number, weather, routes, directions):
+    def serialize_machine_learning_input(self,time, day, month, date, stop_number, weather, routes, trips, direction):
         """
         Input: weather data as json/dict, routes as list, direction as int
         Output: machine learning inputs as json
@@ -143,11 +196,13 @@ class SearchByStop(views.APIView):
         """
         machine_learning_inputs = MachineLearningInputs(time,
                                                         day,
+                                                        month,
                                                         date,
                                                         stop_number,
                                                         weather,
                                                         routes,
-                                                        directions)
+                                                        trips,
+                                                        direction)
         machine_learning_inputs = MachineLearningInputSerializer(
             machine_learning_inputs)
         return machine_learning_inputs.data
@@ -159,34 +214,45 @@ class SearchByStop(views.APIView):
         Output: machine learning predictions as dictionary/json
         Note: output format depends on if we serialize here or somewhere else
         """
-        results =    [
-           {
-              "stop": "2007",
-              "route":"46a",
-              "arrival_time":"4"
-           },
-           {
-              "stop": "2007",
-              "route":"39a",
-              "arrival_time":"2"
-           },
-           {
-              "stop": "2007",
-              "route":"145",
-              "arrival_time":"1"
-           },
-           {
-              "stop": "2007",
-              "route":"46a",
-              "arrival_time":"8"
-           },
-           {
-              "stop": "2007",
-              "route":"155",
-              "arrival_time":"6"
-           },
-        ]
+        date=datetime.strptime(machine_learning_inputs['date'],'%d-%m-%Y')
+        time=datetime.strptime(machine_learning_inputs['time'], '%H:%M:%S').time()
+        results=[]
+        #machine_learning_inputs['trips'][route][1]=stop sequence
+        #machine_learning_inputs['trips'][route][0]=Planned arrival time
+        predictions_dict={}
+        for route in machine_learning_inputs['trips'].keys():
+            predictions_dict[route]={}
+            stop_num=[]
+            df=pd.DataFrame(columns=['temperature_NORM','PROGRNUMBER_NORM','month','day'])
+            for num in range(0, len(machine_learning_inputs['trips'][route])):
+                if machine_learning_inputs['trips'][route][num][1] not in stop_num:
+                    stop_num+=machine_learning_inputs['trips'][route][num][1],
+                    filename = os.path.join(dirname, '46A.pkl')
+                    model = pickle.load(open(filename,'rb'))
+                    df=df.append({
+                        "temperature_NORM":machine_learning_inputs['weather']['temperature'],
+                        "PROGRNUMBER_NORM":num,
+                        "month": machine_learning_inputs['month'],
+                        "day": machine_learning_inputs['day']
+                        }, ignore_index=True)
+            predictions_list=model.predict(df)
+            for i in range(0, len(stop_num)):
+                predictions_dict[route][stop_num[i]]=predictions_list[i]
+
+        for route in machine_learning_inputs['trips'].keys():
+            for num in range(0, len(machine_learning_inputs['trips'][route])):
+                arrival_time=(datetime.combine(date, machine_learning_inputs['trips'][route][num][0])+timedelta(seconds=predictions_dict[route][machine_learning_inputs['trips'][route][num][1]])).time()
+                if self.valid_trip_check(date, time, arrival_time):
+                    #mins_away=(datetime.combine(date, arrival_time)- datetime.combine(date, time))
+                    #print(mins_away)
+                    results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M:%S")},
+
         return results
+
+    def valid_trip_check(self, date, person_leaving_time, bus_arrival_time, walking_time=0, buffer=0):
+        if (datetime.combine(date, person_leaving_time) + timedelta(hours=walking_time)).time()< (datetime.combine(date, bus_arrival_time)- timedelta(minutes=buffer)).time():
+            return True
+        return False
 
 
     def sort_results(self, results):
@@ -294,10 +360,11 @@ class SearchByDestination(SearchByStop):
             default_radius+=1
         if (len(list(station_list))==0):
             return None
-        station_dict={}
-        for station in station_list:
-            station_dict[station.stop_id]=station.distance
-        return station_dict
+        return(NearbyStations(station_list, many=True))
+        #station_dict={}
+        #for station in station_list:
+        #    station_dict[station.stop_id]=station.distance
+        #return station_dict
 
     def walking_time(self, distance, speed=4):
         """
@@ -311,39 +378,6 @@ class SearchByDestination(SearchByStop):
             return True
         return False
 
-        """def get_relevant_routes_for_stop(stop, day, time):
-        """
-        #Input: bus stop, day and time
-        #Output: routes that serve that bus stop that leave around the time given
-        """
-        day=datetime.now().strftime("%A").lower()
-        #get time 30 minutes before hand to allow for prediction model difference
-        start_time=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=30)).strftime('%H:%M:%S')
-        end_time=(datetime.strptime(self.get_time(),"%H:%M")+timedelta(minutes=60)).strftime('%H:%M:%S')
-        services=Calendar.objects.filter(**{day:1})
-        trips=StopTimes.objects.filter(departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short=stop).values('trip_id')
-        long_ids=Trips.objects.filter(service_id__in=services, trip_id__in=trips).values('route_id').distinct()
-        routes=Routes.objects.filter(route_id__in=long_ids).values('route_short_name')
-        return routes
-        """
-
-        """def get_relevant_trips_per_route_and_stop(route, stop, day, time):
-        """
-        #Input: short route id, time(optional)
-        #Filters trips that run for the given day, 30 mins before the time and upto
-        #one hour after the time given.
-        #Output: list of trips objects
-        """
-        day=datetime.now().strftime("%A").lower()
-        #get time 30 minutes before hand to allow for prediction model difference
-        start_time=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=30)).strftime('%H:%M:%S')
-        end_time=(datetime.strptime(self.get_time(),"%H:%M")+timedelta(minutes=60)).strftime('%H:%M:%S')
-        services=Calendar.objects.filter(**{day:1})
-        long_ids=Routes.objects.filter(route_short_name=route)
-        trips=Trips.objects.filter(route_id__in=long_ids, service_id__in=services).values('trip_id')
-        trips=StopTimes.objects.filter(trip_id__in=trips, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short=stop)
-        return trips
-        """
 
     def find_direct_route(self, start_coord, end_coord, day, time):
         """
