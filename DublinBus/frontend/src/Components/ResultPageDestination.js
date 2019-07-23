@@ -6,8 +6,6 @@ import "../Static/StyleSheet/ResultPageDestination.css";
 import DataProvider from "./DataProvider";
 import Table from "./Table";
 import {FaWalking, FaLevelDownAlt,FaMapMarkerAlt} from 'react-icons/fa';
-
-
 //This Component is the Result page of Search By Destination
 class ResultPageDestination extends Component {
     render() {
@@ -35,6 +33,4 @@ class ResultPageDestination extends Component {
         );
     }
 }
-
-
 export default ResultPageDestination;
