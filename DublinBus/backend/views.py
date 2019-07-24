@@ -269,11 +269,16 @@ class SearchByDestination(SearchByStop):
     """
 
     def get(self, request):
+
         time = self.get_time()
         day_info = self.get_day_and_date()
         weather = self.get_weather(time, day_info["date"])
-        start_coords = self.get_coords("startpoint")
-        end_coords = self.get_coords("destination")
+        #start_coords = self.get_coords("startpoint")
+        start_coords = {"lat" : self.get_coords("startpointLat"),
+                        "lon" : self.get_coords("startpointLon")}
+        #end_coords = self.get_coords("destination")
+        end_coords = {"lat" : self.get_coords("departureLat"),
+                        "lon" : self.get_coords("departureLon")}
         dir_route = self.find_direct_routes(start_coords,
                                             end_coords,
                                            day_info['day_long'],
@@ -293,7 +298,7 @@ class SearchByDestination(SearchByStop):
                                                time)"""
 
         if len(dir_route)==0:
-            routes = self.get_route(time, start_coords,end_coords=)
+            routes = self.get_route(time, start_coords,end_coords)
             route_segments = self.get_route_segments(routes, time)
             route_segments=self.validate(route_segments, time, day_info,weather)
             results=self.sort_routes(route_segments)
@@ -316,6 +321,7 @@ class SearchByDestination(SearchByStop):
         return literal_eval(coords)
 
     def get_route(self, time, start_coords, end_coords):
+
         """
         Input: origin coords as string, destination coords as string
         Output: route as json
@@ -325,6 +331,7 @@ class SearchByDestination(SearchByStop):
         call = "https://maps.googleapis.com/maps/api/directions/json?origin="\
         +str(start_coords['lat'])+','+str(start_coords['lon'])+"&destination="+str(end_coords['lat'])+','+str(end_coords['lon'])+"&key="\
         + key + "&mode=transit&transit_mode=bus&alternatives=true&region=ie&departure_time="+str(time)
+
         response = requests.get(call)
         if response.status_code == 200:
             route = json.loads(response.text)
@@ -337,7 +344,8 @@ class SearchByDestination(SearchByStop):
         Input: route as json
         Ouput: route segments as json
         """
-        all_routes=[]
+        all_routes=[] 
+   
         for r in range(0, len(route["routes"])):
             steps = route["routes"][r]["legs"][0]["steps"]
             segments = []
@@ -355,6 +363,10 @@ class SearchByDestination(SearchByStop):
                 segment["polyline"] = step["polyline"]["points"]
                 segment['distance'] = step["distance"]["value"]
                 segment["travel_mode"] = step["travel_mode"]
+                segment["markers"] += [{"start_lat": step["start_location"]["lat"],
+            "start_lon": step["start_location"]["lng"],
+            "end_lat": step["end_location"]["lat"],
+            "end_lon": step["end_location"]["lng"]}]
                 if segment["travel_mode"] == "TRANSIT":
                     segment["route"] = step["transit_details"]["line"]["short_name"]
                     segment["num_stops"] = step["transit_details"]["num_stops"]
@@ -478,7 +490,6 @@ class SearchByDestination(SearchByStop):
                 return station.stopid_short
         else:
             return Stops.objects.get(stop_name=name).stopid_short
-
 
     def get_stations_nearby(self, dest_lat, dest_lon):
         """

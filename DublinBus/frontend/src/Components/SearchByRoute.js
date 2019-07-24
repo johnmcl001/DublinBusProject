@@ -7,7 +7,6 @@ import Autocomplete from "./Autocomplete";
 import DropDown from "./DropDown";
 import axios from "axios";
 
-
 var routeList = require("../Json/routes_directions.json");
 
 //This Component is Search by Route at the mobile view ports
@@ -55,19 +54,20 @@ class SearchByRoute extends Component {
       url: "http://localhost:8000/api/stopsautocomplete/",
       params: {
         route: this.state.routeNumber,
-        direction: this.state.direction,
+        direction: this.state.direction
       }
     })
       .then(response => {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-        {console.log("here")}
+        {
+          console.log("here");
+        }
         return response.data;
       })
       .then(data => this.setState({ stopsAutocomplete: data, loaded: true }));
   }
-
 
   handleSubmit(e) {
     {
@@ -83,7 +83,10 @@ class SearchByRoute extends Component {
         id="EntireBox_SearchRoute"
       >
         <div className="container SearchByRouteBox bg-light">
-          <AppViewHeader SearchState={this.state.SearchState} />
+          <AppViewHeader
+            SearchState={this.state.SearchState}
+            Return="toHomePage"
+          />
           <AppViewFavourAndLogin />
           <div id="formColor">
             <form onSubmit={this.handleSubmit}>
@@ -105,7 +108,7 @@ class SearchByRoute extends Component {
                 <div className="col-5  ">
                   <label htmlFor="Towards">Towards :</label>
                 </div>
-                <div className="col-7 inputBox">
+                <div className="col-7 inputBox  ">
                   <DropDown
                     suggestions={this.state.directionAutocomplete}
                     updateState={this.updateDirection}
@@ -128,16 +131,17 @@ class SearchByRoute extends Component {
               </div>
             </form>
           </div>
-
-          <Link to={"/ResultPage_Stop_Route"}>
-            <button
-              type="button"
-              className="btn btn-warning col-7"
-              id="SubmitButton"
-            >
-              Submit
-            </button>
-          </Link>
+          <div className="col-8  bottomClass">
+            <Link to={"/ResultPage_Stop_Route"}>
+              <button
+                type="button"
+                className="btn btn-warning  "
+                id="SubmitButton"
+              >
+                Submit
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     );

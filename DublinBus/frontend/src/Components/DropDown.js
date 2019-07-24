@@ -40,7 +40,12 @@ const DropDown = props => {
   }
 
   return (
-    <select defaultValue="Direction" onClick={onClick} onKeyDown={onKeyDown}>
+    <select
+      defaultValue="Direction"
+      onClick={onClick}
+      onKeyDown={onKeyDown}
+      id="dropdown"
+    >
       {optionList}
     </select>
   );

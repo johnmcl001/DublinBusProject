@@ -4,12 +4,15 @@ import React from "react";
 // import LocationSearchInput from "./GoogleAutoComplete";
 
 const { compose, withProps, lifecycle } = require("recompose");
+const { withScriptjs } = require("react-google-maps");
 const {
   StandaloneSearchBox
 } = require("react-google-maps/lib/components/places/StandaloneSearchBox");
 
 const PlacesWithStandaloneSearchBox = compose(
   withProps({
+    googleMapURL:
+      "https://maps.googleapis.com/maps/api/js?key=AIzaSyDBnVde8R4LpYQapr6-zbAHPD5Xcva9H_c&v=3.exp&libraries=geometry,drawing,places",
     loadingElement: <div style={{ height: `100%` }} />,
     containerElement: <div style={{ height: `400px` }} />
   }),
@@ -38,6 +41,7 @@ const PlacesWithStandaloneSearchBox = compose(
       });
     }
   }),
+  withScriptjs
 )(props => (
   <div data-standalone-searchbox="">
     <StandaloneSearchBox
@@ -45,9 +49,12 @@ const PlacesWithStandaloneSearchBox = compose(
       bounds={props.bounds}
       onPlacesChanged={props.onPlacesChanged}
     >
-      <input type="text" placeholder={props.comment} />
+      <input type="text" placeholder={props.comment} style={style} />
     </StandaloneSearchBox>
   </div>
 ));
 
+const style = {
+  width: "220px"
+};
 export default PlacesWithStandaloneSearchBox;

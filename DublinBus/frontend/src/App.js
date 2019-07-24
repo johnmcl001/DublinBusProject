@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, setState } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
@@ -10,16 +10,34 @@ import NoPathToRender_ThenThisPage from "./Components/NoPathToRender_ThenThisPag
 import ResultPage_Stop_Route from "./Components/ResultPage_Stop_Route";
 import ResultPageDestination from "./Components/ResultPageDestination";
 import Map from "./Components/Map";
+import MapContext from "./Components/MapContext";
+import decodePolyline from "decode-google-map-polyline";
 
+const polyLine = [];
 
 class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      polyline: [],
+      markers: []
+    };
+    this.updateMap = this.updateMap.bind(this);
+  }
+
+  updateMap = (newLine, newMarkers) => {
+    this.setState({ polyline: newLine });
+    this.setState({ markers: newMarkers });
+    console.log(this.state.markers);
+  };
   render() {
     return (
       <Router>
-      <Map/>
         <div className="App">
           <Header />
           <div className="container-fluid position-relative">
+            <Map markers={this.state.markers} polyline={this.state.polyline} />
+
             <Switch>
               <Route path="/" exact={true} component={HomePage} />
               <Route
@@ -34,8 +52,13 @@ class App extends Component {
               />
 
               <Route
-                path="/ResultPageDestination/:startCoordinates/:destinationCoordinates/:startDateToBackEnd/:startTimeToBackEnd"
-                component={ResultPageDestination}
+                path="/ResultPageDestination/:startLat/:startLon/:destinationLat/:destinationLon/:startDateToBackEnd/:startTimeToBackEnd"
+                render={({ updateMap, match }) => (
+                  <ResultPageDestination
+                    updateMap={this.updateMap}
+                    match={match}
+                  />
+                )}
               />
               {/*<Route component={NoPathToRender_ThenThisPage} />*/}
             </Switch>
