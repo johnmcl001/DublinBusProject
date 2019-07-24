@@ -271,15 +271,17 @@ class SearchByDestination(SearchByStop):
     """
 
     def get(self, request):
-        route = self.get_route()
-        route_segments = self.get_route_segments(route)
-        return Response(route_segments)
 
         time = self.get_time()
         day_info = self.get_day_and_date()
         weather = self.get_weather(time, day_info["date"])
-        start_coords = self.get_coords("startpoint")
-        end_coords = self.get_coords("destination")
+        start_coords = {"lat" : self.get_coords("startpointLat"),
+                        "lon" : self.get_coords("startpointLon")}
+        end_coords = {"lat" : self.get_coords("departureLat"),
+                        "lon" : self.get_coords("departureLon")}
+        route = self.get_route(start_coords, end_coords)
+        route_segments = self.get_route_segments(route)
+        return Response(route_segments)
         dir_route = self.find_direct_route(start_coords,
                                            end_coords,
                                            day_info,
@@ -294,13 +296,15 @@ class SearchByDestination(SearchByStop):
         coords = self.request.GET.get(point)
         return literal_eval(coords)
 
-    def get_route(self):
+    def get_route(self, start_coords, end_coords):
         """
         Input: origin coords as string, destination coords as string
         Output: route as json
         """
         key = os.getenv("GOOGLE")
-        call = "https://maps.googleapis.com/maps/api/directions/json?origin=ucd&destination=dun+laoghaire&key=" + key + "&mode=transit&transit_mode=bus&alternatives=true&region=ie"
+        start = str(start_coords["lat"]) + "," + str(start_coords["lon"])
+        end = str(end_coords["lat"]) + "," + str(end_coords["lon"])
+        call = "https://maps.googleapis.com/maps/api/directions/json?origin=" +start + "&destination=" + end + "&key=" + key + "&mode=transit&transit_mode=bus&alternatives=true&region=IE"
         response = requests.get(call)
 
         if response.status_code == 200:
@@ -315,24 +319,21 @@ class SearchByDestination(SearchByStop):
         Ouput: route segments as json
         """
         steps = route["routes"][0]["legs"][0]["steps"]
-        segments = []
+        route_breakdown = {"instructions": [], "markers": [], "polylines": [], "busInfo": {}, "travel_mode": []}
         for step in steps:
-            segment = {}
-            segment["time"] = step["duration"]["value"]
-            segment["instruction"] = step["html_instructions"]
-            segment["start_lat"] = step["start_location"]["lat"]
-            segment["start_lon"] = step["start_location"]["lng"]
-            segment["end_lat"] = step["end_location"]["lat"]
-            segment["end_lon"] = step["end_location"]["lng"]
-            segment["polyline"] = step["polyline"]["points"]
-            segment["travel_mode"] = step["travel_mode"]
-            if segment["travel_mode"] == "TRANSIT":
-                segment["route"] = step["transit_details"]["line"]["short_name"]
-                segment["num_stops"] = step["transit_details"]["num_stops"]
-                segment["arrival_stop"] = step["transit_details"]["arrival_stop"]["name"]
-                segment["departure_stop"] = step["transit_details"]["departure_stop"]["name"]
-            segments += [segment]
-        return segments
+            route_breakdown["instructions"] += [{"time": step["duration"]["value"]//60, "instruction": step["html_instructions"]}]
+            route_breakdown["markers"] += [{"start_lat": step["start_location"]["lat"],
+            "start_lon": step["start_location"]["lng"],
+            "end_lat": step["end_location"]["lat"],
+            "end_lon": step["end_location"]["lng"]}]
+            route_breakdown["polylines"] += [step["polyline"]["points"]]
+            route_breakdown["travel_mode"] += [step["travel_mode"]]
+            if step["travel_mode"] == "TRANSIT":
+                route_breakdown["busInfo"]["route"] = step["transit_details"]["line"]["short_name"]
+                route_breakdown["busInfo"]["num_stops"] = step["transit_details"]["num_stops"]
+                route_breakdown["busInfo"]["arrival_stop"] = step["transit_details"]["arrival_stop"]["name"]
+                route_breakdown["busInfo"]["departure_stop"] = step["transit_details"]["departure_stop"]["name"]
+        return route_breakdown
 
 
     def get_arrival_time(self, ):

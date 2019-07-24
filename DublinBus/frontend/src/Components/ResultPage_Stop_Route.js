@@ -17,7 +17,6 @@ class ResultPage_Stop_Route extends Component {
         className="EntireBox  container col-md-12  position-absolute bg-light"
         id="EntireBox_ResultPageStopRoute"
       >
-
         <div className="container ">
           <AppViewHeader SearchState={"Real time Information"} />
           <AppViewFavourAndLogin />

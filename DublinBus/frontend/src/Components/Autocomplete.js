@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import '../Static/StyleSheet/AutoComplete.css'
+import "../Static/StyleSheet/AutoComplete.css";
 import PropTypes from "prop-types";
 
 const Autocomplete = props => {
@@ -77,11 +77,15 @@ const Autocomplete = props => {
   if (showSuggestions && userInput) {
     if (filteredSuggestions.length) {
       suggestionList = (
-        <div className='AutoComplete_suggestion  '>
+        <div className="AutoComplete_suggestion  ">
           {filteredSuggestions.map((suggestionName, index) => {
             if (index === activeSuggestion) {
             }
-            return <p onClick={onClick} className='show_suggestion'>{suggestionName}</p>;
+            return (
+              <p onClick={onClick} className="show_suggestion">
+                {suggestionName}
+              </p>
+            );
           })}
         </div>
       );
@@ -91,7 +95,7 @@ const Autocomplete = props => {
   }
 
   return (
-    <div className='position-relative container AutoComplete '>
+    <div className="position-relative container AutoComplete ">
       <input
         type="text"
         onChange={e => onChange(e)}

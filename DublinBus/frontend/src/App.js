@@ -1,5 +1,5 @@
-import React, {Component, setState } from "react";
-import {BrowserRouter as Router, Switch, Route} from "react-router-dom";
+import React, { Component, setState } from "react";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
 import SearchByStop from "./Components/SearchByStop";
@@ -16,57 +16,58 @@ import decodePolyline from "decode-google-map-polyline";
 const polyLine = [];
 
 class App extends Component {
-    constructor(){
-        super()
-        this.state = {
-            polyline: []
-        }
-        this.updatePolyline = this.updatePolyline.bind(this);
-    }
+  constructor() {
+    super();
+    this.state = {
+      polyline: [],
+      markers: []
+    };
+    this.updateMap = this.updateMap.bind(this);
+  }
 
-    updatePolyline = (newline) => {
-        this.setState({polyline: newline});
+  updateMap = (newLine, newMarkers) => {
+    this.setState({ polyline: newLine });
+    this.setState({ markers: newMarkers });
+    console.log(this.state.markers);
+  };
+  render() {
+    return (
+      <Router>
+        <div className="App">
+          <Header />
+          <div className="container-fluid position-relative">
+            <Map markers={this.state.markers} polyline={this.state.polyline} />
 
+            <Switch>
+              <Route path="/" exact={true} component={HomePage} />
+              <Route
+                path="/SearchByDestination"
+                component={SearchbyDestination}
+              />
+              <Route path="/SearchByRoute" component={SearchByRoute} />
+              <Route path="/SearchByStop" component={SearchByStop} />
+              <Route
+                path="/ResultPage_Stop_Route/:stopnumber"
+                component={ResultPage_Stop_Route}
+              />
 
-    }
-    render() {
-        return (
-            <Router>
-                <div className="App">
-                        <Header/>
-                    <div className="container-fluid position-relative">
-                        <Map path={this.state.polyline} />
-
-                        <Switch>
-                            <Route path="/" exact={true} component={HomePage}/>
-                            <Route
-                                path="/SearchByDestination"
-                                component={SearchbyDestination}
-                            />
-                            <Route path="/SearchByRoute" component={SearchByRoute}/>
-                            <Route
-                            path="/SearchByStop"
-                            component={SearchByStop}
-                            />
-                            <Route
-                                path="/ResultPage_Stop_Route/:stopnumber"
-                                component={ResultPage_Stop_Route}
-                            />
-
-                            <Route
-                                path="/ResultPageDestination/:startCoordinates/:destinationCoordinates/:startDateToBackEnd/:startTimeToBackEnd"
-                                render={(updatePolyline) => (
-                                <ResultPageDestination updatePolyline={this.updatePolyline} />
-                            )}
-                            />
-                            {/*<Route component={NoPathToRender_ThenThisPage} />*/}
-                        </Switch>
-                    </div>
-                    <Footer/>
-                </div>
-            </Router>
-        );
-    }
+              <Route
+                path="/ResultPageDestination/:startLat/:startLon/:destinationLat/:destinationLon/:startDateToBackEnd/:startTimeToBackEnd"
+                render={({ updateMap, match }) => (
+                  <ResultPageDestination
+                    updateMap={this.updateMap}
+                    match={match}
+                  />
+                )}
+              />
+              {/*<Route component={NoPathToRender_ThenThisPage} />*/}
+            </Switch>
+          </div>
+          <Footer />
+        </div>
+      </Router>
+    );
+  }
 }
 
 export default App;

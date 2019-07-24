@@ -49,12 +49,12 @@ const PlacesWithStandaloneSearchBox = compose(
       bounds={props.bounds}
       onPlacesChanged={props.onPlacesChanged}
     >
-      <input type="text" placeholder={props.comment} style={style}/>
+      <input type="text" placeholder={props.comment} style={style} />
     </StandaloneSearchBox>
   </div>
 ));
 
-const style={
-    width:'220px'
-}
+const style = {
+  width: "220px"
+};
 export default PlacesWithStandaloneSearchBox;

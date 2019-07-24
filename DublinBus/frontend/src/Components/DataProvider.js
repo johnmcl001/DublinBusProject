@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import axios from "axios";
 import decodePolyline from "decode-google-map-polyline";
 
-
 class DataProvider extends Component {
   static propTypes = {
     render: PropTypes.func.isRequired,
@@ -11,9 +10,11 @@ class DataProvider extends Component {
     stopnumber: PropTypes.string,
     route: PropTypes.string,
     towards: PropTypes.string,
-    departure: PropTypes.string,
-    startpoint: PropTypes.object,
-    destination: PropTypes.object,
+    departureLat: PropTypes.string,
+    departureLon: PropTypes.string,
+    startpointLat: PropTypes.string,
+    startpointLon: PropTypes.string,
+    destination: PropTypes.string,
     time: PropTypes.string,
     date: PropTypes.string
   };
@@ -32,19 +33,28 @@ class DataProvider extends Component {
         stopnumber: this.props.stopnumber,
         route: this.props.route,
         towards: this.props.towards,
-        departure: this.props.departure,
-        startpoint: this.props.startpoint,
-        destination: this.props.destination,
+        departureLat: this.props.destinationLat,
+        departureLon: this.props.destinationLon,
+        startpointLat: this.props.startLat,
+        startpointLon: this.props.startLon,
         time: this.props.time,
         date: this.props.date
       }
     })
       .then(response => {
-        this.props.updatePolyline(decodePolyline(response.data[0].polyline).concat(decodePolyline(response.data[1].polyline)).concat(decodePolyline(response.data[2].polyline)))
+        let polyline = [];
+        let arr = [];
+        for (var i = 0; i < response.data.polylines.length; i++) {
+          arr = decodePolyline(response.data.polylines[i]);
+          for (var j = 0; j < arr.length; j++) {
+            polyline.push(arr[j]);
+          }
+        }
+        this.props.updateMap(polyline, response.data.markers);
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-        return response.data;
+        return response.data.instructions;
       })
       .then(data => this.setState({ data: data, loaded: true }));
   }
