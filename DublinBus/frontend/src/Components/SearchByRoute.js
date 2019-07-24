@@ -119,7 +119,7 @@ class SearchByRoute extends Component {
 
               <div className="row rowSpace ">
                 <div className="col-5 ">
-                  <label htmlFor="fname"> Departure :</label>
+                  <label htmlFor="fname"> Departure Stop:</label>
                 </div>
                 <div className="col-7  inputBox">
                   <Autocomplete

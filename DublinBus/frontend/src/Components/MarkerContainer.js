@@ -7,9 +7,7 @@ import {
   Polyline
 } from "react-google-maps";
 import "../Static/StyleSheet/Map.css";
-import InfoWindowMap from "./InfoWindow.js";
 import * as stationkeys from "./frontEndBusInfo.json";
-import * as markerslist from "./oneRoute.json";
 
 class MarkerContainer extends Component {
   constructor(props) {

@@ -10,7 +10,6 @@ import NoPathToRender_ThenThisPage from "./Components/NoPathToRender_ThenThisPag
 import ResultPage_Stop_Route from "./Components/ResultPage_Stop_Route";
 import ResultPageDestination from "./Components/ResultPageDestination";
 import Map from "./Components/Map";
-import MapContext from "./Components/MapContext";
 import decodePolyline from "decode-google-map-polyline";
 
 const polyLine = [];
