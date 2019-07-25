@@ -97,7 +97,6 @@ class SearchByStop(views.APIView):
         Output: weather conditions for prediction as json or dictionary
         """
         weatherResult=Forecast.objects.filter(date=date)
-        #print(weatherResult)
         for result in weatherResult:
             if result.end_time=="00:00":
                 result.end_time="24:00"
@@ -298,7 +297,7 @@ class SearchByDestination(SearchByStop):
                                                time)"""
 
         if len(dir_route)==0:
-            routes = self.get_route(time, start_coords,end_coords)
+            routes = self.get_route(time, day_info['date'], start_coords,end_coords)
             route_segments = self.get_route_segments(routes, time)
             route_segments=self.validate(route_segments, time, day_info,weather)
             results=self.sort_routes(route_segments)
@@ -310,6 +309,7 @@ class SearchByDestination(SearchByStop):
                 route_segments = self.get_route_segments(routes, time)
                 route_segments=self.validate(route_segments, time, day_info,weather)
                 results=self.sort_routes(route_segments)
+        results=self.format_response(results)
         return Response(results)
 
     def get_coords(self, point):
@@ -320,17 +320,24 @@ class SearchByDestination(SearchByStop):
         coords = self.request.GET.get(point)
         return literal_eval(coords)
 
-    def get_route(self, time, start_coords, end_coords):
+    def get_route(self, time, date, start_coords, end_coords, mode='transit'):
 
         """
         Input: origin coords as string, destination coords as string
         Output: route as json
         """
+        date=datetime.strptime(date,'%d-%m-%Y')
+        time=datetime.strptime(time, '%H:%M:%S').time()
+        time=int(datetime.combine(date, time).timestamp())
         key = os.getenv("GOOGLE")
-        time='now' #EPOCH timestamp
-        call = "https://maps.googleapis.com/maps/api/directions/json?origin="\
-        +str(start_coords['lat'])+','+str(start_coords['lon'])+"&destination="+str(end_coords['lat'])+','+str(end_coords['lon'])+"&key="\
-        + key + "&mode=transit&transit_mode=bus&alternatives=true&region=ie&departure_time="+str(time)
+        if mode=='transit':
+            call = "https://maps.googleapis.com/maps/api/directions/json?origin="\
+            +str(start_coords['lat'])+','+str(start_coords['lon'])+"&destination="+str(end_coords['lat'])+','+str(end_coords['lon'])+"&key="\
+            + key + "&mode=transit&transit_mode=bus&alternatives=true&region=ie&departure_time="+str(time)
+        else:
+            call = "https://maps.googleapis.com/maps/api/directions/json?origin="\
+            +str(start_coords['lat'])+','+str(start_coords['lon'])+"&destination="+str(end_coords['lat'])+','+str(end_coords['lon'])+"&key="\
+            + key + "&mode="+mode
 
         response = requests.get(call)
         if response.status_code == 200:
@@ -344,15 +351,12 @@ class SearchByDestination(SearchByStop):
         Input: route as json
         Ouput: route segments as json
         """
-        all_routes=[] 
-   
+        all_routes=[]
         for r in range(0, len(route["routes"])):
             steps = route["routes"][r]["legs"][0]["steps"]
             segments = []
             count=0
             for step in steps:
-                #print(step)
-                #print()
                 segment = {}
                 segment["duration_sec"] = step["duration"]["value"]
                 segment["instruction"] = step["html_instructions"]
@@ -363,10 +367,10 @@ class SearchByDestination(SearchByStop):
                 segment["polyline"] = step["polyline"]["points"]
                 segment['distance'] = step["distance"]["value"]
                 segment["travel_mode"] = step["travel_mode"]
-                segment["markers"] += [{"start_lat": step["start_location"]["lat"],
-            "start_lon": step["start_location"]["lng"],
-            "end_lat": step["end_location"]["lat"],
-            "end_lon": step["end_location"]["lng"]}]
+                segment["markers"] = [step["start_location"]["lat"],
+            step["start_location"]["lng"],
+            step["end_location"]["lat"],
+            step["end_location"]["lng"]]
                 if segment["travel_mode"] == "TRANSIT":
                     segment["route"] = step["transit_details"]["line"]["short_name"]
                     segment["num_stops"] = step["transit_details"]["num_stops"]
@@ -387,7 +391,6 @@ class SearchByDestination(SearchByStop):
         Ouput: a list of dictionarys with valid routes based on our ML prediction model
         """
         valid_results=[]
-        count=0
         #loop for each route option given by google maps
         for route in route_segments:
             start=time
@@ -409,7 +412,6 @@ class SearchByDestination(SearchByStop):
                         print('Cant identify stop')
                     #finds all relevant trips that serve the stop and route given by google maps
                     trips=self.get_relevant_trips_per_routes_and_stops([start_stop], [segment["route"]], day_info['day_long'], time, day_info["date"])
-
                     machine_learning_inputs = self.serialize_machine_learning_input(
                                                                         time,
                                                                         day_info["day"],
@@ -445,8 +447,8 @@ class SearchByDestination(SearchByStop):
                                 index=results.index(res)
                                 segment['later_bus_arrivals']=results[index:]
                                 segment['start_time']=res['arrival_time']
-                                #testing to see if flushing query by print works
                                 if StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop).count()==0:
+                                    print('no valid trips')
                                     valid_result=False
                                     break
                                 segment['end_time']=StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop)[:1][0].arrival_time.strftime('%H:%M:%S')
@@ -461,7 +463,6 @@ class SearchByDestination(SearchByStop):
                     #found break out of the route and dont add to results
                     if valid_result==False:
                         break
-            count+=1
             duration=str((datetime.strptime(end,"%H:%M:%S")-datetime.strptime(start,"%H:%M:%S")).total_seconds())
             if valid_result==True and {'duration':duration, 'route':route} not in valid_results:
                 valid_results+={'duration':duration, 'route':route},
@@ -509,7 +510,7 @@ class SearchByDestination(SearchByStop):
             default_radius+=1
         if (len(list(station_list))==0):
             return None
-        #return(NearbyStations(station_list, many=True))
+
         station_dict={}
         for station in station_list:
             station_dict[station.stop_id]={'short': station.stopid_short, 'distance':round(station.distance*1000), 'walking_time':self.walking_time(station.distance)}
@@ -522,15 +523,6 @@ class SearchByDestination(SearchByStop):
         """
         return round((float(distance)/float(speed))*3600)
 
-    def valid_route_check(self, time, leave_time, walking_time):
-        """
-        Input: Time as a datetime object, the leave_time of the bus and walking time needed to get to the station
-        Can use to find if the user has enough time to walk to the bus
-        Output: Boolean True/False
-        """
-        if (time + timedelta(hours=walking_time)).strftime('%H:%M')<leave_time-buffer:
-            return True
-        return False
 
     def make_walking_segment(self, start_lat, start_lon, end_lat, end_lon, end_name, walking_time, walking_distance, start_time=None):
         """
@@ -547,6 +539,7 @@ class SearchByDestination(SearchByStop):
             "distance": walking_distance,
             "travel_mode": "WALKING",
             "start_time": start_time,
+            "markers" : [start_lat, start_lon, end_lat, end_lon]
         }
 
     def make_transit_segment(self, start_lat, start_lon, end_lat, end_lon, end_name, route, start_stop, end_stop, trip_headsign):
@@ -560,7 +553,8 @@ class SearchByDestination(SearchByStop):
                 "travel_mode": "TRANSIT",
                 "route": route ,
                 "arrival_stop": end_stop,
-                "departure_stop": start_stop
+                "departure_stop": start_stop,
+                "markers" : [start_lat, start_lon, end_lat, end_lon]
         }
 
 
@@ -617,8 +611,7 @@ class SearchByDestination(SearchByStop):
         +" and st1.trip_id=t.trip_id and t.service_id in %(services)s and st1.trip_id=st2.trip_id"\
         +"  and r.route_id=t.route_id and s1.stop_id=st1.stop_id"\
         +" and s2.stop_id=st2.stop_id order by s1.stopID_short limit 10;",inputs)
-        #validate(self, route_segments, time, day_info, weather)
-        #print(trips)
+
         results=[]
         for trip in trips:
             route=[]
@@ -628,6 +621,43 @@ class SearchByDestination(SearchByStop):
             route+=self.make_walking_segment(trip.end_lat, trip.end_lon, end_coord["lat"], end_coord['lon'], end_name, end_stations[trip.end_stop_id_long]['walking_time'], end_stations[trip.end_stop_id_long]['distance']),
             results+=route,
         return results
+
+    def format_response(self, results):
+        response=[]
+        if len(results)>3:
+            results=results[:3]
+        for i in range(0,len(results)):
+            result=results[i]
+            route_breakdown = {"instructions": {'total_journey_time':[], 'instruction_breakdown':[]}, "markers": [], "polylines": [], "busInfo": {'route':[]}, "travel_mode": []}
+            route_breakdown['instructions']['total_journey_time']=result['duration']
+            for j in range(0, len(result['route'])):
+                segment=result['route'][j]
+                route_breakdown['travel_mode']+=segment['travel_mode'],
+                if segment['travel_mode']=='WALKING':
+                    route_breakdown["instructions"]['instruction_breakdown']+=[segment['instruction']+ '\t Distance'+str(segment['distance'])+'km.']
+                else:
+                    route_breakdown["instructions"]['instruction_breakdown']+=[segment['instruction']]
+                if segment['travel_mode']=='TRANSIT':
+                    route_breakdown["instructions"]['instruction_breakdown'][j]+="\nDeparture stop: "+str(segment['arrival_stop'])
+                    route_breakdown["instructions"]['instruction_breakdown'][j]+="\nPredicted bus departure time: "+str(segment['arrival_stop'])
+                    route_breakdown["instructions"]['instruction_breakdown'][j]+="\nArrival stop: "+str(segment['arrival_stop'])
+                    if len(segment['later_bus_arrivals']) !=0:
+                        route_breakdown["instructions"]['instruction_breakdown'][j]+="\nLater departure times: "
+                        for k in range(0, len(segment['later_bus_arrivals'])):
+                            route_breakdown["instructions"]['instruction_breakdown'][j]+=str(segment['later_bus_arrivals'][k]['arrival_time'])+","
+                        route_breakdown["instructions"]['instruction_breakdown'][j]=route_breakdown["instructions"]['instruction_breakdown'][j][:-1]
+                route_breakdown["instructions"]['instruction_breakdown'][j]+='\nJourney leg travel time: '+str(segment['duration_sec'])
+                for marker in segment['markers']:
+                    if marker not in route_breakdown['markers']:
+                            route_breakdown['markers']+=marker,
+                if 'polyline' in segment.keys():
+                    route_breakdown['polylines']+=segment['polyline'],
+                if segment['travel_mode']=='TRANSIT':
+                    route_breakdown['busInfo']['route']+=segment['route'],
+            response+=route_breakdown,
+        return response
+
+
 
 
 class StopsAutocomplete(views.APIView):
