@@ -46,6 +46,7 @@ class DataProvider extends Component {
         let arr = [];
         for (var i = 0; i < response.data.polylines.length; i++) {
           arr = decodePolyline(response.data.polylines[i]);
+          console.log(arr);
           for (var j = 0; j < arr.length; j++) {
             polyline.push(arr[j]);
           }

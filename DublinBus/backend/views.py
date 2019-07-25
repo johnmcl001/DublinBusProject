@@ -344,8 +344,8 @@ class SearchByDestination(SearchByStop):
         Input: route as json
         Ouput: route segments as json
         """
-        all_routes=[] 
-   
+        all_routes=[]
+
         for r in range(0, len(route["routes"])):
             steps = route["routes"][r]["legs"][0]["steps"]
             segments = []
@@ -491,7 +491,7 @@ class SearchByDestination(SearchByStop):
         else:
             return Stops.objects.get(stop_name=name).stopid_short
 
-    def get_stations_nearby(self, dest_lat, dest_lon):
+    def get_stations_nearby(self, dest_lat, dest_lon, num_stations=10, max_walking_distance=5, limit=50):
         """
         Input: Centre point coordinates
         Output: Dictionary of stops with stop id as key and distance in m from centre point as value
@@ -500,12 +500,12 @@ class SearchByDestination(SearchByStop):
         station_list=[]
         #for results that are not null, the more stations we check the better
         #trade off-response time
-        while default_radius<5 and len(station_list)<10:
+        while default_radius<max_walking_distance and len(station_list)<num_stations:
             station_list=Stops.objects.raw('SELECT stop_id, stopID_short,'\
             +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
             + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\
             +' * sin( radians( stop_lat ) ) ) ) AS distance FROM website.stops HAVING distance < '\
-            +'%(default_radius)s ORDER BY distance;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(default_radius)})
+            +'%(default_radius)s ORDER BY distance LIMIT %(limit)s;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(default_radius), 'limit': limit})
             default_radius+=1
         if (len(list(station_list))==0):
             return None
@@ -547,6 +547,10 @@ class SearchByDestination(SearchByStop):
             "distance": walking_distance,
             "travel_mode": "WALKING",
             "start_time": start_time,
+            "markers": [{"start_lat": start_lat,
+        "start_lon": start_lon,
+        "end_lat": end_lat,
+        "end_lon": end_lon}]
         }
 
     def make_transit_segment(self, start_lat, start_lon, end_lat, end_lon, end_name, route, start_stop, end_stop, trip_headsign):
@@ -560,7 +564,11 @@ class SearchByDestination(SearchByStop):
                 "travel_mode": "TRANSIT",
                 "route": route ,
                 "arrival_stop": end_stop,
-                "departure_stop": start_stop
+                "departure_stop": start_stop,
+                "markers": [{"start_lat": start_lat,
+            "start_lon": start_lon,
+            "end_lat": end_lat,
+            "end_lon": end_lon}]
         }
 
 
@@ -628,6 +636,11 @@ class SearchByDestination(SearchByStop):
             route+=self.make_walking_segment(trip.end_lat, trip.end_lon, end_coord["lat"], end_coord['lon'], end_name, end_stations[trip.end_stop_id_long]['walking_time'], end_stations[trip.end_stop_id_long]['distance']),
             results+=route,
         return results
+
+    def format_response(self, results):
+        #response[]
+        pass
+
 
 
 class StopsAutocomplete(views.APIView):

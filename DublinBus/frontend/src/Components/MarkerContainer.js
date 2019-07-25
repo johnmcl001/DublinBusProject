@@ -16,13 +16,7 @@ class MarkerContainer extends Component {
       markers: this.props.markers,
       openInfoWindowMarkerId: ""
     };
-    //Holds coordinates to draw route on map
-    this.polyCoords = [];
   }
-  //adds coordinates from markers to polyline array
-  addPolyline = props => {
-    this.polyCoords.push(props);
-  };
 
   handleToggleOpen = id => {
     this.setState({
@@ -37,11 +31,6 @@ class MarkerContainer extends Component {
     let markers;
     if (this.state.markers !== null) {
       return this.state.markers.map(station => {
-        //console.log(stationkeys[station]['name']);
-        this.addPolyline({
-          lat: stationkeys[station]["lat"],
-          lng: stationkeys[station]["long"]
-        });
 
         return (
           <Marker
