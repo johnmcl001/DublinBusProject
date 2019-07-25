@@ -357,6 +357,7 @@ class SearchByDestination(SearchByStop):
         Ouput: route segments as json
         """
         all_routes=[]
+
         for r in range(0, len(route["routes"])):
             steps = route["routes"][r]["legs"][0]["steps"]
             segments = []
