@@ -275,11 +275,11 @@ class SearchByDestination(SearchByStop):
         day_info = self.get_day_and_date()
         weather = self.get_weather(time, day_info["date"])
         #start_coords = self.get_coords("startpoint")
-        start_coords = {"lat" : self.get_coords("startpointLat"),
-                        "lon" : self.get_coords("startpointLon")}
+        start_coords = {"lat": self.get_coords("startpointLat"),
+                        "lon": self.get_coords("startpointLon")}
         #end_coords = self.get_coords("destination")
-        end_coords = {"lat" : self.get_coords("departureLat"),
-                        "lon" : self.get_coords("departureLon")}
+        end_coords = {"lat": self.get_coords("departureLat"),
+                        "lon": self.get_coords("departureLon")}
         dir_route = self.find_direct_routes(start_coords,
                                             end_coords,
                                            day_info['day_long'],

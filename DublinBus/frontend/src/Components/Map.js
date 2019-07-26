@@ -46,6 +46,7 @@ class Map extends Component {
       >
         <MarkerContainer markers={this.state.markers} />
 
+
         <Polyline
           path={this.state.polyline}
           strokeColor="#0000FF"
