@@ -9,7 +9,6 @@ import {
 import "../Static/StyleSheet/Map.css";
 import MarkerContainer from "./MarkerContainer.js";
 import * as stationkeys from "./frontEndBusInfo.json";
-import * as markerslist from "./oneRoute.json";
 
 
 class Map extends Component {
