@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
-import ResultPageButton from "./ResultPageButton";
+import ResultPageButton from "./SlideShowMobileMap";
 import "../Static/StyleSheet/ResultPageDestination.css";
 import DataProvider from "./DataProvider";
 import Table from "./Table";
+
 import { FaWalking, FaLevelDownAlt, FaMapMarkerAlt } from "react-icons/fa";
 //This Component is the Result page of Search By Destination
 class ResultPageDestination extends Component {

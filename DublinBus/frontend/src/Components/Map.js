@@ -8,7 +8,9 @@ import {
 } from "react-google-maps";
 import "../Static/StyleSheet/Map.css";
 import MarkerContainer from "./MarkerContainer.js";
-import decodePolyline from "decode-google-map-polyline";
+import * as stationkeys from "./frontEndBusInfo.json";
+import * as markerslist from "./oneRoute.json";
+
 
 class Map extends Component {
   constructor(props) {

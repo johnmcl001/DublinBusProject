@@ -6,7 +6,6 @@ import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import YourLocationOrSearch from "./YourLocationOrSearch";
 import GoogleAddressSearch from "./GoogleAddressSearch";
 import { FaMapMarkerAlt } from "react-icons/fa";
-// import Map from "./Map";
 
 // npm install react-datepicker --save
 import DatePicker from "react-datepicker";
