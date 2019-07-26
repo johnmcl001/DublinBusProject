@@ -10,12 +10,19 @@ import JourneyPlanner from "./Components/JourneyPlanner";
 import NoPathToRender_ThenThisPage from "./Components/NoPathToRender_ThenThisPage";
 import ResultPage_Stop_Route from "./Components/ResultPage_Stop_Route";
 import ResultPageDestination from "./Components/ResultPageDestination";
-import JourneyPlannerResultPage from "./Components/JourneyPlaner_ResultPage";
+import JourneyPlannerResultPage from "./Components/JourneyPlaner_ResultPage"
 import Map from "./Components/Map";
 import decodePolyline from "decode-google-map-polyline";
 import MobileMap from "./Components/MobileMap"
 
-
+class App extends Component {
+    render() {
+        return (
+            <Router>
+                <div className="App">
+                    <Header/>
+                    <div className="container-fluid position-relative">
+                        <Map/>
                         <Switch>
                             <Route path="/" exact={true} component={HomePage}/>
                             <Route
@@ -29,7 +36,6 @@ import MobileMap from "./Components/MobileMap"
                                 path="/ResultPage_Stop_Route/:stopnumber"
                                 component={ResultPage_Stop_Route}
                             />
-
                            <Route
                                 path="/JourneyPlannerResultPage/"
                                 component={JourneyPlannerResultPage}
