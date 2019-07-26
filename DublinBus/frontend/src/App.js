@@ -1,5 +1,5 @@
-import React, {Component} from "react";
-import {BrowserRouter as Router, Switch, Route} from "react-router-dom";
+import React, { Component } from "react";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
 import SearchByStop from "./Components/SearchByStop";
@@ -10,21 +10,10 @@ import JourneyPlanner from "./Components/JourneyPlanner";
 import NoPathToRender_ThenThisPage from "./Components/NoPathToRender_ThenThisPage";
 import ResultPage_Stop_Route from "./Components/ResultPage_Stop_Route";
 import ResultPageDestination from "./Components/ResultPageDestination";
-import JourneyPlannerResultPage from "./Components/JourneyPlaner_ResultPage"
+import JourneyPlannerResultPage from "./Components/JourneyPlaner_ResultPage";
 import Map from "./Components/Map";
 import decodePolyline from "decode-google-map-polyline";
 import MobileMap from "./Components/MobileMap"
-
-class App extends Component {
-    render() {
-        return (
-            <Router>
-                <div className="App">
-                    <Header/>
-
-
-                    <div className="container-fluid position-relative">
-                        <Map/>
 
 
                         <Switch>
@@ -41,10 +30,6 @@ class App extends Component {
                                 component={ResultPage_Stop_Route}
                             />
 
-                            <Route
-                                path="/ResultPageDestination/:startLocation_lat/:startLocation_long/:destination_lat/:destination_long/:startTimeToBackEnd"
-                                component={ResultPageDestination}
-                            />
                            <Route
                                 path="/JourneyPlannerResultPage/"
                                 component={JourneyPlannerResultPage}
