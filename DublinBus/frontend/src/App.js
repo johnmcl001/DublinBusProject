@@ -10,7 +10,7 @@ import JourneyPlanner from "./Components/JourneyPlanner";
 import NoPathToRender_ThenThisPage from "./Components/NoPathToRender_ThenThisPage";
 import ResultPage_Stop_Route from "./Components/ResultPage_Stop_Route";
 import ResultPageDestination from "./Components/ResultPageDestination";
-import JourneyPlannerResultPage from "./Components/JourneyPlaner_ResultPage"
+import JourneyPlannerResultPage from "./Components/JourneyPlaner_ResultPage";
 import Map from "./Components/Map";
 import decodePolyline from "decode-google-map-polyline";
 import MobileMap from "./Components/MobileMap"
