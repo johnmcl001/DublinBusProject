@@ -1,18 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
 import key from "weak-key";
-import { FaWalking, FaLevelDownAlt, FaMapMarkerAlt } from "react-icons/fa";
+import { FaWalking, FaLevelDownAlt, FaMapMarkerAlt, FaBus } from "react-icons/fa";
 
 const Table = ({ data }) =>
   !data.length ? (
     <p>Nothing to show</p>
   ) : (
     <div>
-      {console.log(data)}
       <div className="row ">
-        <div className="col-8 resultLabel  ">
-          <h4>To 'To be Change'</h4>
-        </div>
+
       </div>
       <div className="container border border-primary">
         <div className="container ResultPageDestination  ">
@@ -81,29 +78,22 @@ const Table = ({ data }) =>
               {/*<FaLevelDownAlt className='arrow_down_icon border border-secondary'/>*/}
               {/*</div>*/}
               {/*))}*/}
+        {data.map((x, y) => (
+          //    Loop throught
+          <div>
+            <div className="row instruction border border-secondary ">
+              <p className="Icons_ResultPage border border-secondary">
+              {x.travel_mode == "WALKING" ? <FaWalking className="Icon" /> : <FaBus className="Icon" />}
+              </p>
+              <p className="instruction_text border border-secondary" key={y}>
+                {x.instruction}
+              </p>
+              <p className="time_show border border-secondary" key={y}>{x.time}</p>
+            </div>
+          </div>
+        ))}
 
-              <div>
-                <div className="row instruction border border-secondary ">
-                  <p className="Icons_ResultPage border border-secondary">
-                    <FaWalking className="Icon" />
-                  </p>
-                  <p className="instruction_text border border-secondary">
-                    Walk to O'Conned Street
-                  </p>
-                  <p className="time_show border border-secondary">6 mins</p>
-                </div>
-                <FaLevelDownAlt className="arrow_down_icon border border-secondary" />
-              </div>
 
-              <div className="row result_destination border border-secondary ">
-                <p className="Icons_destination border border-secondary">
-                  <FaMapMarkerAlt className="Icon" />
-                </p>
-
-                <p className="destination_text border border-secondary">
-                  O'Conned Street
-                </p>
-              </div>
             </div>
             <div
               className="tab-pane fade"
@@ -125,11 +115,10 @@ const Table = ({ data }) =>
           </div>
         </div>
       </div>
+      <div>
+
+      </div>
     </div>
   );
-
-Table.propTypes = {
-  data: PropTypes.array.isRequired
-};
 
 export default Table;
