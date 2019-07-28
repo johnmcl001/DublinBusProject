@@ -42,8 +42,10 @@ class DataProvider extends Component {
       }
     })
       .then(response => {
+        /*
         let polyline = [];
         let arr = [];
+        console.log(response.data)
         for (var i = 0; i < response.data.polylines.length; i++) {
           arr = decodePolyline(response.data.polylines[i]);
           console.log(arr);
@@ -52,10 +54,12 @@ class DataProvider extends Component {
           }
         }
         this.props.updateMap(polyline, response.data.markers);
+        */
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-        return response.data.instructions;
+        console.log(response.data.directions);
+        return response.data.directions;
       })
       .then(data => this.setState({ data: data, loaded: true }));
   }

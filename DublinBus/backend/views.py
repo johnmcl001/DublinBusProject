@@ -296,11 +296,14 @@ class SearchByDestination(SearchByStop):
                                                day_info['date'],
                                                time)"""
 
+
         if len(dir_route)==0:
             routes = self.get_route(time, day_info['date'], start_coords,end_coords)
             route_segments = self.get_route_segments(routes, time)
+            return Response(routes)
             route_segments=self.validate(route_segments, time, day_info,weather)
             results=self.sort_routes(route_segments)
+
         else:
             dir_routes=self.validate(dir_route, time, day_info,weather)
             results=self.sort_routes(dir_routes)
@@ -309,7 +312,7 @@ class SearchByDestination(SearchByStop):
                 route_segments = self.get_route_segments(routes, time)
                 route_segments=self.validate(route_segments, time, day_info,weather)
                 results=self.sort_routes(route_segments)
-        results=self.format_response(results)
+        results = self.format_response(results)
         return Response(results)
 
     def get_coords(self, point):
@@ -628,10 +631,27 @@ class SearchByDestination(SearchByStop):
 
     def format_response(self, results):
 
-        response=[]
-        if len(results)>3:
-            results=results[:3]
-        for i in range(0,len(results)):
+        response = []
+        results = results[:3]
+        for result in results:
+            route_breakdown = {}
+            route_breakdown["duration"] = result["duration"]
+            route_breakdown["directions"] = []
+            for i in range(0, len(result)+1):
+                route_dict = {
+                    "instruction": result["route"][i]["instruction"],
+                    "time": result["route"][i]["duration_sec"] // 60,
+                }
+                route_dict["travel_mode"] = ""
+                if result["route"][i]["travel_mode"] == "TRANSIT":
+                    route_dict["travel_mode"] = result["route"][i]["route"]
+                else:
+                    route_dict["travel_mode"] = "WALKING"
+
+                route_breakdown["directions"] += [route_dict]
+        return route_breakdown
+
+    """        for i in range(0,len(results)):
             result=results[i]
             route_breakdown = {"instructions": {'total_journey_time':[], 'instruction_breakdown':[]}, "markers": [], "polylines": [], "busInfo": {'route':[]}, "travel_mode": []}
             route_breakdown['instructions']['total_journey_time']=result['duration']
@@ -660,7 +680,7 @@ class SearchByDestination(SearchByStop):
                 if segment['travel_mode']=='TRANSIT':
                     route_breakdown['busInfo']['route']+=segment['route'],
             response+=route_breakdown,
-        return response
+    """
 
 
 

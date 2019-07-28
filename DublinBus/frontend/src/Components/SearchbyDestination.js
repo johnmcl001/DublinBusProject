@@ -32,7 +32,10 @@ class SearchbyDestination extends Component {
       startLocation_long: null,
 
       destination_lat: null,
-      destination_long: null
+      destination_long: null,
+
+      start: "",
+      end: ""
     };
     this.handleChangeDate = this.handleChangeDate.bind(this);
     this.handleChangeTime = this.handleChangeTime.bind(this);
@@ -47,7 +50,8 @@ class SearchbyDestination extends Component {
   updateCurrentPosition(e) {
     this.setState({
       startLocation_lat: e.latitude,
-      startLocation_long: e.longitude
+      startLocation_long: e.longitude,
+      start: e.place
     });
   }
 
@@ -55,7 +59,8 @@ class SearchbyDestination extends Component {
     //set Co-ordinate for destination box
     this.setState({
       destination_lat: e.latitude,
-      destination_long: e.longitude
+      destination_long: e.longitude,
+      end: e.place
     });
   }
 
@@ -216,7 +221,7 @@ class SearchbyDestination extends Component {
             <p>NotificationButton locate here</p>
           </div>
           <Link
-            to={`/ResultPageDestination/${this.state.startLocation_lat}/${this.state.startLocation_long}/${this.state.destination_lat}/${this.state.destination_long}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}`}
+            to={`/ResultPageDestination/${this.state.startLocation_lat}/${this.state.startLocation_long}/${this.state.destination_lat}/${this.state.destination_long}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}/${this.state.start}/${this.state.end}`}
           >
             <button
               type="button"

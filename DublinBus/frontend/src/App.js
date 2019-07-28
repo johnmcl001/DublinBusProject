@@ -51,7 +51,7 @@ class App extends Component {
               />
 
               <Route
-                path="/ResultPageDestination/:startLat/:startLon/:destinationLat/:destinationLon/:startDateToBackEnd/:startTimeToBackEnd"
+                path="/ResultPageDestination/:startLat/:startLon/:destinationLat/:destinationLon/:startDateToBackEnd/:startTimeToBackEnd/:start/:end"
                 render={({ updateMap, match }) => (
                   <ResultPageDestination
                     updateMap={this.updateMap}
