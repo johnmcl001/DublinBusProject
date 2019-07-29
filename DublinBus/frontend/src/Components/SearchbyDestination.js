@@ -6,7 +6,6 @@ import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import YourLocationOrSearch from "./YourLocationOrSearch";
 import GoogleAddressSearch from "./GoogleAddressSearch";
 import { FaMapMarkerAlt } from "react-icons/fa";
-// import Map from "./Map";
 
 // npm install react-datepicker --save
 import DatePicker from "react-datepicker";
@@ -77,7 +76,8 @@ class SearchbyDestination extends Component {
     //set time
     this.setState({
       initial_Time: Time,
-      startTimeToBackEnd: Time.getHours() + ":" + Time.getMinutes() + ":" + Time.getSeconds()
+      startTimeToBackEnd:
+        Time.getHours() + ":" + Time.getMinutes() + ":" + Time.getSeconds()
     });
   }
 

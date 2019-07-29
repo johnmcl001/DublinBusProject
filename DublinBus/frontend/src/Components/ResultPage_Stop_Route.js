@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
-import ResultPageButton from "./ResultPageButton";
+import ResultPageButton from "./SlideShowMobileMap";
 import "../Static/StyleSheet/ResultPage_Stop_Route.css";
 import DataProvider from "./DataProvider";
 import ResultTable_StopRoute from "./ResultTable_StopRoute";

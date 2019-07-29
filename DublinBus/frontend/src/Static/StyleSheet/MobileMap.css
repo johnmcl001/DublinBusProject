@@ -1,0 +1,10 @@
+.slideShowMapFooter {
+background-color:  #8B9DC3 ;
+    height: 12%;
+    font-size: 100px;
+     position: fixed;
+   left: 0;
+   bottom: 0;
+    width: 100%;
+    border-top:grey ;
+}
