@@ -19,6 +19,8 @@ import pickle
 from sklearn.linear_model import LinearRegression
 import pandas as pd
 from dotenv import load_dotenv, find_dotenv
+import redis
+from itertools import permutations
 
 load_dotenv(find_dotenv(), override=True)
 
@@ -722,6 +724,126 @@ class StopsAutocomplete(views.APIView):
 
 
         return stop_list
+
+
+class TouristPlanner(views.APIView):
+    """
+    Returns best route through series of tourist destinations
+    """
+
+    def get(self, request):
+        """
+        Input: user http request
+        Output: array of lowest cost route
+        """
+        attractions = self.get_attractions()
+        home = self.get_home()
+        attractions = self.remove_home_from_attractions(attractions, home)
+        attractions = list(permutations(attractions))
+        attractions = self.convert_tuples_to_list(attractions)
+        attractions = self.add_home(attractions, home)
+        best_route = self.get_best_route(attractions)
+        return Response(best_route)
+
+    def get_attractions(self):
+        """
+        Input: request from user
+        Output: attractions as array
+        """
+        attractions = []
+        i = 0
+        while self.request.GET.get("attraction"+str(i)) != "null" and i <= 4:
+            attractions += [self.request.GET.get("attraction"+str(i))]
+            i += 1
+        return attractions
+
+    def get_home(self):
+        """
+        Input: request from user
+        Output: home as string
+        """
+        return self.request.GET.get("home")
+
+    def remove_home_from_attractions(self, attractions, home):
+        """
+        Input: attractions as array, home as string
+        Output: home removed from attractions
+        """
+        while home in attractions:
+            attractions.remove(home)
+        return attractions
+
+    def convert_tuples_to_list(self, attractions):
+        """
+        Input: List of tuples
+        Output: List of lists
+        """
+        for i in range(len(attractions)):
+            attractions[i] = list(attractions[i])
+        return attractions
+
+    def add_home(self, permutations, home):
+        """
+        Input: permutations as array of arrays, home as string
+        Output: home added to start and end of each permutation
+        """
+        if permutations[0][0] != home:
+            for i in range(len(permutations)):
+                permutations[i] = [home] + permutations[i] + [home]
+        return permutations
+
+    def get_best_route(self, attractions):
+        """
+        Input: permutations as array of arrays
+        Output: lowest cost permutation as array, cost of permutation
+        """
+        minimum = float("inf")
+        lowest_cost_permutation = []
+        r = redis.Redis(host="localhost", port=6379, db=0)
+
+        for permutation in attractions:
+            total_cost = 0
+            i = 0
+            while total_cost < minimum and i < len(permutation)-1:
+                if r.exists(str(permutation[i]) + " " + str(permutation[i+1])):
+                    cost = r.get(str(permutation[i]) + " " + str(permutation[i+1]))
+                    total_cost += int(cost.decode())
+                elif i == 0:
+                    cost = self.get_cost_from_api(permutation[i], permutation[i+1])
+                    r.set(str(permutation[i]) + " " + str(permutation[i+1]), cost, ex=3600)
+                    total_cost += cost
+                elif i == len(permutation)-2:
+                    cost = self.get_cost_from_api(permutation[i], permutation[i+1])
+                    r.set(str(permutation[i]) + " " + str(permutation[i+1]), cost, ex=3600)
+                    total_cost += cost
+                else:
+                    cost = self.get_cost_from_database(permutation[i], permutation[i+1])
+                    r.set(str(permutation[i]) + " " + str(permutation[i+1]), cost, ex=3600)
+                    total_cost += cost
+                i += 1
+            if total_cost < minimum:
+                lowest_cost_permutation = permutation
+                minimum = total_cost
+
+            return lowest_cost_permutation, minimum
+
+    def get_cost_from_api(self, origin, destination):
+        """
+        Input: origin, destination as string
+        Output: cost as int
+        """
+        call = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&key=" + os.getenv("GOOGLE") + "&mode=transit&transit_mode=bus&region=IE"
+        response = requests.get(call)
+        response_json = json.loads(response.text)
+        result = response_json["routes"][0]["legs"][0]["distance"]["value"]
+        return result
+
+    def get_cost_from_database(self, origin, destination):
+        """
+        Input: origin, destination as string
+        Output: cost as int
+        """
+        return Costs.objects.filter(origin=origin, destination=destination)[0].cost
 
 
 class RouteView(generics.ListCreateAPIView):
