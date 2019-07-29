@@ -196,25 +196,8 @@ class JourneyPlanner extends Component {
 
           {/*</div>*/}
         </div>
-
-        <div className="ListofAllAttractions d-none d-lg-block">
-          {axios({
-            method: "get",
-            url: "http://localhost:8000/api/attractions/"
-          }).then(response => {
-            if (response.status === 200) {
-              this.state.cards = response.data;
-            }
-          })}
-          {this.state.cards.map((x, y) => (
-            //    Loop throught
-            <Cards name={x.name} description={x.description} />
-          ))}
-          }
-          <Cards key={y} name={x.name} description={x.description} />
-          <Cards />
         </div>
-      </div>
+     
     );
   }
 }
