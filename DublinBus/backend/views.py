@@ -21,6 +21,7 @@ import pandas as pd
 from dotenv import load_dotenv, find_dotenv
 import redis
 from itertools import permutations
+from .queries import *
 
 load_dotenv(find_dotenv(), override=True)
 
@@ -49,7 +50,8 @@ class SearchByStop(views.APIView):
         weather = self.get_weather(time, day_info["date"])
         bus_stop_info = self.get_bus_stop_info(stop_number)
         routes = self.get_routes(bus_stop_info)
-        trips=self.get_relevant_trips_per_routes_and_stops(stop_number, routes, day_info['day_long'], time, day_info["date"])
+        trips=get_relevant_stop_times_per_routes_and_stops(stop_number, routes, day_info['day_long'], time, day_info["date"])
+        trips=self.format_trips_into_dict_with_routes_as_key(trips)
         directions = self.get_direction(day_info['day_long'], day_info["date"], routes, stop_number)
         machine_learning_inputs = self.serialize_machine_learning_input(
                                                             time,
@@ -142,37 +144,21 @@ class SearchByStop(views.APIView):
             routes = bus_stop_info["routes"][0]
         return routes
 
-    def get_relevant_trips_per_routes_and_stops(self, stop_numbers, route_numbers, day, time, date):
+    def format_trips_into_dict_with_routes_as_key(self, trips):
         """
-        Input: list of routes, list of stop numbers
-        Filters trips that run for the given day, 30 mins before the time and upto
-        one hour after the time given.
-        Output: list of trips with srrival time, stop_sequence, short stop id and trip id
+        Input: Trips Objects in a queryset
+        Use to seperate trips into routes to create dataframes for our ML
+        Output: Dictionary with route as key and trip objects as a list.
         """
-        #checks if a string is given, converts to a list
-        try:
-            if stop_numbers.isdigit():
-                stop_numbers=[stop_numbers]
-        except AttributeError as e:
-            pass
-        #date in calendar must be changed
-        date=(datetime.strptime(date,"%d-%m-%Y")).strftime('%Y%m%d')
-        #get time 30 minutes before hand to allow for prediction model difference
-        start_time=(datetime.strptime(self.get_time(),"%H:%M:%S")-timedelta(minutes=30)).strftime('%H:%M:%S')
-        end_time=(datetime.strptime(self.get_time(),"%H:%M:%S")+timedelta(minutes=60)).strftime('%H:%M:%S')
-        services=Calendar.objects.filter(**{day:1}, start_date__lte=date, end_date__gte=date)
-        long_ids=Routes.objects.filter(route_short_name__in=route_numbers)
-        trips=Trips.objects.filter(route_id__in=long_ids, service_id__in=services).values('trip_id')
-        trips=StopTimes.objects.filter(trip_id__in=trips, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short__in=stop_numbers).order_by('departure_time')
         info={}
         for trip in trips:
-            route_short=trip.trips_set.get().route.route_short_name
+            route_short=trip.route_short_name
             if route_short not in info:
-                info[route_short]=[trip.arrival_time, trip.stop_sequence, trip.stop.stopid_short, trip.trip_id],
+                info[route_short]=[trip]
             else:
-                info[route_short]+=[trip.arrival_time, trip.stop_sequence, trip.stop.stopid_short, trip.trip_id],
-        return info
+                info[route_short]+=trip,
 
+        return info
 
     def get_direction(self, day, date, route_numbers, stop_number):
         """
@@ -218,16 +204,15 @@ class SearchByStop(views.APIView):
         date=datetime.strptime(machine_learning_inputs['date'],'%d-%m-%Y')
         time=datetime.strptime(machine_learning_inputs['time'], '%H:%M:%S').time()
         results=[]
-        #machine_learning_inputs['trips'][route][1]=stop sequence
-        #machine_learning_inputs['trips'][route][0]=Planned arrival time
+
         predictions_dict={}
         for route in machine_learning_inputs['trips'].keys():
             predictions_dict[route]={}
             stop_num=[]
             df=pd.DataFrame(columns=['temperature_NORM','PROGRNUMBER_NORM','month','day'])
             for num in range(0, len(machine_learning_inputs['trips'][route])):
-                if machine_learning_inputs['trips'][route][num][1] not in stop_num:
-                    stop_num+=machine_learning_inputs['trips'][route][num][1],
+                if machine_learning_inputs['trips'][route][num].stop_sequence not in stop_num:
+                    stop_num+=machine_learning_inputs['trips'][route][num].stop_sequence,
                     filename = os.path.join(dirname, '46A.pkl')
                     model = pickle.load(open(filename,'rb'))
                     df=df.append({
@@ -242,9 +227,9 @@ class SearchByStop(views.APIView):
 
         for route in machine_learning_inputs['trips'].keys():
             for num in range(0, len(machine_learning_inputs['trips'][route])):
-                arrival_time=(datetime.combine(date, machine_learning_inputs['trips'][route][num][0])+timedelta(seconds=predictions_dict[route][machine_learning_inputs['trips'][route][num][1]])).time()
+                arrival_time=(datetime.combine(date, machine_learning_inputs['trips'][route][num].arrival_time)+timedelta(seconds=predictions_dict[route][machine_learning_inputs['trips'][route][num].stop_sequence])).time()
                 if self.valid_trip_check(date, time, arrival_time):
-                    results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M:%S"), 'stop':machine_learning_inputs['trips'][route][num][2], 'trip_id':machine_learning_inputs['trips'][route][num][3]},
+                    results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M:%S"), 'stop':machine_learning_inputs['trips'][route][num].stop, 'trip_id':machine_learning_inputs['trips'][route][num].trip_id},
 
         return self.sort_results(results)
 
@@ -285,21 +270,9 @@ class SearchByDestination(SearchByStop):
                                            day_info['day_long'],
                                            day_info['date'],
                                            time)
-        #default to maps
-        """dir_route = self.find_direct_routes({'lat':53.3249987, 'lon':-6.26499894},
-                                           {'lat':53.295312, 'lon': -6.134956},
-                                           day_info['day_long'],
-                                           day_info['date'],
-                                           time)
-        #direct possible
-        dir_route = self.find_direct_routes({'lat':53.3249987, 'lon':-6.26499894},
-                                               {'lat':53.342608,  'lon': -6.255987},
-                                               day_info['day_long'],
-                                               day_info['date'],
-                                               time)"""
-
 
         if len(dir_route)==0:
+            print('api')
             routes = self.get_route(time, day_info['date'], start_coords,end_coords)
             route_segments = self.get_route_segments(routes, time)
             route_segments=self.validate(route_segments, time, day_info,weather)
@@ -313,6 +286,7 @@ class SearchByDestination(SearchByStop):
                 route_segments = self.get_route_segments(routes, time)
                 route_segments=self.validate(route_segments, time, day_info,weather)
                 results=self.sort_routes(route_segments)
+            print('own algo')
         results = self.format_response(results)
         return Response(results)
 
@@ -348,6 +322,7 @@ class SearchByDestination(SearchByStop):
             route = json.loads(response.text)
         elif response.status_code == 400:
             route = "not found"
+        #print(route)
         return route
 
     def get_route_segments(self, route, time):
@@ -406,6 +381,10 @@ class SearchByDestination(SearchByStop):
                 if segment["travel_mode"]=="WALKING":
                     valid_result=True
                     segment["end_time"]=(datetime.strptime(segment["start_time"],"%H:%M:%S")+timedelta(seconds=segment["duration_sec"])).strftime('%H:%M:%S')
+                    if i !=len(route)-1:
+                        route[i+1]["start_time"]=segment['end_time']
+
+
                 #if segment is transit, we must run our machine learning model to
                 #ensure a bus will arrive after the previous stage of the journey
                 #is complete
@@ -415,9 +394,10 @@ class SearchByDestination(SearchByStop):
                     if end_stop == None:
                         print('Cant identify stop')
                     #finds all relevant trips that serve the stop and route given by google maps
-                    trips=self.get_relevant_trips_per_routes_and_stops([start_stop], [segment["route"]], day_info['day_long'], time, day_info["date"])
+                    trips=get_relevant_stop_times_per_routes_and_stops([start_stop], [segment["route"]], day_info['day_long'], segment["start_time"], day_info["date"])
+                    trips=self.format_trips_into_dict_with_routes_as_key(trips)
                     machine_learning_inputs = self.serialize_machine_learning_input(
-                                                                        time,
+                                                                        segment["start_time"],
                                                                         day_info["day"],
                                                                         day_info["month"],
                                                                         day_info["date"],
@@ -436,10 +416,26 @@ class SearchByDestination(SearchByStop):
                                 index=results.index(res)
                                 segment['later_bus_arrivals']=results[index:]
                                 segment['start_time']=res['arrival_time']
+                                print(segment['start_time'])
                                 if StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop).count()==0:
+                                    print('no valid trips')
                                     valid_result=False
                                     break
-                                segment['end_time']=StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop)[:1][0].arrival_time.strftime('%H:%M:%S')
+                                trips=StopTimes.objects.get(trip_id=res['trip_id'], stop__stopid_short=end_stop)
+                                segment['end_time']=trips.arrival_time.strftime('%H:%M:%S')
+                                trips=self.format_trips_into_dict_with_routes_as_key([trips])
+                                machine_learning_inputs = self.serialize_machine_learning_input(
+                                                                                    segment['end_time'],
+                                                                                    day_info["day"],
+                                                                                    day_info["month"],
+                                                                                    day_info["date"],
+                                                                                    end_stop,
+                                                                                    weather,
+                                                                                    segment["route"],
+                                                                                    trips)
+                                #runs our machine learning on all relevant trips
+                                results_end_time = self.get_arrival_times(machine_learning_inputs)
+                                segment['end_time']=results_end_time[0]['arrival_time']
                                 segment['duration_sec']=(datetime.strptime(segment["end_time"],"%H:%M:%S")-datetime.strptime(segment["start_time"],"%H:%M:%S")).total_seconds()
                                 if i !=len(route)-1:
                                     route[i+1]["start_time"]=segment['end_time']
@@ -447,7 +443,7 @@ class SearchByDestination(SearchByStop):
                                 break
                         else:
                             #bus must leave after walking time
-                            if res['arrival_time']>=route[i-1]['end_time']:
+                            if res['arrival_time']>=segment['start_time']:
                                 index=results.index(res)
                                 segment['later_bus_arrivals']=results[index:]
                                 segment['start_time']=res['arrival_time']
@@ -455,7 +451,21 @@ class SearchByDestination(SearchByStop):
                                     print('no valid trips')
                                     valid_result=False
                                     break
-                                segment['end_time']=StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop)[:1][0].arrival_time.strftime('%H:%M:%S')
+                                trips=StopTimes.objects.get(trip_id=res['trip_id'], stop__stopid_short=end_stop)
+                                segment['end_time']=trips.arrival_time.strftime('%H:%M:%S')
+                                trips=self.format_trips_into_dict_with_routes_as_key([trips])
+                                machine_learning_inputs = self.serialize_machine_learning_input(
+                                                                                    segment['end_time'],
+                                                                                    day_info["day"],
+                                                                                    day_info["month"],
+                                                                                    day_info["date"],
+                                                                                    end_stop,
+                                                                                    weather,
+                                                                                    segment["route"],
+                                                                                    trips)
+                                #runs our machine learning on all relevant trips
+                                results_end_time = self.get_arrival_times(machine_learning_inputs)
+                                segment['end_time']=results_end_time[0]['arrival_time']
                                 segment['duration_sec']=(datetime.strptime(segment["end_time"],"%H:%M:%S")-datetime.strptime(segment["start_time"],"%H:%M:%S")).total_seconds()
                                 if i !=len(route)-1:
                                     route[i+1]["start_time"]=segment['end_time']
@@ -477,6 +487,8 @@ class SearchByDestination(SearchByStop):
         Input: Routes results as json
         Output: Routes results sorted into a dictionary where route is key, then stops and times as values
         """
+        for route in range(0, len(results)):
+            results[route]['duration']=float(results[route]['duration'])
         return sorted(results, key=lambda k: k["duration"])
 
     def get_station_number(self, name, dest_lat, dest_lon):
@@ -496,7 +508,7 @@ class SearchByDestination(SearchByStop):
         else:
             return Stops.objects.get(stop_name=name).stopid_short
 
-    def get_stations_nearby(self, dest_lat, dest_lon, num_stations=10, max_walking_distance=5, limit=50):
+    def get_stations_nearby(self, dest_lat, dest_lon, num_stations=10, max_walking_distance=5, limit=20):
         """
         Input: Centre point coordinates
         Output: Dictionary of stops with stop id as key and distance in m from centre point as value
@@ -631,14 +643,13 @@ class SearchByDestination(SearchByStop):
         return results
 
     def format_response(self, results):
-
         response = []
-        results = results[:3]
+        #results = results[:3]
         for result in results:
             route_breakdown = {}
             route_breakdown["duration"] = result["duration"]
             route_breakdown["directions"] = []
-            for i in range(0, len(result)+1):
+            for i in range(0, len(result['route'])):
                 route_dict = {
                     "instruction": result["route"][i]["instruction"],
                     "time": result["route"][i]["duration_sec"] // 60,
@@ -650,7 +661,7 @@ class SearchByDestination(SearchByStop):
                     route_dict["travel_mode"] = "WALKING"
 
                 route_breakdown["directions"] += [route_dict]
-        return route_breakdown
+            return route_breakdown
 
     """        for i in range(0,len(results)):
             result=results[i]
