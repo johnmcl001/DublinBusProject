@@ -65,7 +65,23 @@ class SearchByStop(views.APIView):
         #return Response(machine_learning_inputs)
 
         results = self.get_arrival_times(machine_learning_inputs)
+        results = self.format_results(results)
         return Response(results)
+
+    def format_results(self, results):
+        """
+        Input: results as json
+        Output: formatted results as json
+        """
+        formatted_results = {"directions": []}
+        for i in range(5):
+            formatted_results["directions"] += [
+                {
+                    "instruction": results[i]["route"],
+                    "time": results[i]["arrival_time"]
+                }
+            ]
+        return formatted_results
 
     def get_time(self):
         """
@@ -138,7 +154,7 @@ class SearchByStop(views.APIView):
         Input: Http request, bus_stop_info
         Ouput: route(s) as list
         """
-        if self.request.GET.get("route") != None:
+        if self.request.GET.get("route") != "null":
             routes = [self.request.GET.get("route")]
         else:
             routes = bus_stop_info["routes"][0]

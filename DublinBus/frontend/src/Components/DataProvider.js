@@ -28,7 +28,7 @@ class DataProvider extends Component {
   componentDidMount() {
     axios({
       method: "get",
-      url: "http://csi420-01-vm9.ucd.ie/api/" + this.props.endpoint + "/",
+      url: "http://localhost:8000/api/" + this.props.endpoint + "/",
       params: {
         stopnumber: this.props.stopnumber,
         route: this.props.route,

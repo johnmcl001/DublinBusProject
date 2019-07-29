@@ -126,7 +126,7 @@ class Calendar(models.Model):
 
 
 class CalendarDates(models.Model):
-    service = models.ForeignKey(Calendar, models.DO_NOTHING, primary_key=True)
+    service = models.OneToOneField(Calendar, models.DO_NOTHING, primary_key=True)
     date = models.CharField(max_length=45)
     exception_type = models.TextField(blank=True, null=True)
 
@@ -137,9 +137,11 @@ class CalendarDates(models.Model):
 
 
 class Costs(models.Model):
+
     origin = models.ForeignKey(Touristattractions, models.DO_NOTHING, db_column='origin', primary_key=True,
     related_name='origin')
     destination = models.ForeignKey(Touristattractions, models.DO_NOTHING, db_column='destination')
+
     cost = models.IntegerField(blank=True, null=True)
 
     class Meta:
@@ -247,7 +249,7 @@ class Stops(models.Model):
 
 
 class Trips(models.Model):
-    route = models.ForeignKey(Routes, models.DO_NOTHING, primary_key=True)
+    route = models.OneToOneField(Routes, models.DO_NOTHING, primary_key=True)
     direction_id = models.IntegerField()
     trip_headsign = models.CharField(max_length=100, blank=True, null=True)
     shape_id = models.CharField(max_length=45, blank=True, null=True)
