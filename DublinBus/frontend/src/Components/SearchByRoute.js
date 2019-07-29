@@ -41,7 +41,7 @@ class SearchByRoute extends Component {
   }
 
   updateStop(e) {
-    this.setState({ stopNumber: e });
+    this.setState({ stopNumber: e.substring(0, e.indexOf(","))});
   }
 
   updateDirectionAutocomplete(e) {
@@ -60,9 +60,6 @@ class SearchByRoute extends Component {
       .then(response => {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
-        }
-        {
-          console.log("here");
         }
         return response.data;
       })
@@ -131,17 +128,17 @@ class SearchByRoute extends Component {
               </div>
             </form>
           </div>
-          <div className="col-8  bottomClass">
-            <Link to={"/ResultPage_Stop_Route"}>
-              <button
-                type="button"
-                className="btn btn-warning  "
-                id="SubmitButton"
-              >
-                Submit
-              </button>
-            </Link>
-          </div>
+        <div className="col-8  bottomClass">
+          <Link to={`/ResultPage_Stop_Route/${this.state.stopNumber}/${this.state.routeNumber}`}>
+            <button
+              type="button"
+              className="btn btn-warning "
+              id="SubmitButton"
+            >
+              Submit
+            </button>
+          </Link>
+        </div>
         </div>
       </div>
     );

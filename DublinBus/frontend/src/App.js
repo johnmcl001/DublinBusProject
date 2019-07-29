@@ -33,7 +33,7 @@ class App extends Component {
               <Route path="/SearchByStop" component={SearchByStop} />
               <Route path="/JourneyPlanner" component={JourneyPlanner} />
               <Route
-                path="/ResultPage_Stop_Route/:stopnumber"
+                path="/ResultPage_Stop_Route/:stopnumber/:route"
                 component={ResultPage_Stop_Route}
               />
               <Route
