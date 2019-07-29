@@ -51,7 +51,7 @@ def get_direction( day, date, route_numbers, stop_number):
     services=Calendar.objects.filter(**{day:1}, start_date__lte=date, end_date__gte=date)
     directions = {}
     for route in route_numbers:
-        allRoutes=Trips.objects.filter(route__route_short_name=route, trip__in=allTrips, service_id__in=services).values('direction_id', 'trip_headsign').distinct()
+        allRoutes=Trips.objects.filter(route__route_short_name=route, trip__in=allTrips, service_id__in=services).values('direction_id', 'route__route_long_name').distinct()
         if len(allRoutes) > 0:
             directions[route] = allRoutes[0]
     return directions

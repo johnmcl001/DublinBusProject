@@ -52,7 +52,7 @@ class SearchByStop(views.APIView):
         routes = self.get_routes(bus_stop_info)
         trips=get_relevant_stop_times_per_routes_and_stops(stop_number, routes, day_info['day_long'], time, day_info["date"])
         trips=self.format_trips_into_dict_with_routes_as_key(trips)
-        directions = self.get_direction(day_info['day_long'], day_info["date"], routes, stop_number)
+        directions = get_direction(day_info['day_long'], day_info["date"], routes, stop_number)
         machine_learning_inputs = self.serialize_machine_learning_input(
                                                             time,
                                                             day_info["day"],
@@ -74,7 +74,7 @@ class SearchByStop(views.APIView):
         Output: formatted results as json
         """
         formatted_results = {"directions": []}
-        for i in range(5):
+        for i in range(10):
             formatted_results["directions"] += [
                 {
                     "instruction": results[i]["route"],
@@ -176,21 +176,6 @@ class SearchByStop(views.APIView):
 
         return info
 
-    def get_direction(self, day, date, route_numbers, stop_number):
-        """
-        Input: bus stop number and route_number
-        Filters endpoints that the bus goes to (one the given day) based on route and stop given
-        Output: Direction of route as int and headsign label
-        """
-        stop_number=Stops.objects.get(stopid_short=stop_number)
-        allTrips=StopTimes.objects.filter(stop=stop_number)
-        services=Calendar.objects.filter(**{day:1}, start_date__lte=date, end_date__gte=date)
-        directions = {}
-        for route in route_numbers:
-            allRoutes=Trips.objects.filter(route__route_short_name=route, trip__in=allTrips, service_id__in=services).values('direction_id', 'trip_headsign').distinct()
-            if len(allRoutes) > 0:
-                directions[route] = allRoutes[0]
-        return directions
 
     def serialize_machine_learning_input(self,time, day, month, date, stop_number, weather, routes, trips):
         """
