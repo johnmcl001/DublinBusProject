@@ -49,10 +49,19 @@ class HomePage extends Component {
                 </button>
               </Link>
             </div>
+
             <div className="row">
               <Link to={"/SearchByDestination"} className="LinkCss">
                 <button type="button" className="btn btn-success">
                   Search By Destination
+                </button>
+              </Link>
+            </div>
+
+            <div className="row">
+              <Link to={"/JourneyPlanner"} className="LinkCss">
+                <button type="button" className="btn btn-success">
+                  Journey Planner
                 </button>
               </Link>
             </div>

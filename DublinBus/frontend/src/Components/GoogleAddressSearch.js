@@ -27,15 +27,14 @@ const PlacesWithStandaloneSearchBox = compose(
         },
         onPlacesChanged: () => {
           const places = refs.searchBox.getPlaces();
-
           this.setState({
             places
           });
-
           //pass geolocation via lat & long back to Search by Destination
           this.props.onUpdatePosition({
             latitude: this.state.places[0].geometry.location.lat(),
-            longitude: this.state.places[0].geometry.location.lng()
+            longitude: this.state.places[0].geometry.location.lng(),
+            place: this.state.places[0].address_components[0].long_name
           });
         }
       });
@@ -49,12 +48,12 @@ const PlacesWithStandaloneSearchBox = compose(
       bounds={props.bounds}
       onPlacesChanged={props.onPlacesChanged}
     >
-      <input type="text" placeholder={props.comment} style={style}/>
+      <input type="text" placeholder={props.comment} style={style} />
     </StandaloneSearchBox>
   </div>
 ));
 
-const style={
-    width:'220px'
-}
+const style = {
+  width: "220px"
+};
 export default PlacesWithStandaloneSearchBox;

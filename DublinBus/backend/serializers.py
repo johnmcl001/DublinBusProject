@@ -10,7 +10,7 @@ class MachineLearningInputs(object):
     """
     Create inputs objects for serialization
     """
-    def __init__(self, time, day, month, date,stop_number, weather, routes, trips, directions):
+    def __init__(self, time, day, month, date,stop_number, weather, routes, trips):
         self.time = time
         self.day = day
         self.date = date
@@ -19,7 +19,6 @@ class MachineLearningInputs(object):
         self.weather = weather
         self.routes = routes
         self.trips = trips
-        self.directions = directions
 
 
 class MachineLearningInputSerializer(serializers.Serializer):
@@ -34,7 +33,6 @@ class MachineLearningInputSerializer(serializers.Serializer):
     weather = serializers.DictField()
     routes = serializers.ListField(child=serializers.CharField(max_length=5))
     trips = serializers.DictField()
-    directions = serializers.DictField()
 
 
 class StopSerializer(serializers.ModelSerializer):
@@ -57,8 +55,8 @@ class RouteSerializer(serializers.ModelSerializer):
         """
         Meta data for RouteSerializer, model and what to return
         """
-        model = Routes
-        fields = "__all__"
+        model = Touristattractions
+        fields = ["name", "description", "address"]
 
 class StopTimeSerializer(serializers.ModelSerializer):
     """

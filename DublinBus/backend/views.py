@@ -15,12 +15,12 @@ from rest_framework import generics
 from .HereManager import HereManager
 from datetime import datetime, timedelta, date
 from ast import literal_eval
-
 import pickle
 from sklearn.linear_model import LinearRegression
 import pandas as pd
-
 from dotenv import load_dotenv, find_dotenv
+import redis
+from itertools import permutations
 
 load_dotenv(find_dotenv(), override=True)
 
@@ -29,7 +29,6 @@ dirname = os.path.dirname(__file__)
 
 from .serializers import *
 from .models import *
-
 #from .permissions import ApiPermissions
 
 class SearchByStop(views.APIView):
@@ -50,7 +49,7 @@ class SearchByStop(views.APIView):
         weather = self.get_weather(time, day_info["date"])
         bus_stop_info = self.get_bus_stop_info(stop_number)
         routes = self.get_routes(bus_stop_info)
-        trips=self.get_relevant_trips_per_route_and_stop(stop_number, routes, day_info['day_long'], time, day_info["date"])
+        trips=self.get_relevant_trips_per_routes_and_stops(stop_number, routes, day_info['day_long'], time, day_info["date"])
         directions = self.get_direction(day_info['day_long'], day_info["date"], routes, stop_number)
         machine_learning_inputs = self.serialize_machine_learning_input(
                                                             time,
@@ -60,13 +59,27 @@ class SearchByStop(views.APIView):
                                                             stop_number,
                                                             weather,
                                                             routes,
-                                                            trips,
-                                                            directions)
+                                                            trips)
         #return Response(machine_learning_inputs)
 
         results = self.get_arrival_times(machine_learning_inputs)
-        results = self.sort_results(results)
+        results = self.format_results(results)
         return Response(results)
+
+    def format_results(self, results):
+        """
+        Input: results as json
+        Output: formatted results as json
+        """
+        formatted_results = {"directions": []}
+        for i in range(5):
+            formatted_results["directions"] += [
+                {
+                    "instruction": results[i]["route"],
+                    "time": results[i]["arrival_time"]
+                }
+            ]
+        return formatted_results
 
     def get_time(self):
         """
@@ -102,7 +115,6 @@ class SearchByStop(views.APIView):
         Output: weather conditions for prediction as json or dictionary
         """
         weatherResult=Forecast.objects.filter(date=date)
-        #print(weatherResult)
         for result in weatherResult:
             if result.end_time=="00:00":
                 result.end_time="24:00"
@@ -140,42 +152,48 @@ class SearchByStop(views.APIView):
         Input: Http request, bus_stop_info
         Ouput: route(s) as list
         """
-        if self.request.GET.get("route") != None:
+        if self.request.GET.get("route") != "null":
             routes = [self.request.GET.get("route")]
         else:
             routes = bus_stop_info["routes"][0]
         return routes
 
-    def get_relevant_trips_per_route_and_stop(self, stop, route_numbers, day, time, date):
+    def get_relevant_trips_per_routes_and_stops(self, stop_numbers, route_numbers, day, time, date):
         """
-        #Input: short route id, time(optional)
-        #Filters trips that run for the given day, 30 mins before the time and upto
-        #one hour after the time given.
-        #Output: list of trips objects
+        Input: list of routes, list of stop numbers
+        Filters trips that run for the given day, 30 mins before the time and upto
+        one hour after the time given.
+        Output: list of trips with srrival time, stop_sequence, short stop id and trip id
         """
+        #checks if a string is given, converts to a list
+        try:
+            if stop_numbers.isdigit():
+                stop_numbers=[stop_numbers]
+        except AttributeError as e:
+            pass
+        #date in calendar must be changed
         date=(datetime.strptime(date,"%d-%m-%Y")).strftime('%Y%m%d')
-        #print(date)
         #get time 30 minutes before hand to allow for prediction model difference
         start_time=(datetime.strptime(self.get_time(),"%H:%M:%S")-timedelta(minutes=30)).strftime('%H:%M:%S')
         end_time=(datetime.strptime(self.get_time(),"%H:%M:%S")+timedelta(minutes=60)).strftime('%H:%M:%S')
         services=Calendar.objects.filter(**{day:1}, start_date__lte=date, end_date__gte=date)
         long_ids=Routes.objects.filter(route_short_name__in=route_numbers)
         trips=Trips.objects.filter(route_id__in=long_ids, service_id__in=services).values('trip_id')
-        trips=StopTimes.objects.filter(trip_id__in=trips, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short=stop).order_by('departure_time')
-        #print(trips)
+        trips=StopTimes.objects.filter(trip_id__in=trips, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short__in=stop_numbers).order_by('departure_time')
         info={}
         for trip in trips:
             route_short=trip.trips_set.get().route.route_short_name
             if route_short not in info:
-                info[route_short]=[trip.arrival_time, trip.stop_sequence],
+                info[route_short]=[trip.arrival_time, trip.stop_sequence, trip.stop.stopid_short, trip.trip_id],
             else:
-                info[route_short]+=[trip.arrival_time, trip.stop_sequence],
+                info[route_short]+=[trip.arrival_time, trip.stop_sequence, trip.stop.stopid_short, trip.trip_id],
         return info
 
 
     def get_direction(self, day, date, route_numbers, stop_number):
         """
         Input: bus stop number and route_number
+        Filters endpoints that the bus goes to (one the given day) based on route and stop given
         Output: Direction of route as int and headsign label
         """
         stop_number=Stops.objects.get(stopid_short=stop_number)
@@ -188,7 +206,7 @@ class SearchByStop(views.APIView):
                 directions[route] = allRoutes[0]
         return directions
 
-    def serialize_machine_learning_input(self,time, day, month, date, stop_number, weather, routes, trips, direction):
+    def serialize_machine_learning_input(self,time, day, month, date, stop_number, weather, routes, trips):
         """
         Input: weather data as json/dict, routes as list, direction as int
         Output: machine learning inputs as json
@@ -201,8 +219,7 @@ class SearchByStop(views.APIView):
                                                         stop_number,
                                                         weather,
                                                         routes,
-                                                        trips,
-                                                        direction)
+                                                        trips)
         machine_learning_inputs = MachineLearningInputSerializer(
             machine_learning_inputs)
         return machine_learning_inputs.data
@@ -243,11 +260,9 @@ class SearchByStop(views.APIView):
             for num in range(0, len(machine_learning_inputs['trips'][route])):
                 arrival_time=(datetime.combine(date, machine_learning_inputs['trips'][route][num][0])+timedelta(seconds=predictions_dict[route][machine_learning_inputs['trips'][route][num][1]])).time()
                 if self.valid_trip_check(date, time, arrival_time):
-                    #mins_away=(datetime.combine(date, arrival_time)- datetime.combine(date, time))
-                    #print(mins_away)
-                    results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M:%S")},
+                    results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M:%S"), 'stop':machine_learning_inputs['trips'][route][num][2], 'trip_id':machine_learning_inputs['trips'][route][num][3]},
 
-        return results
+        return self.sort_results(results)
 
     def valid_trip_check(self, date, person_leaving_time, bus_arrival_time, walking_time=0, buffer=0):
         if (datetime.combine(date, person_leaving_time) + timedelta(hours=walking_time)).time()< (datetime.combine(date, bus_arrival_time)- timedelta(minutes=buffer)).time():
@@ -271,20 +286,51 @@ class SearchByDestination(SearchByStop):
     """
 
     def get(self, request):
-        route = self.get_route()
-        route_segments = self.get_route_segments(route)
-        return Response(route_segments)
 
         time = self.get_time()
         day_info = self.get_day_and_date()
         weather = self.get_weather(time, day_info["date"])
-        start_coords = self.get_coords("startpoint")
-        end_coords = self.get_coords("destination")
-        dir_route = self.find_direct_route(start_coords,
-                                           end_coords,
-                                           day_info,
+        #start_coords = self.get_coords("startpoint")
+        start_coords = {"lat": self.get_coords("startpointLat"),
+                        "lon": self.get_coords("startpointLon")}
+        #end_coords = self.get_coords("destination")
+        end_coords = {"lat": self.get_coords("departureLat"),
+                        "lon": self.get_coords("departureLon")}
+        dir_route = self.find_direct_routes(start_coords,
+                                            end_coords,
+                                           day_info['day_long'],
+                                           day_info['date'],
                                            time)
-        return Response(dir_route)
+        #default to maps
+        """dir_route = self.find_direct_routes({'lat':53.3249987, 'lon':-6.26499894},
+                                           {'lat':53.295312, 'lon': -6.134956},
+                                           day_info['day_long'],
+                                           day_info['date'],
+                                           time)
+        #direct possible
+        dir_route = self.find_direct_routes({'lat':53.3249987, 'lon':-6.26499894},
+                                               {'lat':53.342608,  'lon': -6.255987},
+                                               day_info['day_long'],
+                                               day_info['date'],
+                                               time)"""
+
+
+        if len(dir_route)==0:
+            routes = self.get_route(time, day_info['date'], start_coords,end_coords)
+            route_segments = self.get_route_segments(routes, time)
+            route_segments=self.validate(route_segments, time, day_info,weather)
+            results=self.sort_routes(route_segments)
+
+        else:
+            dir_routes=self.validate(dir_route, time, day_info,weather)
+            results=self.sort_routes(dir_routes)
+            if len(results)==0:
+                routes = self.get_route(time)
+                route_segments = self.get_route_segments(routes, time)
+                route_segments=self.validate(route_segments, time, day_info,weather)
+                results=self.sort_routes(route_segments)
+        results = self.format_response(results)
+        return Response(results)
 
     def get_coords(self, point):
         """
@@ -294,97 +340,256 @@ class SearchByDestination(SearchByStop):
         coords = self.request.GET.get(point)
         return literal_eval(coords)
 
-    def get_route(self):
+    def get_route(self, time, date, start_coords, end_coords, mode='transit'):
+
         """
         Input: origin coords as string, destination coords as string
         Output: route as json
         """
+        date=datetime.strptime(date,'%d-%m-%Y')
+        time=datetime.strptime(time, '%H:%M:%S').time()
+        time=int(datetime.combine(date, time).timestamp())
         key = os.getenv("GOOGLE")
-        call = "https://maps.googleapis.com/maps/api/directions/json?origin=ucd&destination=dun+laoghaire&key=" + key + "&mode=transit&transit_mode=bus&alternatives=true&region=ie"
-        response = requests.get(call)
+        if mode=='transit':
+            call = "https://maps.googleapis.com/maps/api/directions/json?origin="\
+            +str(start_coords['lat'])+','+str(start_coords['lon'])+"&destination="+str(end_coords['lat'])+','+str(end_coords['lon'])+"&key="\
+            + key + "&mode=transit&transit_mode=bus&alternatives=true&region=ie&departure_time="+str(time)
+        else:
+            call = "https://maps.googleapis.com/maps/api/directions/json?origin="\
+            +str(start_coords['lat'])+','+str(start_coords['lon'])+"&destination="+str(end_coords['lat'])+','+str(end_coords['lon'])+"&key="\
+            + key + "&mode="+mode
 
+        response = requests.get(call)
         if response.status_code == 200:
             route = json.loads(response.text)
         elif response.status_code == 400:
             route = "not found"
         return route
 
-    def get_route_segments(self, route):
+    def get_route_segments(self, route, time):
         """
         Input: route as json
         Ouput: route segments as json
         """
-        steps = route["routes"][0]["legs"][0]["steps"]
-        segments = []
-        for step in steps:
-            segment = {}
-            segment["time"] = step["duration"]["value"]
-            segment["instruction"] = step["html_instructions"]
-            segment["start_lat"] = step["start_location"]["lat"]
-            segment["start_lon"] = step["start_location"]["lng"]
-            segment["end_lat"] = step["end_location"]["lat"]
-            segment["end_lon"] = step["end_location"]["lng"]
-            segment["polyline"] = step["polyline"]["points"]
-            segment["travel_mode"] = step["travel_mode"]
-            if segment["travel_mode"] == "TRANSIT":
-                segment["route"] = step["transit_details"]["line"]["short_name"]
-                segment["num_stops"] = step["transit_details"]["num_stops"]
-                segment["arrival_stop"] = step["transit_details"]["arrival_stop"]["name"]
-                segment["departure_stop"] = step["transit_details"]["departure_stop"]["name"]
-            segments += [segment]
-        return segments
+        all_routes=[]
+        for r in range(0, len(route["routes"])):
+            steps = route["routes"][r]["legs"][0]["steps"]
+            segments = []
+            count=0
+            for step in steps:
+                segment = {}
+                segment["duration_sec"] = step["duration"]["value"]
+                segment["instruction"] = step["html_instructions"]
+                segment["start_lat"] = step["start_location"]["lat"]
+                segment["start_lon"] = step["start_location"]["lng"]
+                segment["end_lat"] = step["end_location"]["lat"]
+                segment["end_lon"] = step["end_location"]["lng"]
+                segment["polyline"] = step["polyline"]["points"]
+                segment['distance'] = step["distance"]["value"]
+                segment["travel_mode"] = step["travel_mode"]
+                segment["markers"] = [step["start_location"]["lat"],
+            step["start_location"]["lng"],
+            step["end_location"]["lat"],
+            step["end_location"]["lng"]]
+                if segment["travel_mode"] == "TRANSIT":
+                    segment["route"] = step["transit_details"]["line"]["short_name"]
+                    segment["num_stops"] = step["transit_details"]["num_stops"]
+                    segment["arrival_stop"] = step["transit_details"]["arrival_stop"]["name"]
+                    segment["departure_stop"] = step["transit_details"]["departure_stop"]["name"]
+                if count==0:
+                    segment["start_time"]=time
+                    if segment["travel_mode"] == "WALKING":
+                        segment["end_time"]=(datetime.strptime(segment["start_time"],"%H:%M:%S")+timedelta(seconds=segment["duration_sec"])).strftime('%H:%M:%S')
+                segments += [segment]
+                count+=1
+            all_routes+=segments,
+        return all_routes
 
-
-    def get_arrival_time(self, ):
+    def validate(self, route_segments, time, day_info, weather):
         """
-        Input
-        Output
+        Input: a list of routes broken into segments
+        Ouput: a list of dictionarys with valid routes based on our ML prediction model
         """
-        pass
+        valid_results=[]
+        #loop for each route option given by google maps
+        for route in route_segments:
+            start=time
+            end=time
+            #loop for each segment per route and check if the segment is valid.
+            for i in range(0, len(route)):
+                segment=route[i]
+                #if segment is walking end time can be calculated by addition
+                if segment["travel_mode"]=="WALKING":
+                    valid_result=True
+                    segment["end_time"]=(datetime.strptime(segment["start_time"],"%H:%M:%S")+timedelta(seconds=segment["duration_sec"])).strftime('%H:%M:%S')
+                #if segment is transit, we must run our machine learning model to
+                #ensure a bus will arrive after the previous stage of the journey
+                #is complete
+                if segment["travel_mode"]=="TRANSIT":
+                    start_stop=self.get_station_number(segment["departure_stop"], segment["start_lat"], segment["start_lon"])
+                    end_stop=self.get_station_number(segment["arrival_stop"], segment["end_lat"], segment["end_lon"])
+                    if end_stop == None:
+                        print('Cant identify stop')
+                    #finds all relevant trips that serve the stop and route given by google maps
+                    trips=self.get_relevant_trips_per_routes_and_stops([start_stop], [segment["route"]], day_info['day_long'], time, day_info["date"])
+                    machine_learning_inputs = self.serialize_machine_learning_input(
+                                                                        time,
+                                                                        day_info["day"],
+                                                                        day_info["month"],
+                                                                        day_info["date"],
+                                                                        start_stop,
+                                                                        weather,
+                                                                        segment["route"],
+                                                                        trips)
+                    #runs our machine learning on all relevant trips
+                    results = self.get_arrival_times(machine_learning_inputs)
+                    valid_result=False
+                    #updates start, end and journey duration in segments.
+                    for res in results:
+                        #no walking as first stage.
+                        if i==0:
+                            if res['arrival_time']>= time:
+                                index=results.index(res)
+                                segment['later_bus_arrivals']=results[index:]
+                                segment['start_time']=res['arrival_time']
+                                if StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop).count()==0:
+                                    valid_result=False
+                                    break
+                                segment['end_time']=StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop)[:1][0].arrival_time.strftime('%H:%M:%S')
+                                segment['duration_sec']=(datetime.strptime(segment["end_time"],"%H:%M:%S")-datetime.strptime(segment["start_time"],"%H:%M:%S")).total_seconds()
+                                if i !=len(route)-1:
+                                    route[i+1]["start_time"]=segment['end_time']
+                                valid_result=True
+                                break
+                        else:
+                            #bus must leave after walking time
+                            if res['arrival_time']>=route[i-1]['end_time']:
+                                index=results.index(res)
+                                segment['later_bus_arrivals']=results[index:]
+                                segment['start_time']=res['arrival_time']
+                                if StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop).count()==0:
+                                    print('no valid trips')
+                                    valid_result=False
+                                    break
+                                segment['end_time']=StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop)[:1][0].arrival_time.strftime('%H:%M:%S')
+                                segment['duration_sec']=(datetime.strptime(segment["end_time"],"%H:%M:%S")-datetime.strptime(segment["start_time"],"%H:%M:%S")).total_seconds()
+                                if i !=len(route)-1:
+                                    route[i+1]["start_time"]=segment['end_time']
+                                valid_result=True
+                                break
+                    if valid_result==True:
+                        end=segment['end_time']
+                    #after the segment has been checked, if no valid result has Been
+                    #found break out of the route and dont add to results
+                    if valid_result==False:
+                        break
+            duration=str((datetime.strptime(end,"%H:%M:%S")-datetime.strptime(start,"%H:%M:%S")).total_seconds())
+            if valid_result==True and {'duration':duration, 'route':route} not in valid_results:
+                valid_results+={'duration':duration, 'route':route},
+        return valid_results
 
-    def get_stations_nearby(self, dest_lat, dest_lon):
+    def sort_routes(self, results):
+        """
+        Input: Routes results as json
+        Output: Routes results sorted into a dictionary where route is key, then stops and times as values
+        """
+        return sorted(results, key=lambda k: k["duration"])
+
+    def get_station_number(self, name, dest_lat, dest_lon):
+        """
+        Input: Station name and coordinates
+        Output: Short stop id
+        """
+        num_of_stations_with_name=Stops.objects.filter(stop_name=name).count()
+        if num_of_stations_with_name!=1:
+            #Finds stations within 500m of the coordinates and returns 1
+            for station in Stops.objects.raw('SELECT stop_id, stopID_short,'\
+            +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
+            + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\
+            +' * sin( radians( stop_lat ) ) ) ) AS distance FROM website.stops HAVING distance < '\
+            +'%(default_radius)s ORDER BY distance LIMIT 0 , 1;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(.5)}):
+                return station.stopid_short
+        else:
+            return Stops.objects.get(stop_name=name).stopid_short
+
+    def get_stations_nearby(self, dest_lat, dest_lon, num_stations=10, max_walking_distance=5, limit=50):
         """
         Input: Centre point coordinates
-        Output: List of stop objects with attributes id and distance from centre point
+        Output: Dictionary of stops with stop id as key and distance in m from centre point as value
         """
         default_radius=1 #km
         station_list=[]
         #for results that are not null, the more stations we check the better
         #trade off-response time
-        while default_radius<5 and len(station_list)<5:
+        while default_radius<max_walking_distance and len(station_list)<num_stations:
             station_list=Stops.objects.raw('SELECT stop_id, stopID_short,'\
             +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
             + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\
             +' * sin( radians( stop_lat ) ) ) ) AS distance FROM website.stops HAVING distance < '\
-            +'%(default_radius)s ORDER BY distance LIMIT 0 , 10;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(default_radius)})
+            +'%(default_radius)s ORDER BY distance LIMIT %(limit)s;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(default_radius), 'limit': limit})
             default_radius+=1
         if (len(list(station_list))==0):
             return None
-        return(NearbyStations(station_list, many=True))
-        #station_dict={}
-        #for station in station_list:
-        #    station_dict[station.stop_id]=station.distance
-        #return station_dict
+
+        station_dict={}
+        for station in station_list:
+            station_dict[station.stop_id]={'short': station.stopid_short, 'distance':round(station.distance*1000), 'walking_time':self.walking_time(station.distance)}
+        return station_dict
 
     def walking_time(self, distance, speed=4):
         """
         Input: distance from stop, speed is by default 4km/hr
-        Output: time(in hours) needed to walk to the bus stops
+        Output: time(in seconds) needed to walk to the bus stops
         """
-        return float(distance)/float(speed)
-
-    def valid_route_check(self, leave_time, walking_time):
-        if (datetime.now() + timedelta(hours=walking_time)).strftime('%H:%M')<leave_time-buffer:
-            return True
-        return False
+        return round((float(distance)/float(speed))*3600)
 
 
-    def find_direct_route(self, start_coord, end_coord, day, time):
+    def make_walking_segment(self, start_lat, start_lon, end_lat, end_lon, end_name, walking_time, walking_distance, start_time=None):
         """
-        Input: start poition as lat long, end position as lat long
-               day of the week(optional, today if null), time(optional, now if null)
+        input: Strings(starting coordinates, end coordinates, walking_time of segment, starting time of segments)
+        output: walking segment as json
+        """
+        return {
+            "duration_sec": walking_time,
+            "instruction": "Walk to "+end_name,
+            "start_lat": start_lat,
+            "start_lon": start_lon,
+            "end_lat": end_lat,
+            "end_lon": end_lon,
+            "distance": walking_distance,
+            "travel_mode": "WALKING",
+            "start_time": start_time,
+
+            "markers" : [start_lat, start_lon, end_lat, end_lon]
+
+        }
+
+    def make_transit_segment(self, start_lat, start_lon, end_lat, end_lon, end_name, route, start_stop, end_stop, trip_headsign):
+        return {
+                "instruction": "Bus towards "+end_name,
+                "trip_headsign": trip_headsign,
+                "start_lat": start_lat,
+                "start_lon": start_lon,
+                "end_lat": end_lat,
+                "end_lon": end_lon ,
+                "travel_mode": "TRANSIT",
+                "route": route ,
+                "arrival_stop": end_stop,
+                "departure_stop": start_stop,
+
+                "markers" : [start_lat, start_lon, end_lat, end_lon]
+
+        }
+
+
+    def find_direct_routes(self, start_coord, end_coord, day, date, time):
+        """
+        Input: start poition as dictionary with lat long as keys, end position as dictionary with lat long
+               as keys.
+        Our own routing which finds a direct route from one station to another.
         Output: 10 routes from start to stop order by stop_ids(for future walking calc)
         """
+        #holds information 'start_stations', 'end_stations, 'date', 'start_time', 'end_time' for query
         inputs={}
         start_stations=self.get_stations_nearby(start_coord["lat"],
                                                 start_coord["lon"])
@@ -392,52 +597,108 @@ class SearchByDestination(SearchByStop):
                                               end_coord["lon"])
         if start_stations==None or end_stations==None:
             return "There are no direct routes within a 5km walk"
+
         #convert list to tuples with stop ids for query
         start_stop_list = []
         for stop in start_stations.keys():
             start_stop_list += stop,
         inputs['start_stations']=tuple(start_stop_list)
         end_stop_list = []
-        for stop in start_stations.keys():
+        for stop in end_stations.keys():
             end_stop_list += stop,
         inputs['end_stations']=tuple(end_stop_list)
-
-        day=datetime.now().strftime("%A").lower()
-        inputs[day]=1
-        inputs['date']=datetime.now().strftime('%Y%m%d')
+        inputs['date']=(datetime.strptime(date,"%d-%m-%Y")).strftime('%Y%m%d')
         #get time 30 minutes before hand to allow for prediction model difference
-        inputs['start_time']=(datetime.strptime(self.get_time(),"%H:%M")-timedelta(minutes=30)).strftime('%H:%M:%S')
-        inputs['end_time']=(datetime.strptime(self.get_time(),"%H:%M")+timedelta(minutes=60)).strftime('%H:%M:%S')
+        inputs['start_time']=(datetime.strptime(time,"%H:%M:%S")-timedelta(minutes=30)).strftime('%H:%M:%S')
+        inputs['end_time']=(datetime.strptime(time,"%H:%M:%S")+timedelta(minutes=60)).strftime('%H:%M:%S')
+        inputs['services']=[]
+        for service in Calendar.objects.filter(**{day:1}, start_date__lte=inputs['date'], end_date__gte=inputs['date']):
+            inputs['services']+=service.service_id,
 
-        #checks that trip will leave within the time frame given, the two stops are in the same trip,
-        #the service runs on the correct day and the destination stop comes after the start stop
-        #
+        #Finds all trip info for direct routes from one of the given start stations and stop stations
+        #within a given time on a specific day.
+        #Attributes returned
+        #'trip_id', 'arrival_time', 'departure_time', 'trip_headsign', 'route_short_name',
+        #'start_stop_id', start_stop_id_long', start_stop_name, 'start_lat', 'start_lon', 'start_num',
+        #''end_stop_id', 'end_lat', 'end_lon', 'end_num', end_stop_id_long, end_stop_name'
 
-        trips=StopTimes.objects.raw("SELECT distinct t.trip_headsign, t.route_id, st1.trip_id, st1.departure_time, st1.stop_id as start_stop_id, "\
-        +"st1.stop_sequence as start_num, st1.shape_dist_traveled as start_dist,st2.arrival_time, st2.stop_id as end_stop_id, st2.stop_sequence as end_num ,"\
-        +" st2.shape_dist_traveled as end_dist FROM website.stop_times as st1, website.stop_times as st2, website.trips "\
-        +"as t, website.calendar as c where st1.stop_id in %(start_stations)s and st2.stop_id in %(end_stations)s"\
-        +" and st1.stop_sequence<st2.stop_sequence and st1.departure_time>=%(start_time)s and st1.departure_time<=%(end_time)s and st2.departure_time>%(start_time)s"\
-        +" and st1.trip_id=t.trip_id and t.service_id=c.service_id and c.friday=1 and st1.trip_id=st2.trip_id"\
-        +" and c.start_date<=%(date)s and c.end_date>=%(date)s order by st1.stop_id limit 20;",inputs)
+        trips=StopTimes.objects.raw("SELECT distinct t.trip_headsign, r.route_short_name, st1.trip_id,"\
+        +" st1.departure_time, s1.stop_id as start_stop_id_long, s1.stopID_short as start_stop_id, s1.stop_name as start_stop_name,"\
+        +"s1.stop_lat as start_lat, s1.stop_lon as start_lon, st1.stop_sequence as start_num, "\
+        +"st2.arrival_time, s2.stopID_short as end_stop_id, s2.stop_id as end_stop_id_long, "\
+        +"s2.stop_name as end_stop_name, s2.stop_lat as end_lat, s2.stop_lon as end_lon, "\
+        +"st2.stop_sequence as end_num FROM website.stop_times as st1, website.stop_times as st2,"\
+        +" website.trips as t, website.routes as r, website.stops as s1, "\
+        + "website.stops as s2  where st1.stop_id in  %(start_stations)s"\
+        +" and st2.stop_id in  %(end_stations)s and st1.stop_sequence<st2.stop_sequence and st1.departure_time>=%(start_time)s and "\
+        +"st1.departure_time<=%(end_time)s and st2.departure_time>%(start_time)s"\
+        +" and st1.trip_id=t.trip_id and t.service_id in %(services)s and st1.trip_id=st2.trip_id"\
+        +"  and r.route_id=t.route_id and s1.stop_id=st1.stop_id"\
+        +" and s2.stop_id=st2.stop_id order by s1.stopID_short limit 10;",inputs)
 
-        routes=[]
+        results=[]
         for trip in trips:
-            #run machine learning model to get start_time
-            #trip.departure_time=start_time
-            start_walk_time=self.walking_time(start_stations[trip.start_stop_id])
-            return (datetime.strptime(time, '%H:%M') + timedelta(minutes = start_walk_time*60)).strftime("%H:%M")
-            leavetime = self.get_arrival_time()
+            route=[]
+            end_name='destination'
+            route+=self.make_walking_segment(start_coord['lat'], start_coord['lon'], trip.start_lat, trip.start_lon, trip.start_stop_name, start_stations[trip.start_stop_id_long]['walking_time'], start_stations[trip.start_stop_id_long]['distance'], time),
+            route+=self.make_transit_segment(trip.start_lat, trip.start_lon, trip.end_lat, trip.end_lon, trip.end_stop_name, trip.route_short_name, trip.start_stop_id, trip.end_stop_id, trip.trip_headsign),
+            route+=self.make_walking_segment(trip.end_lat, trip.end_lon, end_coord["lat"], end_coord['lon'], end_name, end_stations[trip.end_stop_id_long]['walking_time'], end_stations[trip.end_stop_id_long]['distance']),
+            results+=route,
+        return results
 
-            if self.valid_route_check(leavetime, start_walk_time):
-                #run machine learning to predict arrival time
-                #trip.arrival_time=arrival_time
-                end_walk_time=self.walking_time(end_stations[trip.end_stop_id])
-                routes+=[start_walk_time,trip,end_walk_time]
+    def format_response(self, results):
 
-        #each object contains the walking distance to stop, its headsign, route_id, trip_id, departure_time, start stop_id, start stop_sequence,
-        #start shape_dist_traveled, dest arrival_time, dest stop_id, dest stop_sequence, dest shape_dist_traveled and walking dist to destination
-        return routes
+        response = []
+        results = results[:3]
+        for result in results:
+            route_breakdown = {}
+            route_breakdown["duration"] = result["duration"]
+            route_breakdown["directions"] = []
+            for i in range(0, len(result)+1):
+                route_dict = {
+                    "instruction": result["route"][i]["instruction"],
+                    "time": result["route"][i]["duration_sec"] // 60,
+                }
+                route_dict["travel_mode"] = ""
+                if result["route"][i]["travel_mode"] == "TRANSIT":
+                    route_dict["travel_mode"] = result["route"][i]["route"]
+                else:
+                    route_dict["travel_mode"] = "WALKING"
+
+                route_breakdown["directions"] += [route_dict]
+        return route_breakdown
+
+    """        for i in range(0,len(results)):
+            result=results[i]
+            route_breakdown = {"instructions": {'total_journey_time':[], 'instruction_breakdown':[]}, "markers": [], "polylines": [], "busInfo": {'route':[]}, "travel_mode": []}
+            route_breakdown['instructions']['total_journey_time']=result['duration']
+            for j in range(0, len(result['route'])):
+                segment=result['route'][j]
+                route_breakdown['travel_mode']+=segment['travel_mode'],
+                if segment['travel_mode']=='WALKING':
+                    route_breakdown["instructions"]['instruction_breakdown']+=[segment['instruction']+ '\t Distance'+str(segment['distance'])+'km.']
+                else:
+                    route_breakdown["instructions"]['instruction_breakdown']+=[segment['instruction']]
+                if segment['travel_mode']=='TRANSIT':
+                    route_breakdown["instructions"]['instruction_breakdown'][j]+="\nDeparture stop: "+str(segment['arrival_stop'])
+                    route_breakdown["instructions"]['instruction_breakdown'][j]+="\nPredicted bus departure time: "+str(segment['arrival_stop'])
+                    route_breakdown["instructions"]['instruction_breakdown'][j]+="\nArrival stop: "+str(segment['arrival_stop'])
+                    if len(segment['later_bus_arrivals']) !=0:
+                        route_breakdown["instructions"]['instruction_breakdown'][j]+="\nLater departure times: "
+                        for k in range(0, len(segment['later_bus_arrivals'])):
+                            route_breakdown["instructions"]['instruction_breakdown'][j]+=str(segment['later_bus_arrivals'][k]['arrival_time'])+","
+                        route_breakdown["instructions"]['instruction_breakdown'][j]=route_breakdown["instructions"]['instruction_breakdown'][j][:-1]
+                route_breakdown["instructions"]['instruction_breakdown'][j]+='\nJourney leg travel time: '+str(segment['duration_sec'])
+                for marker in segment['markers']:
+                    if marker not in route_breakdown['markers']:
+                            route_breakdown['markers']+=marker,
+                if 'polyline' in segment.keys():
+                    route_breakdown['polylines']+=segment['polyline'],
+                if segment['travel_mode']=='TRANSIT':
+                    route_breakdown['busInfo']['route']+=segment['route'],
+            response+=route_breakdown,
+    """
+
 
 
 class StopsAutocomplete(views.APIView):
@@ -479,6 +740,132 @@ class StopsAutocomplete(views.APIView):
 
         return stop_list
 
+
+class TouristPlanner(views.APIView):
+    """
+    Returns best route through series of tourist destinations
+    """
+
+    def get(self, request):
+        """
+        Input: user http request
+        Output: array of lowest cost route
+        """
+        attractions = self.get_attractions()
+        home = self.get_home()
+        attractions = self.remove_home_from_attractions(attractions, home)
+        attractions = list(permutations(attractions))
+        attractions = self.convert_tuples_to_list(attractions)
+        attractions = self.add_home(attractions, home)
+        best_route = self.get_best_route(attractions)
+        return Response(best_route)
+
+    def get_attractions(self):
+        """
+        Input: request from user
+        Output: attractions as array
+        """
+        attractions = []
+        i = 0
+        while self.request.GET.get("attraction"+str(i)) != "null" and i <= 4:
+            attractions += [self.request.GET.get("attraction"+str(i))]
+            i += 1
+        return attractions
+
+    def get_home(self):
+        """
+        Input: request from user
+        Output: home as string
+        """
+        return self.request.GET.get("home")
+
+    def remove_home_from_attractions(self, attractions, home):
+        """
+        Input: attractions as array, home as string
+        Output: home removed from attractions
+        """
+        while home in attractions:
+            attractions.remove(home)
+        return attractions
+
+    def convert_tuples_to_list(self, attractions):
+        """
+        Input: List of tuples
+        Output: List of lists
+        """
+        for i in range(len(attractions)):
+            attractions[i] = list(attractions[i])
+        return attractions
+
+    def add_home(self, permutations, home):
+        """
+        Input: permutations as array of arrays, home as string
+        Output: home added to start and end of each permutation
+        """
+        if permutations[0][0] != home:
+            for i in range(len(permutations)):
+                permutations[i] = [home] + permutations[i] + [home]
+        return permutations
+
+    def get_best_route(self, attractions):
+        """
+        Input: permutations as array of arrays
+        Output: lowest cost permutation as array, cost of permutation
+        """
+        minimum = float("inf")
+        lowest_cost_permutation = []
+        r = redis.Redis(host="localhost", port=6379, db=0)
+
+        for permutation in attractions:
+            total_cost = 0
+            i = 0
+            while total_cost < minimum and i < len(permutation)-1:
+                if r.exists(str(permutation[i]) + " " + str(permutation[i+1])):
+                    cost = r.get(str(permutation[i]) + " " + str(permutation[i+1]))
+                    total_cost += int(cost.decode())
+                elif i == 0:
+                    cost = self.get_cost_from_api(permutation[i], permutation[i+1])
+                    r.set(str(permutation[i]) + " " + str(permutation[i+1]), cost, ex=3600)
+                    total_cost += cost
+                elif i == len(permutation)-2:
+                    cost = self.get_cost_from_api(permutation[i], permutation[i+1])
+                    r.set(str(permutation[i]) + " " + str(permutation[i+1]), cost, ex=3600)
+                    total_cost += cost
+                else:
+                    cost = self.get_cost_from_database(permutation[i], permutation[i+1])
+                    r.set(str(permutation[i]) + " " + str(permutation[i+1]), cost, ex=3600)
+                    total_cost += cost
+                i += 1
+            if total_cost < minimum:
+                lowest_cost_permutation = permutation
+                minimum = total_cost
+
+            return lowest_cost_permutation, minimum
+
+    def get_cost_from_api(self, origin, destination):
+        """
+        Input: origin, destination as string
+        Output: cost as int
+        """
+        call = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&key=" + os.getenv("GOOGLE") + "&mode=transit&transit_mode=bus&region=IE"
+        response = requests.get(call)
+        response_json = json.loads(response.text)
+        result = response_json["routes"][0]["legs"][0]["distance"]["value"]
+        return result
+
+    def get_cost_from_database(self, origin, destination):
+        """
+        Input: origin, destination as string
+        Output: cost as int
+        """
+        return Costs.objects.filter(origin=origin, destination=destination)[0].cost
+
+class GetTouristAttractions(generics.ListCreateAPIView):
+    """
+    Handles returning results from database for journey planner attraction info
+    """
+    queryset = Touristattractions.objects.all()
+    serializer_class = RouteSerializer
 
 class RouteView(generics.ListCreateAPIView):
     """

@@ -32,7 +32,7 @@ const DropDown = props => {
   } else {
     optionList = props.suggestions.map((option, index) => {
       return (
-        <option key={index} value={option} onClick={onClick} >
+        <option key={index} value={option} onClick={onClick}>
           {option}
         </option>
       );
@@ -40,7 +40,12 @@ const DropDown = props => {
   }
 
   return (
-    <select defaultValue="Direction" onClick={onClick} onKeyDown={onKeyDown} id='dropdown'>
+    <select
+      defaultValue="Direction"
+      onClick={onClick}
+      onKeyDown={onKeyDown}
+      id="dropdown"
+    >
       {optionList}
     </select>
   );

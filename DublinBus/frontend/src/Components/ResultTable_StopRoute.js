@@ -9,14 +9,15 @@ const ResultTable_StopRoute = props => {
 
   return (
     <div>
+    {console.log(data)}
       {props.data.map((x, y) => (
         //    Loop throught
         <div className="row resultRows">
           <div className="col-4 busNumber">
-            <p key={y}>{x.route}</p>
+            <p key={y}>{x.instruction}</p>
           </div>
           <div className="col-6 busArrivalTime ">
-            <p key={y}>{x.arrival_time} mins</p>
+            <p key={y}>{x.time}</p>
           </div>
         </div>
       ))}

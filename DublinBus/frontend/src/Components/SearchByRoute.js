@@ -7,7 +7,6 @@ import Autocomplete from "./Autocomplete";
 import DropDown from "./DropDown";
 import axios from "axios";
 
-
 var routeList = require("../Json/routes_directions.json");
 
 //This Component is Search by Route at the mobile view ports
@@ -42,7 +41,7 @@ class SearchByRoute extends Component {
   }
 
   updateStop(e) {
-    this.setState({ stopNumber: e });
+    this.setState({ stopNumber: e.substring(0, e.indexOf(","))});
   }
 
   updateDirectionAutocomplete(e) {
@@ -55,19 +54,17 @@ class SearchByRoute extends Component {
       url: "http://localhost:8000/api/stopsautocomplete/",
       params: {
         route: this.state.routeNumber,
-        direction: this.state.direction,
+        direction: this.state.direction
       }
     })
       .then(response => {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-        {console.log("here")}
         return response.data;
       })
       .then(data => this.setState({ stopsAutocomplete: data, loaded: true }));
   }
-
 
   handleSubmit(e) {
     {
@@ -83,7 +80,10 @@ class SearchByRoute extends Component {
         id="EntireBox_SearchRoute"
       >
         <div className="container SearchByRouteBox bg-light">
-                    <AppViewHeader SearchState={this.state.SearchState} Return="toHomePage" />
+          <AppViewHeader
+            SearchState={this.state.SearchState}
+            Return="toHomePage"
+          />
           <AppViewFavourAndLogin />
           <div id="formColor">
             <form onSubmit={this.handleSubmit}>
@@ -116,7 +116,7 @@ class SearchByRoute extends Component {
 
               <div className="row rowSpace ">
                 <div className="col-5 ">
-                  <label htmlFor="fname"> Departure :</label>
+                  <label htmlFor="fname"> Departure Stop:</label>
                 </div>
                 <div className="col-7  inputBox">
                   <Autocomplete
@@ -128,17 +128,17 @@ class SearchByRoute extends Component {
               </div>
             </form>
           </div>
-<div   className="col-8  bottomClass">
-          <Link to={"/ResultPage_Stop_Route"}>
+        <div className="col-8  bottomClass">
+          <Link to={`/ResultPage_Stop_Route/${this.state.stopNumber}/${this.state.routeNumber}`}>
             <button
               type="button"
-              className="btn btn-warning  "
+              className="btn btn-warning "
               id="SubmitButton"
             >
               Submit
             </button>
           </Link>
-</div>
+        </div>
         </div>
       </div>
     );
