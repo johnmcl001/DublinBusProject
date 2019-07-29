@@ -77,7 +77,7 @@ class SearchbyDestination extends Component {
     //set time
     this.setState({
       initial_Time: Time,
-      startTimeToBackEnd: Time.getHours() + ":" + Time.getMinutes()
+      startTimeToBackEnd: Time.getHours() + ":" + Time.getMinutes() + ":" + Time.getSeconds()
     });
   }
 
@@ -207,7 +207,7 @@ class SearchbyDestination extends Component {
                       showTimeSelect
                       showTimeSelectOnly
                       timeIntervals={15}
-                      dateFormat="h:mm aa"
+                      dateFormat="hh:mm:ss aa"
                       timeCaption="Time"
                       placeholderText="Now"
                     />
