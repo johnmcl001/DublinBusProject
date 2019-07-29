@@ -302,7 +302,6 @@ class SearchByDestination(SearchByStop):
         if len(dir_route)==0:
             routes = self.get_route(time, day_info['date'], start_coords,end_coords)
             route_segments = self.get_route_segments(routes, time)
-            return Response(routes)
             route_segments=self.validate(route_segments, time, day_info,weather)
             results=self.sort_routes(route_segments)
 
@@ -845,6 +844,12 @@ class TouristPlanner(views.APIView):
         """
         return Costs.objects.filter(origin=origin, destination=destination)[0].cost
 
+class GetTouristAttractions(generics.ListCreateAPIView):
+    """
+    Handles returning results from database for journey planner attraction info
+    """
+    queryset = Touristattractions.objects.all()
+    serializer_class = RouteSerializer
 
 class RouteView(generics.ListCreateAPIView):
     """

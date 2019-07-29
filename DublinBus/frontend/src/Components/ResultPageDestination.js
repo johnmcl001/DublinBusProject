@@ -10,7 +10,7 @@ import { FaWalking, FaLevelDownAlt, FaMapMarkerAlt } from "react-icons/fa";
 //This Component is the Result page of Search By Destination
 class ResultPageDestination extends Component {
   render() {
-    console.log(this.props)
+    console.log(this.props);
     return (
       <div
         className="EntireBox  container col-md-12  position-absolute bg-light"
@@ -22,8 +22,8 @@ class ResultPageDestination extends Component {
         </div>
 
         <div>
-          <h4 className="col-8 resultLabel  " >
-          {this.props.match.params.start} to {this.props.match.params.end}
+          <h4 className="col-8 resultLabel  ">
+            {this.props.match.params.start} to {this.props.match.params.end}
           </h4>
           <DataProvider
             endpoint="destination"

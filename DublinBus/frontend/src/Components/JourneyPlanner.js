@@ -13,6 +13,7 @@ import Cards from "./JourneyPlanner_Card";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Imgx from "../Static/img/img1.jpg";
+import axios from "axios";
 
 //This Component is Search by Destination at the mobile view ports
 class JourneyPlanner extends Component {
@@ -30,8 +31,11 @@ class JourneyPlanner extends Component {
       currentLocation_long: null,
 
       startLocation_lat: null,
-      startLocation_long: null
+      startLocation_long: null,
+
+      cards: []
     };
+
     this.handleChangeDate = this.handleChangeDate.bind(this);
     this.handleChangeTime = this.handleChangeTime.bind(this);
 
@@ -39,6 +43,7 @@ class JourneyPlanner extends Component {
 
     this.setPosition = this.setPosition.bind(this);
     this.getLocation = this.getLocation.bind(this);
+    console.log(this.state.cards);
   }
 
   updateCurrentPosition(e) {
@@ -85,8 +90,6 @@ class JourneyPlanner extends Component {
   }
 
   render() {
-    console.log(this.state.currentLocation_lat);
-
     return (
       <div>
         <div className="EntireBox  SearchByDestinationBox JoureyPlaner bg-light container col-md-12  position-absolute  ">
@@ -195,7 +198,20 @@ class JourneyPlanner extends Component {
         </div>
 
         <div className="ListofAllAttractions d-none d-lg-block">
-          <Cards />
+          {axios({
+            method: "get",
+            url: "http://localhost:8000/api/attractions/"
+          }).then(response => {
+            if (response.status === 200) {
+              this.state.cards = response.data;
+            }
+          })}
+          {this.state.cards.map((x, y) => (
+            //    Loop throught
+            <Cards name={x.name} description={x.description} />
+          ))}
+          }
+          <Cards key={y} name={x.name} description={x.description} />
           <Cards />
         </div>
       </div>

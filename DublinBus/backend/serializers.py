@@ -55,8 +55,8 @@ class RouteSerializer(serializers.ModelSerializer):
         """
         Meta data for RouteSerializer, model and what to return
         """
-        model = Routes
-        fields = "__all__"
+        model = Touristattractions
+        fields = ["name", "description", "address"]
 
 class StopTimeSerializer(serializers.ModelSerializer):
     """

@@ -31,7 +31,6 @@ class MarkerContainer extends Component {
     let markers;
     if (this.state.markers !== null) {
       return this.state.markers.map(station => {
-
         return (
           <Marker
             key={station}

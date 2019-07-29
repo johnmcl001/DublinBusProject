@@ -76,7 +76,8 @@ class SearchbyDestination extends Component {
     //set time
     this.setState({
       initial_Time: Time,
-      startTimeToBackEnd: Time.getHours() + ":" + Time.getMinutes() + ":" + Time.getSeconds()
+      startTimeToBackEnd:
+        Time.getHours() + ":" + Time.getMinutes() + ":" + Time.getSeconds()
     });
   }
 

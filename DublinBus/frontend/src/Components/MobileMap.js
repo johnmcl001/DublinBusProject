@@ -1,4 +1,3 @@
-
 import React from "react";
 import Map from "./Map";
 import "../Static/StyleSheet/MobileMap.css";
