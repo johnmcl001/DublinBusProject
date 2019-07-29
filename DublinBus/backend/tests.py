@@ -402,3 +402,144 @@ class StopsAutoCompleteTest(TestCase):
         }
         self.assertEqual(self.test_view.get_params(), expected)
 
+class TouristPlannerTest(TestCase):
+    """
+    UnitTests for StopsAutoComplete
+    """
+
+    def setUp(self):
+        """
+        Setup fake models for testing
+        """
+        Touristattractions.objects.create(
+            name="C",
+            lat=3.3,
+            lon=4.4,
+            description="this",
+            rating=3.3,
+            raters=2,
+            address="ee"
+        )
+        Costs.objects.create(
+            origin=Touristattractions.objects.create(
+                name="A",
+                lat=3.3,
+                lon=4.4,
+                description="this",
+                rating=3.3,
+                raters=2,
+                address="ee"
+            ),
+            destination=Touristattractions.objects.create(
+                name="B",
+                lat=3.3,
+                lon=4.4,
+                description="this",
+                rating=3.3,
+                raters=2,
+                address="ee"
+            ),
+            cost=7
+        )
+
+        self.factory = RequestFactory()
+
+        self.request = self.factory.get("/api/touristplanner/?attraction0=Trinity+College+Dublin&attraction1=The+Spire&attraction2=Guinness+Storehouse&attraction3=Westin&attraction4=null&home=Westin")
+        self.test_view = self.setup_view(TouristPlanner(),
+                                                  self.request)
+
+        def tearDown(self):
+            del self.test_view
+
+    def setup_view(self, view, request, *args, **kwargs):
+        """
+        Sets up view so its methods can be called and tested
+        """
+        view.request = request
+        view.args = args
+        view.kwargs = kwargs
+        return view
+
+    def test_get_attractions(self):
+        """
+        Should return tourist attractions as array
+        """
+        expected = [
+            "Trinity College Dublin",
+            "The Spire",
+            "Guinness Storehouse",
+            "Westin"
+        ]
+        self.assertEqual(self.test_view.get_attractions(), expected)
+
+    def test_get_home(self):
+        """
+        Should return home as string
+        """
+        self.assertEqual(self.test_view.get_home(), "Westin")
+
+    def test_remove_home_from_attractions(self):
+        """
+        Should return attractions without home as array
+        """
+        test_input = [
+            "Trinity College Dublin",
+            "The Spire",
+            "Guinness Storehouse",
+            "Westin"
+        ]
+
+        expected = [
+            "Trinity College Dublin",
+            "The Spire",
+            "Guinness Storehouse",
+        ]
+        self.assertEqual(self.test_view.remove_home_from_attractions(test_input, "Westin"), expected)
+
+    def test_compute_permutations(self):
+        """
+        Should return all permutations of attractions
+        """
+        test_input = ["A", "B", "C"]
+        expected = [
+            ['A', 'B', 'C'],
+            ['B', 'A', 'C'],
+            ['C', 'A', 'B'],
+            ['A', 'C', 'B'],
+            ['B', 'C', 'A'],
+            ['C', 'B', 'A'],
+
+        ]
+        self.assertEqual(self.test_view.compute_permutations(len(test_input),
+                                                             test_input),
+                                                            expected)
+
+    def test_add_home(self):
+        """
+        Should return permuatations with home added as array of arrays
+        """
+        test_input = [
+            ['A', 'B', 'C'],
+            ['B', 'A', 'C'],
+            ['C', 'A', 'B'],
+            ['A', 'C', 'B'],
+            ['B', 'C', 'A'],
+            ['C', 'B', 'A'],
+
+        ]
+        expected = [
+            ['D', 'A', 'B', 'C', 'D'],
+            ['D', 'B', 'A', 'C', 'D'],
+            ['D', 'C', 'A', 'B', 'D'],
+            ['D', 'A', 'C', 'B', 'D'],
+            ['D', 'B', 'C', 'A', 'D'],
+            ['D', 'C', 'B', 'A', 'D'],
+
+        ]
+        self.assertEqual(self.test_view.add_home(test_input, "D"), expected)
+
+    def test_get_cost_from_database(self):
+        """
+        Should return cost as int
+        """
+        self.assertEqual(self.test_view.get_cost_from_database("A", "B"), 7)

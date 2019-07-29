@@ -12,7 +12,22 @@ class Apikeys(models.Model):
     api_key = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
+        managed = False
         db_table = 'ApiKeys'
+
+
+class Touristattractions(models.Model):
+    name = models.CharField(primary_key=True, max_length=75)
+    lat = models.FloatField(blank=True, null=True)
+    lon = models.FloatField(blank=True, null=True)
+    description = models.CharField(max_length=250, blank=True, null=True)
+    rating = models.FloatField(blank=True, null=True)
+    raters = models.IntegerField(blank=True, null=True)
+    address = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'TouristAttractions'
 
 
 class Agency(models.Model):
@@ -23,6 +38,7 @@ class Agency(models.Model):
     agency_lang = models.TextField(blank=True, null=True)
 
     class Meta:
+        managed = False
         db_table = 'agency'
 
 
@@ -105,6 +121,7 @@ class Calendar(models.Model):
     sunday = models.TextField(blank=True, null=True)
 
     class Meta:
+        managed = False
         db_table = 'calendar'
 
 
@@ -114,8 +131,20 @@ class CalendarDates(models.Model):
     exception_type = models.TextField(blank=True, null=True)
 
     class Meta:
+        managed = False
         db_table = 'calendar_dates'
         unique_together = (('service', 'date'),)
+
+
+class Costs(models.Model):
+    origin = models.ForeignKey(Touristattractions, models.DO_NOTHING, db_column='origin', primary_key=True, related_name="origin")
+    destination = models.ForeignKey(Touristattractions, models.DO_NOTHING, db_column='destination', default="dest")
+    cost = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'costs'
+        unique_together = (('origin', 'destination'),)
 
 
 class DjangoAdminLog(models.Model):
@@ -163,8 +192,8 @@ class DjangoSession(models.Model):
 
 
 class Forecast(models.Model):
-    date = models.CharField(primary_key=True, max_length=30)
-    start_time = models.CharField(max_length=30)
+    date = models.TextField(blank=True, null=True)
+    start_time = models.TextField(blank=True, null=True)
     end_time = models.TextField(blank=True, null=True)
     temperature = models.TextField(blank=True, null=True)
     cloud_percent = models.TextField(blank=True, null=True)
@@ -172,8 +201,8 @@ class Forecast(models.Model):
     description = models.TextField(db_column='Description', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
+        managed = False
         db_table = 'forecast'
-        unique_together = (('date', 'start_time'),)
 
 
 class Routes(models.Model):
@@ -189,12 +218,24 @@ class Routes(models.Model):
 
 class RoutesPerStop(models.Model):
     route_id = models.CharField(primary_key=True, max_length=45)
-    stop_id = models.CharField(max_length=45)
+    stop_id = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'routes_per_stop'
         unique_together = (('route_id', 'stop_id'),)
+
+
+class Shapes(models.Model):
+    shape_id = models.TextField(blank=True, null=True)
+    shape_pt_lat = models.TextField(blank=True, null=True)
+    shape_pt_lon = models.TextField(blank=True, null=True)
+    shape_pt_sequence = models.TextField(blank=True, null=True)
+    shape_dist_traveled = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'shapes'
 
 
 class StopTimes(models.Model):
@@ -216,10 +257,11 @@ class Stops(models.Model):
     stop_lat = models.FloatField(blank=True, null=True)
     zone_id = models.FloatField(blank=True, null=True)
     stop_lon = models.FloatField(blank=True, null=True)
-    stop_id = models.CharField(primary_key=True, max_length=60)
+    stop_id = models.CharField(primary_key=True, max_length=30)
     stop_name = models.TextField(blank=True, null=True)
     location_type = models.BigIntegerField(blank=True, null=True)
-    stopid_short = models.IntegerField(db_column='stopID_short', blank=True, null=True)  # Field name made lowercase.
+    stopid_short = models.BigIntegerField(db_column='stopID_short', blank=True, null=True)  # Field name made lowercase.
+    here_api = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False
