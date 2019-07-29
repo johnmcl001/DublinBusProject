@@ -152,7 +152,7 @@ class SearchByStop(views.APIView):
         Input: Http request, bus_stop_info
         Ouput: route(s) as list
         """
-        if self.request.GET.get("route") != None:
+        if self.request.GET.get("route") != "null":
             routes = [self.request.GET.get("route")]
         else:
             routes = bus_stop_info["routes"][0]

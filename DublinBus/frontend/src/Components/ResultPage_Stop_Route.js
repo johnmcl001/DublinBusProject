@@ -41,6 +41,7 @@ class ResultPage_Stop_Route extends Component {
             <DataProvider
               endpoint="stop"
               stopnumber={this.props.match.params.stopnumber}
+              route={this.props.match.params.route}
               render={data => <ResultTable_StopRoute data={data} />}
             />
           </form>

@@ -13,7 +13,7 @@ class SearchByStop extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      stopnumber: "Stop Number",
+      stopNumber: "Stop Number",
       stopsautocomplete: Object.keys(busList)
     };
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -21,7 +21,7 @@ class SearchByStop extends Component {
   }
 
   updateStop(e) {
-    this.setState({ stopnumber: e });
+    this.setState({ stopNumber: e });
   }
 
   handleSubmit() {
@@ -52,7 +52,7 @@ class SearchByStop extends Component {
         </div>
 
         <div className="col-8  bottomClass">
-          <Link to={`/ResultPage_Stop_Route/${this.state.stopnumber}`}>
+          <Link to={`/ResultPage_Stop_Route/${this.state.stopNumber}/null`}>
             <button
               type="button"
               className="btn btn-warning "
