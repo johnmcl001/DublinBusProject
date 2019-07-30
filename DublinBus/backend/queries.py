@@ -77,7 +77,7 @@ def get_stations_nearby(dest_lat, dest_lon, num_stations=8, radius=5):
     station_list=[]
     #for results that are not null, the more stations we check the better
     #trade off-response time
-    while default_radius<radius and len(station_list)<10:
+    while default_radius<radius and len(station_list)<num_stations:
         station_list=Stops.objects.raw('SELECT distinct(stop_id), stopID_short,'\
         +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
         + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\

@@ -256,6 +256,9 @@ class SearchByDestination(SearchByStop):
     """
     Search by destination feature
     Inherits from search by stop
+    First tries to find a direct route between the beginning and end stations
+    If no direct journeys ar available, it looks for a direct crossover.
+    Finally calls API for multi-leg journeys
     """
 
     def get(self, request):
@@ -439,7 +442,7 @@ class SearchByDestination(SearchByStop):
                                 index=results.index(res)
                                 leg['later_bus_arrivals']=results[index:]
                                 leg['start_time']=res['arrival_time']
-                                if StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop).count()==0:
+                                if not StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop).exists()==0:
                                     print('no valid trips')
                                     valid_result=False
                                     break
@@ -630,10 +633,10 @@ class SearchByDestination(SearchByStop):
         # end_routes={'all':['140', '142'], 895:['140', '142']}
 
         stoptimes_all_start_stops=get_relevant_stop_times_per_routes_and_stops(start_stations['list_stop_short'], start_routes['all'], services, time)
-        possible_crossovers_stops_leg1=StopTimes.objects.filter(trip_id__in=stoptimes_all_start_stops).values('stop__stopid_short')
+        possible_crossovers_stops_leg1=StopTimes.objects.filter(trip_id__in=stoptimes_all_start_stops).values('stop__stopid_short').distinct()
         stoptimes_all_end_stops=get_relevant_stop_times_per_routes_and_stops(end_stations['list_stop_short'], end_routes['all'], services, time)
-        possible_crossovers_stops_leg2=StopTimes.objects.filter(trip_id__in=stoptimes_all_end_stops).values('stop__stopid_short')
-        crossovers=Stops.objects.filter(Q(stopid_short__in=possible_crossovers_stops_leg1)&Q(stopid_short__in=possible_crossovers_stops_leg2)).values('stop_id', 'stopid_short')
+        possible_crossovers_stops_leg2=StopTimes.objects.filter(trip_id__in=stoptimes_all_end_stops).values('stop__stopid_short').distinct()
+        crossovers=Stops.objects.filter(Q(stopid_short__in=possible_crossovers_stops_leg1)&Q(stopid_short__in=possible_crossovers_stops_leg2)).values('stop_id', 'stopid_short').distinct()
         if not crossovers.exists():
             print('no crossover')
             return []
@@ -644,16 +647,12 @@ class SearchByDestination(SearchByStop):
             crossover_stations['list_stop_short']+=crossover['stopid_short'],
             crossover_stations[crossover['stop_id']]={'short': str(crossover['stopid_short'])}
         crossover_routes=self.get_routes_for_list_of_stops(crossover_stations['list_stop_short'])
-        print(crossover_routes)
         all_leg1s=self.find_direct_routes(start_stations, crossover_stations, start_routes, crossover_routes, services, time)
         for leg1 in all_leg1s:
             leg2=self.find_direct_routes({'list_stop_long':[leg1.end_stop_id_long], 'list_stop_short':[str(leg1.end_stop_id)], leg1.end_stop_id_long:{'short':leg1.end_stop_id}}, end_stations, {'all':sorted(list(dict.fromkeys(crossover_routes[leg1.end_stop_id]))), leg1.end_stop_id:crossover_routes[leg1.end_stop_id]}, end_routes, services, leg1.arrival_time.strftime("%H:%M:%S"))
             if len(leg2)!=0:
                 results+=[leg1, leg2[0]],
         return results
-
-
-        pass
 
     def format_response(self, results):
         response = []
