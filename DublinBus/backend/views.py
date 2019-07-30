@@ -684,12 +684,49 @@ class TouristPlanner(views.APIView):
         """
         attractions = self.get_attractions()
         home = self.get_home()
+        home_coords = self.get_home_coords(home)
         attractions = self.remove_home_from_attractions(attractions, home)
         attractions = list(permutations(attractions))
         attractions = self.convert_tuples_to_list(attractions)
         attractions = self.add_home(attractions, home)
         best_route = self.get_best_route(attractions)
-        return Response(best_route)
+        best_route_formatted = self.format_route(best_route, home, home_coords)
+        return Response(best_route_formatted)
+
+    def format_route(self, best_route, home, home_coords):
+        """
+        Input: best route as an array
+        Output:best route formatted as json
+        """
+
+        results = []
+        for i in range(len(best_route[0])-1):
+            if best_route[0][i] != home and best_route[0][i+1] != home:
+                start_lat = Touristattractions.objects.filter(name=best_route[0][i])[0].lat
+                start_lon = Touristattractions.objects.filter(name=best_route[0][i])[0].lon
+                end_lat = Touristattractions.objects.filter(name=best_route[0][i+1])[0].lat
+                end_lon = Touristattractions.objects.filter(name=best_route[0][i+1])[0].lon
+            elif best_route[0][i] == home:
+                start_lat = home_coords["lat"]
+                start_lon = home_coords["lon"]
+                end_lat = Touristattractions.objects.filter(name=best_route[0][i+1])[0].lat
+                end_lon = Touristattractions.objects.filter(name=best_route[0][i+1])[0].lon
+            else:
+                start_lat = Touristattractions.objects.filter(name=best_route[0][i])[0].lat
+                start_lon = Touristattractions.objects.filter(name=best_route[0][i])[0].lon
+                end_lat = home_coords["lat"]
+                end_lon = home_coords["lon"]
+
+            results += [{
+                "number": i+1,
+                "attraction": best_route[0][i] + " to " + best_route[0][i+1],
+                "start_lat": start_lat,
+                "start_lon": start_lon,
+                "end_lat": end_lat,
+                "end_lon": end_lon
+            }]
+
+        return results
 
     def get_attractions(self):
         """
@@ -768,6 +805,38 @@ class TouristPlanner(views.APIView):
                 minimum = total_cost
 
             return lowest_cost_permutation, minimum
+
+    def get_home_coords(self, home):
+        """
+        Input: home as string
+        Output: home coordinates as dicitonary
+        """
+
+        if Touristattractions.objects.filter(name__contains=home).exists():
+            info = Touristattractions.objects.filter(name__contains=home)[0]
+            return {"lat": info.lat, "lon": info.lon}
+        else:
+            call = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input="+home.replace(" ", "+")+"&inputtype=textquery&fields=photos,formatted_address,name,opening_hours,geometry&key=" + os.getenv("GOOGLE")
+            response = requests.get(call).text
+            info = json.loads(response)["candidates"][0]
+            name = info["name"]
+            lat = info["geometry"]["location"]["lat"]
+            lon = info["geometry"]["location"]["lng"]
+
+            new_place = Touristattractions(
+                name = name,
+                lat = lat,
+                lon = lon,
+                description = "",
+                rating = 0.0,
+                raters = 0,
+                address = ""
+            )
+
+            new_place.save()
+            return {"lat": lat, "lon": lon}
+
+
 
     def get_cost_from_api(self, origin, destination):
         """

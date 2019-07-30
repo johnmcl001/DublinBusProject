@@ -26,7 +26,7 @@ class JourneyPlanner_Table extends React.Component {
             className="col-10 AttractionName "
             style={{ color: this.props.color }}
           >
-            Guinness Storehouse
+            {this.props.attraction}
           </h4>
         </div>
         <div className="row ">
@@ -39,10 +39,7 @@ class JourneyPlanner_Table extends React.Component {
               className="card TableCardBody card-body col-11"
               style={{ borderColor: color, borderWidth: "2px " }}
             >
-              Anim pariatur cliche reprehenderit, enim eiusmod high life
-              accusamus terry richardson ad squid. Nihil anim keffiyeh
-              helvetica, craft beer labore wes anderson cred nesciunt sapiente
-              ea proident.
+              {this.props.description}
             </div>
           </div>
         </div>

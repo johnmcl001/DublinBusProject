@@ -6,6 +6,7 @@ import "../Static/StyleSheet/ResultPageDestination.css";
 import JourneyPlanner_Table from "./JourneyPlanner_Table";
 import DataProvider from "./DataProvider";
 import JouneryPlanner_ToVisitPiont from "./JourneyPlanner";
+import JourneyPlannerResultsDisplay from "./JourneyPlannerResultsDisplay";
 
 //This Component is the Result page of Search By Destination
 class JourneyPlaner_ResultPage extends Component {
@@ -21,20 +22,14 @@ class JourneyPlaner_ResultPage extends Component {
           <AppViewFavourAndLogin />
         </div>
 
-        <div className="accordion" id="accordionExample">
-          <JourneyPlanner_Table
-            number={1}
-            buttonID={`ResultPageButton_${1}`}
-            cardID={`AttractionStop_${1}`}
-            color={color[1]}
+
+          <DataProvider
+            endpoint="touristplanner"
+            updateMap={this.props.updateMap}
+            attractions='["Trinity College Dublin","The Spire","Guinness Storehouse"]'
+            home='Westin'
+            render={data => <JourneyPlannerResultsDisplay data={data} />}
           />
-          <JourneyPlanner_Table
-            number={2}
-            buttonID={`ResultPageButton_${2}`}
-            cardID={`AttractionStop_${2}`}
-            color={color[2]}
-          />
-        </div>
 
         <ResultPageButton />
       </div>
