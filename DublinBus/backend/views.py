@@ -573,21 +573,24 @@ class SearchByDestination(SearchByStop):
             route_breakdown["duration"] = result["duration"]
             route_breakdown["directions"] = []
             for i in range(0, len(result['journey'])):
-                if int(result["journey"][i]["duration_sec"])==0:
-                    time= 0,
-                elif int(result["journey"][i]["duration_sec"])<60:
-                    time= 1,
+                if int(result["journey"][i]["duration_sec"]) == 0:
+                    time = 0,
+                elif int(result["journey"][i]["duration_sec"]) < 60:
+                    time = 1,
                 else:
-                    time= result["journey"][i]["duration_sec"] // 60
+                    time = result["journey"][i]["duration_sec"] // 60
                 route_dict = {
                     "instruction": result["journey"][i]["instruction"],
-                    "time":time,
+                    "time": time,
                 }
                 route_dict["travel_mode"] = ""
                 if result["journey"][i]["travel_mode"] == "TRANSIT":
                     route_dict["travel_mode"] = result["journey"][i]["route"]
                 else:
                     route_dict["travel_mode"] = "WALKING"
+
+                if route_dict["travel_mode"] != "WALKING":
+                    route_dict["instruction"] = route_dict["instruction"].replace("Bus", route_dict["travel_mode"])
 
                 route_breakdown["directions"] += [route_dict]
             return route_breakdown
