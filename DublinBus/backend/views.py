@@ -52,7 +52,6 @@ class SearchByStop(views.APIView):
         routes = self.get_routes(bus_stop_info)
         trips=get_relevant_stop_times_per_routes_and_stops(stop_number, routes, day_info['day_long'], time, day_info["date"])
         trips=self.format_trips_into_dict_with_routes_as_key(trips)
-        directions = get_direction(day_info['day_long'], day_info["date"], routes, stop_number)
         machine_learning_inputs = self.serialize_machine_learning_input(
                                                             time,
                                                             day_info["day"],
@@ -74,13 +73,17 @@ class SearchByStop(views.APIView):
         Output: formatted results as json
         """
         formatted_results = {"directions": []}
-        for i in range(10):
+        count=0
+        for i in range(0, len(results)):
+            if count==10:
+                break
             formatted_results["directions"] += [
                 {
                     "instruction": results[i]["route"],
                     "time": results[i]["arrival_time"]
                 }
             ]
+            count+=1
         return formatted_results
 
     def get_time(self):
@@ -120,7 +123,7 @@ class SearchByStop(views.APIView):
         for result in weatherResult:
             if result.end_time=="00:00":
                 result.end_time="24:00"
-                if result.start_time <= (datetime.strptime(self.get_time(),"%H:%M:%S")+timedelta(minutes=60)).strftime("%H:%M") < result.end_time:
+                if result.start_time <= (datetime.strptime(time,"%H:%M:%S")+timedelta(minutes=60)).strftime("%H:%M") < result.end_time:
                     forecast = {
                         "temperature": result.temperature,
                         "cloud": result.cloud_percent,
@@ -129,7 +132,7 @@ class SearchByStop(views.APIView):
                     }
                     return forecast
             else:
-                if datetime.strptime(result.start_time, "%H:%M") <= (datetime.strptime(self.get_time(),"%H:%M:%S")+timedelta(minutes=60)) < datetime.strptime(result.end_time, "%H:%M"):
+                if datetime.strptime(result.start_time, "%H:%M") <= (datetime.strptime(time,"%H:%M:%S")+timedelta(minutes=60)) < datetime.strptime(result.end_time, "%H:%M"):
                     forecast = {
                         "temperature": result.temperature,
                         "cloud": result.cloud_percent,
@@ -145,16 +148,15 @@ class SearchByStop(views.APIView):
         """
         filename = os.path.join(dirname, "frontEndBusInfo.json")
         with open(filename) as json_file:
-                    busStopInfo = json.load(json_file)
-        busStopInfo = busStopInfo[stop_number]
-        return busStopInfo
+            busStopInfo = json.load(json_file)
+        return busStopInfo[stop_number]
 
     def get_routes(self, bus_stop_info):
         """
         Input: Http request, bus_stop_info
         Ouput: route(s) as list
         """
-        if self.request.GET.get("route") != "null":
+        if self.request.GET.get("route") != "null" and self.request.GET.get("route") is not None:
             routes = [self.request.GET.get("route")]
         else:
             routes = bus_stop_info["routes"][0]
@@ -173,7 +175,6 @@ class SearchByStop(views.APIView):
                 info[route_short]=[trip]
             else:
                 info[route_short]+=trip,
-
         return info
 
 
@@ -390,8 +391,8 @@ class SearchByDestination(SearchByStop):
                 #ensure a bus will arrive after the previous stage of the journey
                 #is complete
                 if segment["travel_mode"]=="TRANSIT":
-                    start_stop=self.get_station_number(segment["departure_stop"], segment["start_lat"], segment["start_lon"])
-                    end_stop=self.get_station_number(segment["arrival_stop"], segment["end_lat"], segment["end_lon"])
+                    start_stop=get_station_number(segment["departure_stop"], segment["start_lat"], segment["start_lon"])
+                    end_stop=get_station_number(segment["arrival_stop"], segment["end_lat"], segment["end_lon"])
                     if end_stop == None:
                         print('Cant identify stop')
                     #finds all relevant trips that serve the stop and route given by google maps
@@ -492,54 +493,6 @@ class SearchByDestination(SearchByStop):
             results[route]['duration']=float(results[route]['duration'])
         return sorted(results, key=lambda k: k["duration"])
 
-    def get_station_number(self, name, dest_lat, dest_lon):
-        """
-        Input: Station name and coordinates
-        Output: Short stop id
-        """
-        num_of_stations_with_name=Stops.objects.filter(stop_name=name).count()
-        if num_of_stations_with_name!=1:
-            #Finds stations within 500m of the coordinates and returns 1
-            for station in Stops.objects.raw('SELECT stop_id, stopID_short,'\
-            +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
-            + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\
-            +' * sin( radians( stop_lat ) ) ) ) AS distance FROM website.stops HAVING distance < '\
-            +'%(default_radius)s ORDER BY distance LIMIT 0 , 1;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(.5)}):
-                return station.stopid_short
-        else:
-            return Stops.objects.get(stop_name=name).stopid_short
-
-    def get_stations_nearby(self, dest_lat, dest_lon, num_stations=10, max_walking_distance=5, limit=20):
-        """
-        Input: Centre point coordinates
-        Output: Dictionary of stops with stop id as key and distance in m from centre point as value
-        """
-        default_radius=1 #km
-        station_list=[]
-        #for results that are not null, the more stations we check the better
-        #trade off-response time
-        while default_radius<max_walking_distance and len(station_list)<num_stations:
-            station_list=Stops.objects.raw('SELECT stop_id, stopID_short,'\
-            +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
-            + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\
-            +' * sin( radians( stop_lat ) ) ) ) AS distance FROM website.stops HAVING distance < '\
-            +'%(default_radius)s ORDER BY distance LIMIT %(limit)s;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(default_radius), 'limit': limit})
-            default_radius+=1
-        if (len(list(station_list))==0):
-            return None
-
-        station_dict={}
-        for station in station_list:
-            station_dict[station.stop_id]={'short': station.stopid_short, 'distance':round(station.distance*1000), 'walking_time':self.walking_time(station.distance)}
-        return station_dict
-
-    def walking_time(self, distance, speed=4):
-        """
-        Input: distance from stop, speed is by default 4km/hr
-        Output: time(in seconds) needed to walk to the bus stops
-        """
-        return round((float(distance)/float(speed))*3600)
-
 
     def make_walking_segment(self, start_lat, start_lon, end_lat, end_lon, end_name, walking_time, walking_distance, start_time=None):
         """
@@ -588,9 +541,9 @@ class SearchByDestination(SearchByStop):
         """
         #holds information 'start_stations', 'end_stations, 'date', 'start_time', 'end_time' for query
         inputs={}
-        start_stations=self.get_stations_nearby(start_coord["lat"],
+        start_stations=get_stations_nearby(start_coord["lat"],
                                                 start_coord["lon"])
-        end_stations=self.get_stations_nearby(end_coord["lat"],
+        end_stations=get_stations_nearby(end_coord["lat"],
                                               end_coord["lon"])
         if start_stations==None or end_stations==None:
             return "There are no direct routes within a 5km walk"

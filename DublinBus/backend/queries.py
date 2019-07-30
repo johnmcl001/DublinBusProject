@@ -22,39 +22,28 @@ def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, da
     one hour after the time given.
     Output: list of trips with srrival time, stop_sequence, short stop id and trip id
     """
-    #checks if a string is given, converts to a list
-    try:
-        if stop_numbers.isdigit():
-            stop_numbers=[stop_numbers]
-    except AttributeError as e:
-        pass
-    #date in calendar must be changed
-    date=(datetime.strptime(date,"%d-%m-%Y")).strftime('%Y%m%d')
+    if not isinstance(stop_numbers, list):
+        stop_numbers=[stop_numbers]
+    if not isinstance(route_numbers, list):
+        stop_numbers=[route_numbers]
     #get time 30 minutes before hand to allow for prediction model difference
     start_time=(datetime.strptime(time,"%H:%M:%S")-timedelta(minutes=30)).strftime('%H:%M:%S')
     end_time=(datetime.strptime(time,"%H:%M:%S")+timedelta(minutes=60)).strftime('%H:%M:%S')
-    services=Calendar.objects.filter(**{day:1}, start_date__lte=date, end_date__gte=date)
-    long_ids=Routes.objects.filter(route_short_name__in=route_numbers)
-    trips=Trips.objects.filter(route_id__in=long_ids, service_id__in=services).values('trip_id')
-    trips=StopTimes.objects.filter(trip_id__in=trips, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short__in=stop_numbers).order_by('departure_time')
-    return trips
+    services=get_services(day, date)
+    stop_times=StopTimes.objects.filter(departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short__in=stop_numbers, route_short_name__in=route_numbers).order_by('departure_time')
+    return stop_times
 
 
-def get_direction( day, date, route_numbers, stop_number):
+def get_direction( day, date, route_number, stop_number):
     """
     Input: bus stop number and route_number
     Filters endpoints that the bus goes to (one the given day) based on route and stop given
     Output: Direction of route as int and headsign label
     """
-    stop_number=Stops.objects.get(stopid_short=stop_number)
-    allTrips=StopTimes.objects.filter(stop=stop_number)
-    services=Calendar.objects.filter(**{day:1}, start_date__lte=date, end_date__gte=date)
-    directions = {}
-    for route in route_numbers:
-        allRoutes=Trips.objects.filter(route__route_short_name=route, trip__in=allTrips, service_id__in=services).values('direction_id', 'route__route_long_name').distinct()
-        if len(allRoutes) > 0:
-            directions[route] = allRoutes[0]
-    return directions
+    services=get_services(day, date)
+    route_ids=Routes.objects.filter(route_short_name=route_number)
+    headsigns=Trips.objects.filter(service_id__in=services, route__in=route_ids).values('trip_headsign','direction_id').distinct()
+    return headsigns
 
 def get_station_number( name, dest_lat, dest_lon):
     """
