@@ -9,9 +9,7 @@ class JourneyPlanner_Card extends React.Component {
 
         <div className="card-body">
           <h5>{props.name}</h5>
-          <p className="card-text">
-            {props.description}
-          </p>
+          <p className="card-text">{props.description}</p>
         </div>
         <a type="button" className=" btn btn-success col-6">
           <p>

@@ -196,8 +196,7 @@ class JourneyPlanner extends Component {
 
           {/*</div>*/}
         </div>
-        </div>
-     
+      </div>
     );
   }
 }
