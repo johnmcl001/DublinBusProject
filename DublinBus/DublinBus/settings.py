@@ -119,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Dublin'
 
 USE_I18N = True
 
@@ -134,4 +134,3 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 CORS_ORIGIN_ALLOW_ALL = True
-
