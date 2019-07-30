@@ -50,6 +50,7 @@ class SearchByStop(views.APIView):
         weather = self.get_weather(time, day_info["date"])
         bus_stop_info = self.get_bus_stop_info(stop_number)
         routes = self.get_routes(bus_stop_info)
+        print(routes)
         trips=get_relevant_stop_times_per_routes_and_stops(stop_number, routes, day_info['day_long'], time, day_info["date"])
         trips=self.format_trips_into_dict_with_routes_as_key(trips)
         machine_learning_inputs = self.serialize_machine_learning_input(
@@ -177,7 +178,6 @@ class SearchByStop(views.APIView):
                 info[route_short]+=trip,
         return info
 
-
     def serialize_machine_learning_input(self,time, day, month, date, stop_number, weather, routes, trips):
         """
         Input: weather data as json/dict, routes as list, direction as int
@@ -230,15 +230,10 @@ class SearchByStop(views.APIView):
         for route in machine_learning_inputs['trips'].keys():
             for num in range(0, len(machine_learning_inputs['trips'][route])):
                 arrival_time=(datetime.combine(date, machine_learning_inputs['trips'][route][num].arrival_time)+timedelta(seconds=predictions_dict[route][machine_learning_inputs['trips'][route][num].stop_sequence])).time()
-                if self.valid_trip_check(date, time, arrival_time):
+                if arrival_time>=time:
                     results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M:%S"), 'stop':machine_learning_inputs['trips'][route][num].stop, 'trip_id':machine_learning_inputs['trips'][route][num].trip_id},
 
         return self.sort_results(results)
-
-    def valid_trip_check(self, date, person_leaving_time, bus_arrival_time, walking_time=0, buffer=0):
-        if (datetime.combine(date, person_leaving_time) + timedelta(hours=walking_time)).time()< (datetime.combine(date, bus_arrival_time)- timedelta(minutes=buffer)).time():
-            return True
-        return False
 
 
     def sort_results(self, results):
@@ -418,7 +413,6 @@ class SearchByDestination(SearchByStop):
                                 index=results.index(res)
                                 segment['later_bus_arrivals']=results[index:]
                                 segment['start_time']=res['arrival_time']
-                                print(segment['start_time'])
                                 if StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop).count()==0:
                                     print('no valid trips')
                                     valid_result=False
