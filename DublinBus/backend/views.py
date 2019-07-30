@@ -50,7 +50,6 @@ class SearchByStop(views.APIView):
         weather = self.get_weather(time, day_info["date"])
         bus_stop_info = self.get_bus_stop_info(stop_number)
         routes = self.get_routes(bus_stop_info)
-        print(routes)
         trips=get_relevant_stop_times_per_routes_and_stops(stop_number, routes, day_info['day_long'], time, day_info["date"])
         trips=self.format_trips_into_dict_with_routes_as_key(trips)
         machine_learning_inputs = self.serialize_machine_learning_input(
@@ -256,10 +255,8 @@ class SearchByDestination(SearchByStop):
         time = self.get_time()
         day_info = self.get_day_and_date()
         weather = self.get_weather(time, day_info["date"])
-        #start_coords = self.get_coords("startpoint")
         start_coords = {"lat": self.get_coords("startpointLat"),
                         "lon": self.get_coords("startpointLon")}
-        #end_coords = self.get_coords("destination")
         end_coords = {"lat": self.get_coords("departureLat"),
                         "lon": self.get_coords("departureLon")}
         dir_route = self.find_direct_routes(start_coords,
@@ -271,18 +268,18 @@ class SearchByDestination(SearchByStop):
         if len(dir_route)==0:
             print('api')
             routes = self.get_route(time, day_info['date'], start_coords,end_coords)
-            route_segments = self.get_route_segments(routes, time)
-            route_segments=self.validate(route_segments, time, day_info,weather)
-            results=self.sort_routes(route_segments)
+            full_journeys = self.get_full_journeys(routes, time)
+            full_journeys=self.validate(full_journeys, time, day_info,weather)
+            results=self.sort_routes(full_journeys)
 
         else:
             dir_routes=self.validate(dir_route, time, day_info,weather)
             results=self.sort_routes(dir_routes)
             if len(results)==0:
                 routes = self.get_route(time)
-                route_segments = self.get_route_segments(routes, time)
-                route_segments=self.validate(route_segments, time, day_info,weather)
-                results=self.sort_routes(route_segments)
+                full_journeys = self.get_full_journeys(routes, time)
+                full_journeys=self.validate(full_journeys, time, day_info,weather)
+                results=self.sort_routes(full_journeys)
             print('own algo')
         results = self.format_response(results)
         return Response(results)
@@ -319,10 +316,9 @@ class SearchByDestination(SearchByStop):
             route = json.loads(response.text)
         elif response.status_code == 400:
             route = "not found"
-        #print(route)
         return route
 
-    def get_route_segments(self, route, time):
+    def get_full_journeys(self, route, time):
         """
         Input: route as json
         Ouput: route segments as json
@@ -361,25 +357,25 @@ class SearchByDestination(SearchByStop):
             all_routes+=segments,
         return all_routes
 
-    def validate(self, route_segments, time, day_info, weather):
+    def validate(self, full_journeys, time, day_info, weather):
         """
         Input: a list of routes broken into segments
         Ouput: a list of dictionarys with valid routes based on our ML prediction model
         """
         valid_results=[]
-        #loop for each route option given by google maps
-        for route in route_segments:
+        #loop for each journey option given by google maps
+        for journey in full_journeys:
             start=time
             end=time
-            #loop for each segment per route and check if the segment is valid.
-            for i in range(0, len(route)):
-                segment=route[i]
+            #loop for each segment per journey and check if the segment is valid.
+            for i in range(0, len(journey)):
+                segment=journey[i]
                 #if segment is walking end time can be calculated by addition
                 if segment["travel_mode"]=="WALKING":
                     valid_result=True
                     segment["end_time"]=(datetime.strptime(segment["start_time"],"%H:%M:%S")+timedelta(seconds=segment["duration_sec"])).strftime('%H:%M:%S')
-                    if i !=len(route)-1:
-                        route[i+1]["start_time"]=segment['end_time']
+                    if i !=len(journey)-1:
+                        journey[i+1]["start_time"]=segment['end_time']
 
 
                 #if segment is transit, we must run our machine learning model to
@@ -390,7 +386,7 @@ class SearchByDestination(SearchByStop):
                     end_stop=get_station_number(segment["arrival_stop"], segment["end_lat"], segment["end_lon"])
                     if end_stop == None:
                         print('Cant identify stop')
-                    #finds all relevant trips that serve the stop and route given by google maps
+                    #finds all relevant trips that serve the stop and journey given by google maps
                     trips=get_relevant_stop_times_per_routes_and_stops([start_stop], [segment["route"]], day_info['day_long'], segment["start_time"], day_info["date"])
                     trips=self.format_trips_into_dict_with_routes_as_key(trips)
                     machine_learning_inputs = self.serialize_machine_learning_input(
@@ -433,8 +429,8 @@ class SearchByDestination(SearchByStop):
                                 results_end_time = self.get_arrival_times(machine_learning_inputs)
                                 segment['end_time']=results_end_time[0]['arrival_time']
                                 segment['duration_sec']=(datetime.strptime(segment["end_time"],"%H:%M:%S")-datetime.strptime(segment["start_time"],"%H:%M:%S")).total_seconds()
-                                if i !=len(route)-1:
-                                    route[i+1]["start_time"]=segment['end_time']
+                                if i !=len(journey)-1:
+                                    journey[i+1]["start_time"]=segment['end_time']
                                 valid_result=True
                                 break
                         else:
@@ -463,19 +459,19 @@ class SearchByDestination(SearchByStop):
                                 results_end_time = self.get_arrival_times(machine_learning_inputs)
                                 segment['end_time']=results_end_time[0]['arrival_time']
                                 segment['duration_sec']=(datetime.strptime(segment["end_time"],"%H:%M:%S")-datetime.strptime(segment["start_time"],"%H:%M:%S")).total_seconds()
-                                if i !=len(route)-1:
-                                    route[i+1]["start_time"]=segment['end_time']
+                                if i !=len(journey)-1:
+                                    journey[i+1]["start_time"]=segment['end_time']
                                 valid_result=True
                                 break
                     if valid_result==True:
                         end=segment['end_time']
                     #after the segment has been checked, if no valid result has Been
-                    #found break out of the route and dont add to results
+                    #found break out of the journey and dont add to results
                     if valid_result==False:
                         break
             duration=str((datetime.strptime(end,"%H:%M:%S")-datetime.strptime(start,"%H:%M:%S")).total_seconds())
-            if valid_result==True and {'duration':duration, 'route':route} not in valid_results:
-                valid_results+={'duration':duration, 'route':route},
+            if valid_result==True and {'duration':duration, 'journey':journey} not in valid_results:
+                valid_results+={'duration':duration, 'journey':journey},
         return valid_results
 
     def sort_routes(self, results):
@@ -483,8 +479,8 @@ class SearchByDestination(SearchByStop):
         Input: Routes results as json
         Output: Routes results sorted into a dictionary where route is key, then stops and times as values
         """
-        for route in range(0, len(results)):
-            results[route]['duration']=float(results[route]['duration'])
+        for journey in range(0, len(results)):
+            results[journey]['duration']=float(results[journey]['duration'])
         return sorted(results, key=lambda k: k["duration"])
 
 
@@ -597,14 +593,20 @@ class SearchByDestination(SearchByStop):
             route_breakdown = {}
             route_breakdown["duration"] = result["duration"]
             route_breakdown["directions"] = []
-            for i in range(0, len(result['route'])):
+            for i in range(0, len(result['journey'])):
+                if int(result["journey"][i]["duration_sec"])==0:
+                    time= 0,
+                elif int(result["journey"][i]["duration_sec"])<60:
+                    time= 1,
+                else:
+                    time= result["journey"][i]["duration_sec"] // 60
                 route_dict = {
-                    "instruction": result["route"][i]["instruction"],
-                    "time": result["route"][i]["duration_sec"] // 60,
+                    "instruction": result["journey"][i]["instruction"],
+                    "time":time,
                 }
                 route_dict["travel_mode"] = ""
-                if result["route"][i]["travel_mode"] == "TRANSIT":
-                    route_dict["travel_mode"] = result["route"][i]["route"]
+                if result["journey"][i]["travel_mode"] == "TRANSIT":
+                    route_dict["travel_mode"] = result["journey"][i]["route"]
                 else:
                     route_dict["travel_mode"] = "WALKING"
 
