@@ -15,7 +15,7 @@ def get_trip_object(route, services, value=False):
         return Trips.objects.filter(service__in=services, route__route_short_name=route).values(value)
     return Trips.objects.filter(service__in=services, route__route_short_name=route)
 
-def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, day, time, date):
+def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, services, time):
     """
     Input: list of routes, list of stop numbers
     Filters trips that run for the given day, 30 mins before the time and upto
@@ -29,8 +29,7 @@ def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, da
     #get time 30 minutes before hand to allow for prediction model difference
     start_time=(datetime.strptime(time,"%H:%M:%S")-timedelta(minutes=30)).strftime('%H:%M:%S')
     end_time=(datetime.strptime(time,"%H:%M:%S")+timedelta(minutes=60)).strftime('%H:%M:%S')
-    services=get_services(day, date)
-    stop_times=StopTimes.objects.filter(departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short__in=stop_numbers, route_short_name__in=route_numbers).order_by('departure_time')
+    stop_times=StopTimes.objects.filter(service_id__in=services, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short__in=stop_numbers, route_short_name__in=route_numbers).order_by('departure_time')
     return stop_times
 
 

@@ -51,7 +51,8 @@ class SearchByStop(views.APIView):
         weather = self.get_weather(time, day_info["date"])
         bus_stop_info = self.get_bus_stop_info(stop_number)
         routes = self.get_routes(bus_stop_info)
-        trips=get_relevant_stop_times_per_routes_and_stops(stop_number, routes, day_info['day_long'], time, day_info["date"])
+        services=get_services(day_info['day_long'], day_info['date'])
+        trips=get_relevant_stop_times_per_routes_and_stops(stop_number, routes, services, time)
         trips=self.format_trips_into_dict_with_routes_as_key(trips)
         machine_learning_inputs = self.serialize_machine_learning_input(
                                                             time,
@@ -270,28 +271,36 @@ class SearchByDestination(SearchByStop):
                                                 start_coords["lon"])
         end_stations=get_stations_nearby(end_coords["lat"],
                                               end_coords["lon"])
-        services=get_services(day, date)
-        dir_route = self.find_direct_routes(start_coords, end_coords,
-                                            start_stations,end_stations,
+        services=get_services(day_info['day_long'], day_info['date'])
+        start_routes=self.get_routes_for_list_of_stops(start_stations['list_stop_short'])
+        end_routes=self.get_routes_for_list_of_stops(end_stations['list_stop_short'])
+        dir_route = self.find_direct_routes(start_stations,end_stations,
+                                            start_routes, end_routes,
                                            services,
                                            time)
 
-        if len(dir_route)==0:
-            print('api')
-            routes = self.get_route(time, day_info['date'], start_coords,end_coords)
-            full_journeys = self.get_full_journeys(routes, time)
-            full_journeys=self.validate(full_journeys, time, day_info,weather)
-            results=self.sort_routes(full_journeys)
-
-        else:
+        if len(dir_route)!=0:
+            dir_route=self.format_direct_route(dir_route, start_coords, end_coords, start_stations, end_stations, time)
             dir_routes=self.validate(dir_route, time, day_info,weather)
-            results=self.sort_routes(dir_routes)
-            if len(results)==0:
-                routes = self.get_route(time)
-                full_journeys = self.get_full_journeys(routes, time)
-                full_journeys=self.validate(full_journeys, time, day_info,weather)
-                results=self.sort_routes(full_journeys)
-            print('own algo')
+            if len(dir_routes)!=0:
+                print('direct route')
+                results=self.sort_routes(dir_routes)
+                results = self.format_response(results)
+                return Response(results)
+        crossovers=self.bus_crossover(start_stations, start_routes, end_stations, end_routes, services, time)
+        if len(crossovers)!=0:
+            print('crossover route')
+            crossovers=self.format_bus_crossover(crossovers, start_coords, end_coords, start_stations, end_stations, time)
+            crossovers=self.validate(crossovers, time, day_info,weather)
+            if len(crossovers)!=0:
+                results=self.sort_routes(crossovers)
+                results = self.format_response(results)
+                return Response(results)
+        print('api')
+        routes = self.get_route(time, day_info['date'], start_coords, end_coords)
+        full_journeys = self.get_full_journeys(routes, time)
+        full_journeys=self.validate(full_journeys, time, day_info,weather)
+        results=self.sort_routes(full_journeys)
         results = self.format_response(results)
         return Response(results)
 
@@ -405,7 +414,8 @@ class SearchByDestination(SearchByStop):
                         print('Cant identify stop')
 
                     #finds all relevant trips that serve the start_stop and journey given by google maps
-                    trips=get_relevant_stop_times_per_routes_and_stops([start_stop], [leg["route"]], day_info['day_long'], leg["start_time"], day_info["date"])
+                    services=get_services(day_info['day_long'],  day_info["date"])
+                    trips=get_relevant_stop_times_per_routes_and_stops([start_stop], [leg["route"]],  services, leg["start_time"])
                     trips=self.format_trips_into_dict_with_routes_as_key(trips)
                     machine_learning_inputs = self.serialize_machine_learning_input(
                                                                         leg["start_time"],
@@ -511,6 +521,31 @@ class SearchByDestination(SearchByStop):
 
         }
 
+    def format_direct_route(self, trips, start_coord, end_coord, start_stations, end_stations, time):
+        results=[]
+        for trip in trips:
+            route=[]
+            end_name='destination'
+            route+=self.make_walking_segment(start_coord['lat'], start_coord['lon'], trip.start_lat, trip.start_lon, trip.start_stop_name, start_stations[trip.start_stop_id_long]['walking_time'], start_stations[trip.start_stop_id_long]['distance'], time),
+            route+=self.make_transit_segment(trip.start_lat, trip.start_lon, trip.end_lat, trip.end_lon, trip.end_stop_name, trip.route_short_name, trip.start_stop_id, trip.end_stop_id, trip.trip_headsign),
+            route+=self.make_walking_segment(trip.end_lat, trip.end_lon, end_coord["lat"], end_coord['lon'], end_name, end_stations[trip.end_stop_id_long]['walking_time'], end_stations[trip.end_stop_id_long]['distance']),
+            results+=route,
+        return results
+
+    def format_bus_crossover(self, trips, start_coord, end_coord, start_stations, end_stations, time):
+        results=[]
+        for trip in trips:
+            route=[]
+            leg1=trip[0]
+            leg2=trip[1]
+            end_name='destination'
+            route+=self.make_walking_segment(start_coord['lat'], start_coord['lon'], leg1.start_lat, leg1.start_lon, leg1.start_stop_name, start_stations[leg1.start_stop_id_long]['walking_time'], start_stations[leg1.start_stop_id_long]['distance'], time),
+            route+=self.make_transit_segment(leg1.start_lat, leg1.start_lon, leg1.end_lat, leg1.end_lon, leg1.end_stop_name, leg1.route_short_name, leg1.start_stop_id, leg1.end_stop_id, leg1.trip_headsign),
+            route+=self.make_transit_segment(leg2.start_lat, leg2.start_lon, leg2.end_lat, leg2.end_lon, leg2.end_stop_name, leg2.route_short_name, leg2.start_stop_id, leg2.end_stop_id, leg2.trip_headsign),
+            route+=self.make_walking_segment(leg2.end_lat, leg2.end_lon, end_coord["lat"], end_coord['lon'], end_name, end_stations[leg2.end_stop_id_long]['walking_time'], end_stations[leg2.end_stop_id_long]['distance']),
+            results+=route,
+        return results
+
     def get_routes_for_list_of_stops(self, list_stop_short):
         results={'all':[]}
         for stop in list_stop_short:
@@ -523,7 +558,7 @@ class SearchByDestination(SearchByStop):
         results['all'] = sorted(list(dict.fromkeys(results['all'])))
         return results
 
-    def find_direct_routes(self, start_coord, end_coord, start_stations, end_stations, time, services):
+    def find_direct_routes(self, start_stations, end_stations, start_routes, end_routes, services, time):
         """
         Input: start poition as dictionary with lat long as keys, end position as dictionary with lat long
                as keys.
@@ -532,14 +567,9 @@ class SearchByDestination(SearchByStop):
         """
         #holds information 'start_stations', 'end_stations, 'date', 'start_time', 'end_time' for query
         inputs={}
-
         #get time 30 minutes before hand to allow for prediction model difference
         inputs['start_time']=(datetime.strptime(time,"%H:%M:%S")-timedelta(minutes=30)).strftime('%H:%M:%S')
         inputs['end_time']=(datetime.strptime(time,"%H:%M:%S")+timedelta(minutes=60)).strftime('%H:%M:%S')
-
-
-        start_routes=self.get_routes_for_list_of_stops(start_stations['list_stop_short'])
-        end_routes=self.get_routes_for_list_of_stops(end_stations['list_stop_short'])
 
         common_routes=[]
         index=0
@@ -553,17 +583,14 @@ class SearchByDestination(SearchByStop):
                     index=end_route_index
                     break
         if len(common_routes)==0:
-            print("no direct route")
-            self.crossover(start_stations, start_routes, end_stations, end_routes, services)
+            print("no common route-no direct")
             return[]
-
         inputs['start_stations']=tuple(start_stations['list_stop_long'])
         inputs['end_stations']=tuple(end_stations['list_stop_long'])
 
         inputs['services']=[]
         for service in services:
             inputs['services']+=service.service_id,
-
         #Finds all trip info for direct routes from one of the given start stations and stop stations
         #within a given time on a specific day.
         #Attributes returned
@@ -591,18 +618,41 @@ class SearchByDestination(SearchByStop):
                     +"  and r.route_id=t.route_id and s1.stop_id=st1.stop_id "\
                     +" and s2.stop_id=st2.stop_id limit 1;",inputs)
                     if len(trips)>0:
-                        print(route)
-                        for trip in trips:
-                            route=[]
-                            end_name='destination'
-                            route+=self.make_walking_segment(start_coord['lat'], start_coord['lon'], trip.start_lat, trip.start_lon, trip.start_stop_name, start_stations[trip.start_stop_id_long]['walking_time'], start_stations[trip.start_stop_id_long]['distance'], time),
-                            route+=self.make_transit_segment(trip.start_lat, trip.start_lon, trip.end_lat, trip.end_lon, trip.end_stop_name, trip.route_short_name, trip.start_stop_id, trip.end_stop_id, trip.trip_headsign),
-                            route+=self.make_walking_segment(trip.end_lat, trip.end_lon, end_coord["lat"], end_coord['lon'], end_name, end_stations[trip.end_stop_id_long]['walking_time'], end_stations[trip.end_stop_id_long]['distance']),
-                            results+=route,
+                        results+=trips
             if len(results)!=0:
                 return results
+        return []
 
-    def bus_crossover(self, start_stations, start_routes, end_stations, end_routes, services):
+    def bus_crossover(self, start_stations, start_routes, end_stations, end_routes, services, time):
+        # start_stations={'list_stop_long':['8220DB000037'], 'list_stop_short':['37'], '8220DB000037':{'short':37}}
+        # start_routes={'all':['9'], 37:['9']}
+        # end_stations={'list_stop_long':['8220DB000895'], 'list_stop_short':[895], '8220DB000895':{'short':895}}
+        # end_routes={'all':['140', '142'], 895:['140', '142']}
+
+        stoptimes_all_start_stops=get_relevant_stop_times_per_routes_and_stops(start_stations['list_stop_short'], start_routes['all'], services, time)
+        possible_crossovers_stops_leg1=StopTimes.objects.filter(trip_id__in=stoptimes_all_start_stops).values('stop__stopid_short')
+        stoptimes_all_end_stops=get_relevant_stop_times_per_routes_and_stops(end_stations['list_stop_short'], end_routes['all'], services, time)
+        possible_crossovers_stops_leg2=StopTimes.objects.filter(trip_id__in=stoptimes_all_end_stops).values('stop__stopid_short')
+        crossovers=Stops.objects.filter(Q(stopid_short__in=possible_crossovers_stops_leg1)&Q(stopid_short__in=possible_crossovers_stops_leg2)).values('stop_id', 'stopid_short')
+        if not crossovers.exists():
+            print('no crossover')
+            return []
+        results=[]
+        crossover_stations={'list_stop_long':[], 'list_stop_short':[]}
+        for crossover in crossovers:
+            crossover_stations['list_stop_long']+=crossover['stop_id'],
+            crossover_stations['list_stop_short']+=crossover['stopid_short'],
+            crossover_stations[crossover['stop_id']]={'short': str(crossover['stopid_short'])}
+        crossover_routes=self.get_routes_for_list_of_stops(crossover_stations['list_stop_short'])
+        print(crossover_routes)
+        all_leg1s=self.find_direct_routes(start_stations, crossover_stations, start_routes, crossover_routes, services, time)
+        for leg1 in all_leg1s:
+            leg2=self.find_direct_routes({'list_stop_long':[leg1.end_stop_id_long], 'list_stop_short':[str(leg1.end_stop_id)], leg1.end_stop_id_long:{'short':leg1.end_stop_id}}, end_stations, {'all':sorted(list(dict.fromkeys(crossover_routes[leg1.end_stop_id]))), leg1.end_stop_id:crossover_routes[leg1.end_stop_id]}, end_routes, services, leg1.arrival_time.strftime("%H:%M:%S"))
+            if len(leg2)!=0:
+                results+=[leg1, leg2[0]],
+        return results
+
+
         pass
 
     def format_response(self, results):
