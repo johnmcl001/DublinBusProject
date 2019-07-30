@@ -16,7 +16,9 @@ class DataProvider extends Component {
     startpointLon: PropTypes.string,
     destination: PropTypes.string,
     time: PropTypes.string,
-    date: PropTypes.string
+    date: PropTypes.string,
+    attractions: PropTypes.array,
+    home: PropTypes.string
   };
   state = {
     data: [],
@@ -38,7 +40,9 @@ class DataProvider extends Component {
         startpointLat: this.props.startLat,
         startpointLon: this.props.startLon,
         time: this.props.time,
-        date: this.props.date
+        date: this.props.date,
+        attractions: this.props.attractions,
+        home:this.props.home
       }
     })
       .then(response => {
@@ -58,7 +62,6 @@ class DataProvider extends Component {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-        console.log(response.data);
         return response.data;
       })
       .then(data => this.setState({ data: data, loaded: true }));
