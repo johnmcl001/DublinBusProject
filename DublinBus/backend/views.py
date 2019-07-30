@@ -567,21 +567,21 @@ class SearchByDestination(SearchByStop):
 
     def format_response(self, results):
         response = []
+        count = 0
         #results = results[:3]
         for result in results:
             route_breakdown = {}
-            route_breakdown["duration"] = result["duration"]
             route_breakdown["directions"] = []
             for i in range(0, len(result['journey'])):
-                if int(result["journey"][i]["duration_sec"])==0:
-                    time= 0,
-                elif int(result["journey"][i]["duration_sec"])<60:
-                    time= 1,
+                if int(result["journey"][i]["duration_sec"]) == 0:
+                    time = 0,
+                elif int(result["journey"][i]["duration_sec"]) < 60:
+                    time = 1,
                 else:
-                    time= result["journey"][i]["duration_sec"] // 60
+                    time = result["journey"][i]["duration_sec"] // 60
                 route_dict = {
                     "instruction": result["journey"][i]["instruction"],
-                    "time":time,
+                    "time": time,
                 }
                 route_dict["travel_mode"] = ""
                 if result["journey"][i]["travel_mode"] == "TRANSIT":
@@ -589,8 +589,15 @@ class SearchByDestination(SearchByStop):
                 else:
                     route_dict["travel_mode"] = "WALKING"
 
+                if route_dict["travel_mode"] != "WALKING":
+                    route_dict["instruction"] = route_dict["instruction"].replace("Bus", route_dict["travel_mode"])
+                route_breakdown["duration"] = 0
+                for time in route_breakdown["directions"]:
+                    route_breakdown["duration"] += time["time"]
                 route_breakdown["directions"] += [route_dict]
-            return route_breakdown
+
+            response += [route_breakdown]
+        return response[0:3]
 
     """        for i in range(0,len(results)):
             result=results[i]
@@ -689,12 +696,8 @@ class TouristPlanner(views.APIView):
         Input: request from user
         Output: attractions as array
         """
-        attractions = []
-        i = 0
-        while self.request.GET.get("attraction"+str(i)) != "null" and i <= 4:
-            attractions += [self.request.GET.get("attraction"+str(i))]
-            i += 1
-        return attractions
+        return literal_eval(self.request.GET.get("attractions", ["this", "didn't", "work"]))
+
 
     def get_home(self):
         """

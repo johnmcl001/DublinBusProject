@@ -41,7 +41,7 @@ class SearchByRoute extends Component {
   }
 
   updateStop(e) {
-    this.setState({ stopNumber: e.substring(0, e.indexOf(","))});
+    this.setState({ stopNumber: e.substring(0, e.indexOf(",")) });
   }
 
   updateDirectionAutocomplete(e) {
@@ -128,17 +128,19 @@ class SearchByRoute extends Component {
               </div>
             </form>
           </div>
-        <div className="col-8  bottomClass">
-          <Link to={`/ResultPage_Stop_Route/${this.state.stopNumber}/${this.state.routeNumber}`}>
-            <button
-              type="button"
-              className="btn btn-warning "
-              id="SubmitButton"
+          <div className="col-8  bottomClass">
+            <Link
+              to={`/ResultPage_Stop_Route/${this.state.stopNumber}/${this.state.routeNumber}`}
             >
-              Submit
-            </button>
-          </Link>
-        </div>
+              <button
+                type="button"
+                className="btn btn-warning "
+                id="SubmitButton"
+              >
+                Submit
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     );

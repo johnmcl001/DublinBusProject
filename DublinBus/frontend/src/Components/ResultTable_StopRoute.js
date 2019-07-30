@@ -9,7 +9,7 @@ const ResultTable_StopRoute = props => {
 
   return (
     <div>
-    {console.log(data)}
+      {console.log(data)}
       {props.data.map((x, y) => (
         //    Loop throught
         <div className="row resultRows">
