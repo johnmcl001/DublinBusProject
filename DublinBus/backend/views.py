@@ -382,9 +382,16 @@ class SearchByDestination(SearchByStop):
                 #ensure a bus will arrive after the previous stage of the journey
                 #is complete
                 if segment["travel_mode"]=="TRANSIT":
-                    start_stop=get_station_number(segment["departure_stop"], segment["start_lat"], segment["start_lon"])
-                    end_stop=get_station_number(segment["arrival_stop"], segment["end_lat"], segment["end_lon"])
-                    if end_stop == None:
+                    if not isinstance(segment["departure_stop"], int):
+                        start_stop=get_station_number(segment["departure_stop"], segment["start_lat"], segment["start_lon"])
+                    else:
+                        start_stop=segment["departure_stop"]
+                    if not isinstance(segment["arrival_stop"], int):
+                        end_stop=get_station_number(segment["arrival_stop"], segment["end_lat"], segment["end_lon"])
+                    else:
+                        end_stop=segment["arrival_stop"]
+
+                    if end_stop is None:
                         print('Cant identify stop')
                     #finds all relevant trips that serve the stop and journey given by google maps
                     trips=get_relevant_stop_times_per_routes_and_stops([start_stop], [segment["route"]], day_info['day_long'], segment["start_time"], day_info["date"])
@@ -404,7 +411,7 @@ class SearchByDestination(SearchByStop):
                     #updates start, end and journey duration in segments.
                     for res in results:
                         #no walking as first stage.
-                        if i==0:
+                        if (i==0 and res['arrival_time']>= time) or (i>0 and res['arrival_time']>=segment['start_time']):
                             if res['arrival_time']>= time:
                                 index=results.index(res)
                                 segment['later_bus_arrivals']=results[index:]
@@ -413,36 +420,7 @@ class SearchByDestination(SearchByStop):
                                     print('no valid trips')
                                     valid_result=False
                                     break
-                                trips=StopTimes.objects.get(trip_id=res['trip_id'], stop__stopid_short=end_stop)
-                                segment['end_time']=trips.arrival_time.strftime('%H:%M:%S')
-                                trips=self.format_trips_into_dict_with_routes_as_key([trips])
-                                machine_learning_inputs = self.serialize_machine_learning_input(
-                                                                                    segment['end_time'],
-                                                                                    day_info["day"],
-                                                                                    day_info["month"],
-                                                                                    day_info["date"],
-                                                                                    end_stop,
-                                                                                    weather,
-                                                                                    segment["route"],
-                                                                                    trips)
-                                #runs our machine learning on all relevant trips
-                                results_end_time = self.get_arrival_times(machine_learning_inputs)
-                                segment['end_time']=results_end_time[0]['arrival_time']
-                                segment['duration_sec']=(datetime.strptime(segment["end_time"],"%H:%M:%S")-datetime.strptime(segment["start_time"],"%H:%M:%S")).total_seconds()
-                                if i !=len(journey)-1:
-                                    journey[i+1]["start_time"]=segment['end_time']
-                                valid_result=True
-                                break
-                        else:
-                            #bus must leave after walking time
-                            if res['arrival_time']>=segment['start_time']:
-                                index=results.index(res)
-                                segment['later_bus_arrivals']=results[index:]
-                                segment['start_time']=res['arrival_time']
-                                if StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop).count()==0:
-                                    print('no valid trips')
-                                    valid_result=False
-                                    break
+                                #runs machine learning to find predicted arrival time
                                 trips=StopTimes.objects.get(trip_id=res['trip_id'], stop__stopid_short=end_stop)
                                 segment['end_time']=trips.arrival_time.strftime('%H:%M:%S')
                                 trips=self.format_trips_into_dict_with_routes_as_key([trips])
