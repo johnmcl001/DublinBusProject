@@ -241,8 +241,6 @@ class SearchByStop(views.APIView):
                         "day": machine_learning_inputs['day']
                         }, ignore_index=True)
             #scale input for predictions as in training
-            scaler = MinMaxScaler(feature_range = (0,1))
-            df = scaler.fit_transform(df)
             #make predictions for df
             predictions_list=model.predict(df)
             #store this routes predicted times
@@ -297,7 +295,6 @@ class SearchByDestination(SearchByStop):
                                             start_routes, end_routes,
                                            services,
                                            time)
-
         if len(dir_route)!=0:
             dir_route=self.format_direct_route(dir_route, start_coords, end_coords, start_stations, end_stations, time)
             dir_routes=self.validate(dir_route, time, day_info,weather)
@@ -447,7 +444,6 @@ class SearchByDestination(SearchByStop):
                                                                         trips)
                     #runs our machine learning on all relevant trips
                     results = self.get_arrival_times(machine_learning_inputs)
-
                     #loops through the results and runs machine learning on bus arrival times at destination
                     valid_result=False
                     #updates start, end and journey duration in legs.
@@ -477,6 +473,7 @@ class SearchByDestination(SearchByStop):
                                                                                     trips)
                                 #runs our machine learning on all relevant trips
                                 results_end_time = self.get_arrival_times(machine_learning_inputs)
+                                print(leg["route"])
                                 leg['end_time']=results_end_time[0]['arrival_time']
                                 leg['duration_sec']=(datetime.strptime(leg["end_time"],"%H:%M:%S")-datetime.strptime(leg["start_time"],"%H:%M:%S")).total_seconds()
                                 #updates the start_time of next leg as end_time of current leg
@@ -728,7 +725,7 @@ class SearchByDestination(SearchByStop):
                 route_breakdown["directions"] += [route_dict]
 
             response += [route_breakdown]
-        return response[0:3]
+        return response
 
     """        for i in range(0,len(results)):
             result=results[i]

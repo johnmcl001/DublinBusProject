@@ -62,6 +62,7 @@ class DataProvider extends Component {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
+          console.log(response.data[0].directions)
         return response.data;
       })
       .then(data => this.setState({ data: data, loaded: true }));
