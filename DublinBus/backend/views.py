@@ -23,7 +23,7 @@ import redis
 from itertools import permutations
 from .queries import *
 from django.db.models import Q, F
-
+from sklearn.preprocessing import MinMaxScaler
 load_dotenv(find_dotenv(), override=True)
 
 
