@@ -15,7 +15,7 @@ def get_trip_object(route, services, value=False):
         return Trips.objects.filter(service__in=services, route__route_short_name=route).values(value)
     return Trips.objects.filter(service__in=services, route__route_short_name=route)
 
-def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, day, time, date):
+def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, services, time):
     """
     Input: list of routes, list of stop numbers
     Filters trips that run for the given day, 30 mins before the time and upto
@@ -29,8 +29,7 @@ def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, da
     #get time 30 minutes before hand to allow for prediction model difference
     start_time=(datetime.strptime(time,"%H:%M:%S")-timedelta(minutes=30)).strftime('%H:%M:%S')
     end_time=(datetime.strptime(time,"%H:%M:%S")+timedelta(minutes=60)).strftime('%H:%M:%S')
-    services=get_services(day, date)
-    stop_times=StopTimes.objects.filter(departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short__in=stop_numbers, route_short_name__in=route_numbers).order_by('departure_time')
+    stop_times=StopTimes.objects.filter(service_id__in=services, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short__in=stop_numbers, route_short_name__in=route_numbers).order_by('departure_time')
     return stop_times
 
 
@@ -78,7 +77,7 @@ def get_stations_nearby(dest_lat, dest_lon, num_stations=8, radius=5):
     station_list=[]
     #for results that are not null, the more stations we check the better
     #trade off-response time
-    while default_radius<radius and len(station_list)<10:
+    while default_radius<radius and len(station_list)<num_stations:
         station_list=Stops.objects.raw('SELECT distinct(stop_id), stopID_short,'\
         +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
         + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\
