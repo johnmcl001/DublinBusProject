@@ -645,12 +645,11 @@ class SearchByDestination(SearchByStop):
         for crossover in crossovers:
             crossover_stations['list_stop_long']+=crossover['stop_id'],
             crossover_stations['list_stop_short']+=crossover['stopid_short'],
-            crossover_stations[crossover['stop_id']]={'short': str(crossover['stopid_short'])}
+            crossover_stations[crossover['stop_id']]={'short': crossover['stopid_short']}
         crossover_routes=self.get_routes_for_list_of_stops(crossover_stations['list_stop_short'])
-        print(crossover_routes)
         all_leg1s=self.find_direct_routes(start_stations, crossover_stations, start_routes, crossover_routes, services, time)
         for leg1 in all_leg1s:
-            leg2=self.find_direct_routes({'list_stop_long':[leg1.end_stop_id_long], 'list_stop_short':[str(leg1.end_stop_id)], leg1.end_stop_id_long:{'short':leg1.end_stop_id}}, end_stations, {'all':sorted(list(dict.fromkeys(crossover_routes[leg1.end_stop_id]))), leg1.end_stop_id:crossover_routes[leg1.end_stop_id]}, end_routes, services, leg1.arrival_time.strftime("%H:%M:%S"))
+            leg2=self.find_direct_routes({'list_stop_long':[leg1.end_stop_id_long], 'list_stop_short':[leg1.end_stop_id], leg1.end_stop_id_long:{'short':leg1.end_stop_id}}, end_stations, {'all':sorted(list(dict.fromkeys(crossover_routes[leg1.end_stop_id]))), leg1.end_stop_id:crossover_routes[leg1.end_stop_id]}, end_routes, services, leg1.arrival_time.strftime("%H:%M:%S"))
             if len(leg2)!=0:
                 results+=[leg1, leg2[0]],
         return results
