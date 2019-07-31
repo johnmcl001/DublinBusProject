@@ -1,204 +1,384 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import React, {Component} from "react";
+import {Link} from "react-router-dom";
 import "../Static/StyleSheet/SearchbyDestination.css";
-import "../Static/StyleSheet/JourneyPlanner.css";
+import "../Static/StyleSheet/JourneyPlanner.css"
 import AppViewHeader from "./AppViewHeader";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import YourLocationOrSearch from "./YourLocationOrSearch";
 import JouneryPlanner_ToVisitPiont from "./JouneryPlanner_ToVisitPiont";
-import JourneyPanner_SlideShow_List_DublinAttaction from "./JourneyPanner_SlideShow_List_DublinAttaction";
-import Cards from "./JourneyPlanner_Card";
+import JourneyPanner_SlideShow_List_DublinAttaction from './JourneyPanner_SlideShow_List_DublinAttaction';
+import JourneyPlanner_List_of_All_Tourist_Attraction from './JourneyPlanner_List_of_All_Tourist_Attraction'
+import axios from "axios"
+import WarningAlert from './WarningAlert'
+import {Button, Accordion, Card} from 'react-bootstrap';
+
+import 'bootstrap';
+import * as $ from "jquery";
 
 // npm install react-datepicker --save
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import Imgx from "../Static/img/img1.jpg";
-import axios from "axios";
+
 
 //This Component is Search by Destination at the mobile view ports
 class JourneyPlanner extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      initial_Date: null,
-      initial_Time: null,
+    constructor(props) {
+        super(props);
 
-      startDateToBackEnd: null,
-      startTimeToBackEnd: null,
+        this.state = {
+            initial_Date: null,
+            initial_Time: null,
 
-      //Location Co-Ordinate start Here
-      currentLocation_lat: null,
-      currentLocation_long: null,
+            startDateToBackEnd: null,
+            startTimeToBackEnd: null,
 
-      startLocation_lat: null,
-      startLocation_long: null,
+            //Location Co-Ordinate start Here
+            currentLocation_lat: null,
+            currentLocation_long: null,
 
-      cards: []
-    };
+            startLocation_lat: null,
+            startLocation_long: null,
 
-    this.handleChangeDate = this.handleChangeDate.bind(this);
-    this.handleChangeTime = this.handleChangeTime.bind(this);
+            PickedTouristAttraction: [],
+            ListOfAllAttractions: [],
 
-    this.updateCurrentPosition = this.updateCurrentPosition.bind(this);
+            bgColor: [
+                '#F65314',
+                '#7CBB00',
+                '#00A1F1',
+                '#FFBB00',
+                '#146EB4',
+            ],
 
-    this.setPosition = this.setPosition.bind(this);
-    this.getLocation = this.getLocation.bind(this);
-    console.log(this.state.cards);
-  }
 
-  updateCurrentPosition(e) {
-    this.setState({
-      startLocation_lat: e.latitude,
-      startLocation_long: e.longitude
-    });
-  }
+        };
+        this.handleChangeDate = this.handleChangeDate.bind(this);
+        this.handleChangeTime = this.handleChangeTime.bind(this);
 
-  handleChangeDate(date) {
-    //set date
-    this.setState({
-      initial_Date: date,
-      startDateToBackEnd:
-        date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear()
-    });
-  }
+        this.updateCurrentPosition = this.updateCurrentPosition.bind(this);
 
-  handleChangeTime(Time) {
-    //set time
-    this.setState({
-      initial_Time: Time,
-      startTimeToBackEnd: Time.getHours() + ":" + Time.getMinutes()
-    });
-  }
-
-  //This is Geolocation ask for current location
-  setPosition(position) {
-    this.setState({
-      currentLocation_lat: position.coords.latitude,
-      currentLocation_long: position.coords.longitude
-    });
-  }
-
-  //Ask for permission to obtain current locations
-  getLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(this.setPosition);
+        this.setPosition = this.setPosition.bind(this);
+        this.ToRemoveSelectedCardsFromListOfAllTouristCard_AfterSelect = this.ToRemoveSelectedCardsFromListOfAllTouristCard_AfterSelect.bind(this)
     }
-  }
 
-  componentDidMount() {
-    this.getLocation();
-  }
 
-  render() {
-    return (
-      <div>
-        <div className="EntireBox  SearchByDestinationBox JoureyPlaner bg-light container col-md-12  position-absolute  ">
-          {/*<div className='container '>*/}
-          <AppViewHeader SearchState={"Journey Planner"} Return="toHomePage" />
-          <AppViewFavourAndLogin />
-          <div id="formColor">
-            <form>
-              <div className="container  SearchByDestinationForm">
-                <div className="row  JourneyPlannerRowSecond">
-                  <div className="col-12 JourneyPlanerAddressLabel ">
-                    <label> Start Point:</label>
-                  </div>
+    componentDidMount() {
+        {
+            //Fetch list of attractions from server
+        }
 
-                  <div className="col-10 JourneyPlanerInput ">
-                    <YourLocationOrSearch
-                      onUpdatePosition={this.updateCurrentPosition}
+        axios({
+            method: "get",
+            url: "http://csi420-01-vm9.ucd.ie/api/attractions/",
+            params: {
+                route: this.state.routeNumber,
+                direction: this.state.direction
+            }
+        })
+            .then(response => {
+                if (response.status !== 200) {
+                    return this.setState({placeholder: "Something went wrong"});
+                }
+                {
+                    console.log("here");
+                }
+                return response.data;
+            })
+            .then(data => this.setState({ListOfAllAttractions: data, loaded: true}));
+    }
+
+
+    updateCurrentPosition(e) {
+        this.setState({
+            startLocation_lat: e.latitude,
+            startLocation_long: e.longitude
+        });
+    }
+
+
+    handleChangeDate(date) {
+        //set date
+        this.setState({
+            initial_Date: date,
+            startDateToBackEnd:
+                date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear()
+        });
+    }
+
+    handleChangeTime(Time) {
+        //set time
+        this.setState({
+            initial_Time: Time,
+            startTimeToBackEnd: Time.getHours() + ":" + Time.getMinutes()
+        });
+    }
+
+
+    setPosition(position) {
+        {
+            //This is Geolocation ask for current location
+        }
+        this.setState({
+            currentLocation_lat: position.coords.latitude,
+            currentLocation_long: position.coords.longitude
+        });
+    }
+
+
+    ToRemoveSelectedCardsFromListOfAllTouristCard_AfterSelect(attraction) {
+
+        {
+            //    This Function is used to remove the card from List of all cards once it been add to to visit list
+        }
+
+        this.setState((prevState => ({
+                ListOfAllAttractions: prevState.ListOfAllAttractions.filter(el => el.name != attraction.name)
+            }))
+        );
+    }
+
+    AddAttactionCard(attractions) {
+        {
+            //    This function is for add card from the listed of Tourist Attraction into tourist to visit point components
+        }
+
+        if (this.state.PickedTouristAttraction.length <= 4) {
+            this.setState({
+                    PickedTouristAttraction: [...this.state.PickedTouristAttraction, attractions],
+
+
+                }, () => {
+                    this.ToRemoveSelectedCardsFromListOfAllTouristCard_AfterSelect(attractions)
+
+
+                },
+            )
+        } else {
+            //This is used to activate the alert box
+            let $ = jQuery;
+
+            (function ($) {
+                $('#JourneyPlannerAlertBox').modal('toggle')
+            })(jQuery);
+
+
+        }
+    }
+
+
+    ToAddCardBackToAllCardList(attractions) {
+        {
+            //    return the card back to all attraction card list after user that card from selected list
+        }
+
+        this.setState({
+                ListOfAllAttractions: [...this.state.ListOfAllAttractions, attractions],
+
+            }
+        )
+
+    }
+
+    removeAttractionFromSelected(attraction) {
+        {
+            //    To remove selected attraction from selected
+        }
+        this.setState(prevState => ({
+                    PickedTouristAttraction: prevState.PickedTouristAttraction.filter(el => el.name != attraction.name)
+                }
+
+            ), () => {
+                this.ToAddCardBackToAllCardList(attraction)
+            }
+        );
+    }
+
+
+//    The two function below is used for managing button color (each selected attraction) for Picked Attraction
+    _removeSelectedColorFromList(color) {
+        {
+            //    Remove color from list
+        }
+
+        this.setState(prevState => ({
+                bgColor: prevState.bgColor.filter(el => el != color)
+            }), () => this._AddBackSelectedColor(color)
+        )
+    }
+
+
+    _AddBackSelectedColor(color) {
+        {
+            // re-append the color to end of the list
+        }
+        this.setState({bgColor: [...this.state.bgColor, color],}
+        )
+    }
+
+    //End here - managing button color (each selected attraction) for Picked Attraction
+
+
+    render() {
+        console.log(this.state.startLocation_lat == null)
+
+        return (
+            <div>
+
+                <div
+                    className="EntireBox  SearchByDestinationBox JoureyPlaner bg-light container col-md-12  position-absolute  ">
+
+                    <AppViewHeader
+                        SearchState={"Journey Planner"}
+                        Return="toHomePage"
                     />
-                  </div>
+                    <AppViewFavourAndLogin/>
+
+                    <div id="formColor">
+                        <form>
+                            <div className="container  SearchByDestinationForm">
+
+                                <div className="row  JourneyPlannerRowSecond">
+                                    {/*Start location starts here*/}
+                                    <div className="col-12 JourneyPlanerAddressLabel ">
+                                        <label> Start Point:</label>
+                                    </div>
+
+                                    <div className="col-10 JourneyPlanerInput ">
+                                        <YourLocationOrSearch
+                                            onUpdatePosition={this.updateCurrentPosition}
+                                        />
+                                    </div>
+                                    {/*Start location Ends here*/}
+                                </div>
+
+                                {/*The date and time picker starts here*/}
+                                <div className='row JoureyPlanerTimeLabel '>
+                                    <div className='col-6'><label> Date: </label></div>
+                                    <div className='col-6'><label> Time:</label></div>
+
+                                </div>
+
+                                <div className="row row_fifth ">
+
+                                    <div className="col-6  ">
+                                        <DatePicker
+                                            selected={this.state.initial_Date}
+                                            onChange={this.handleChangeDate}
+                                            placeholderText="Today"
+                                        />
+                                    </div>
+                                    <div className="col-6 ">
+                                        <DatePicker
+                                            selected={this.state.initial_Time}
+                                            onChange={this.handleChangeTime}
+                                            showTimeSelect
+                                            showTimeSelectOnly
+                                            timeIntervals={15}
+                                            dateFormat="h:mm aa"
+                                            timeCaption="Time"
+                                            placeholderText="Now"
+                                        />
+                                    </div>
+
+                                    {/*The date and time picker Ends here*/}
+                                </div>
+
+                                {/*List of Tourist To visit Location  */}
+                                <div className="col-12 listDestination_label  ">
+                                    <label> Picked Attraction:</label>
+                                </div>
+                                <div className="accordion" id="accordionExample">
+                                    <div className='row listDestination border border-white '>
+                                        {/*add to travel destination*/}
+
+                                        {this.state.PickedTouristAttraction.map((cardInfo, index) =>
+                                            <JouneryPlanner_ToVisitPiont
+                                                ref={this.getFunctionFromToVistPiont}
+                                                buttonID={`button_${index}`}
+                                                cardID={`attraction_${index}`}
+                                                key={index}
+                                                name={cardInfo.name} img={cardInfo.img}
+                                                description={cardInfo.description}
+
+                                                removeAttractionFromSelected={this.removeAttractionFromSelected.bind(this)}
+
+                                                PickedAttractionButtonBgColor={this.state.bgColor[index]}
+                                                _AddBackSelectedColor={this._removeSelectedColorFromList.bind(this)}
+                                            />)}
+
+                                    </div>
+
+                                </div>
+                                <Accordion>
+
+
+                                    <JourneyPanner_SlideShow_List_DublinAttaction
+                                        AddAttactionCardFunction={this.AddAttactionCard.bind(this)}
+                                        ListOfAllAttractions={this.state.ListOfAllAttractions}/>
+
+                                </Accordion>
+
+
+                            </div>
+
+
+                        </form>
+                    </div>
+
+                    <div className="row NotificationButton border border-secondary">
+                        <p>NotificationButton locate here</p>
+                    </div>
+
+
+                    <Link
+
+                        // This is submit button
+
+                        to={`/JourneyPlannerResultPage/`}>
+                        {/*<Link*/}
+
+                        {/*    // This is submit button*/}
+
+                        {/*    to={`/JourneyPlannerResultPage/${this.state.startLocation_lat}*/}
+                        {/*    /${this.state.startLocation_long}*/}
+                        {/*    /${this.state.startDateToBackEnd}*/}
+                        {/*    /${this.state.startTimeToBackEnd}*/}
+                        {/*    /${this.state.PickedTouristAttraction}`}>*/}
+
+                        <button
+                            type="button"
+                            className="btn btn-warning col-7"
+                            id="SubmitButton"
+                        >
+                            Submit
+                        </button>
+
+                        <button type="button" className="btn btn-danger">
+                            Create an Event
+                        </button>
+
+                    </Link>
+
                 </div>
 
-                <div className="row JoureyPlanerTimeLabel ">
-                  <div className="col-6">
-                    <label> Time:</label>
-                  </div>
-                  <div className="col-6">
-                    <label> Date:</label>
-                  </div>
-                </div>
 
-                <div className="row row_fifth ">
-                  <div className="col-6  ">
-                    <DatePicker
-                      selected={this.state.initial_Date}
-                      onChange={this.handleChangeDate}
-                      placeholderText="Today"
-                    />
-                  </div>
-                  <div className="col-6 ">
-                    <DatePicker
-                      selected={this.state.initial_Time}
-                      onChange={this.handleChangeTime}
-                      showTimeSelect
-                      showTimeSelectOnly
-                      timeIntervals={15}
-                      dateFormat="h:mm aa"
-                      timeCaption="Time"
-                      placeholderText="Now"
-                    />
-                  </div>
-                </div>
+                <Accordion className="ListofAllAttractions d-none d-lg-block ">
 
-                {/*List of Tourist To visit Location  */}
-                <div className="col-12 listDestination_label  ">
-                  <label> Selected Attraction:</label>
-                </div>
-                <div className="accordion" id="accordionExample">
-                  <div className="row listDestination border border-white ">
-                    <JouneryPlanner_ToVisitPiont
-                      buttonID="button_1"
-                      cardID="attraction_1"
-                    />
-                    <JouneryPlanner_ToVisitPiont
-                      buttonID="button_2"
-                      cardID="attraction_2"
-                    />
-                    <JouneryPlanner_ToVisitPiont
-                      buttonID="button_3"
-                      cardID="attraction_3"
-                    />
-                    <JouneryPlanner_ToVisitPiont
-                      buttonID="button_4"
-                      cardID="attraction_4"
-                    />
-                    <JouneryPlanner_ToVisitPiont
-                      buttonID="button_5"
-                      cardID="attraction_5"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <JourneyPanner_SlideShow_List_DublinAttaction />
-                </div>
-              </div>
-            </form>
-          </div>
+                    <JourneyPlanner_List_of_All_Tourist_Attraction
+                        AddAttactionCardFunction={this.AddAttactionCard.bind(this)}
+                        ListOfAllAttractions={this.state.ListOfAllAttractions}
 
-          <div className="row NotificationButton border border-secondary">
-            <p>NotificationButton locate here</p>
-          </div>
-          <Link to={`/JourneyPlannerResultPage/`}>
-            <button
-              type="button"
-              className="btn btn-warning col-7"
-              id="SubmitButton"
-            >
-              Submit
-            </button>
 
-            <button type="button" className="btn btn-danger">
-              Create an Event
-            </button>
-          </Link>
+                    />
 
-          {/*</div>*/}
-        </div>
-      </div>
-    );
-  }
+
+                </Accordion>
+
+                <WarningAlert color={'#146EB4'}/>
+
+            </div>
+        );
+    }
 }
 
 export default JourneyPlanner;

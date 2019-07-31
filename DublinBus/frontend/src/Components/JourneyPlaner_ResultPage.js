@@ -31,6 +31,8 @@ class JourneyPlaner_ResultPage extends Component {
             render={data => <JourneyPlannerResultsDisplay data={data} />}
           />
 
+
+
         <ResultPageButton />
       </div>
     );
