@@ -4,16 +4,16 @@ from .models import *
 from datetime import datetime, timedelta, date
 
 def get_services(day, date):
+    """
+    input: day as a word in lowercase, date as a string d-m-Y
+    Used to find which bus services are available on the given date
+    output: Quersey holding Calendar objects
+    """
     date=(datetime.strptime(date,"%d-%m-%Y")).strftime('%Y%m%d')
     not_running=CalendarDates.objects.filter(date=date, exception_type=2).values('service_id')
     extra=CalendarDates.objects.filter(date=date, exception_type=1).values('service_id')
     services=Calendar.objects.filter((Q(**{day:1}, start_date__lte=date, end_date__gte=date) | Q(service_id__in=extra)) & ~Q(service_id__in=not_running))
     return services
-
-def get_trip_object(route, services, value=False):
-    if value:
-        return Trips.objects.filter(service__in=services, route__route_short_name=route).values(value)
-    return Trips.objects.filter(service__in=services, route__route_short_name=route)
 
 def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, services, time):
     """
@@ -47,6 +47,7 @@ def get_direction( day, date, route_number, stop_number):
 def get_station_number( name, dest_lat, dest_lon):
     """
     Input: Station name and coordinates
+    Used to match a station name with it's dublinBus stopID
     Output: Short stop id
     """
     num_of_stations_with_name=Stops.objects.filter(stop_name=name).count()
@@ -70,8 +71,10 @@ def walking_time(distance, speed=4):
 
 def get_stations_nearby(dest_lat, dest_lon, num_stations=8, radius=5):
     """
-    Input: Centre point coordinates
-    Output: Dictionary of stops with stop id as key and distance in m from centre point as value
+    Input: Centre point coordinates. number of stations the user wants to find. Radius is default set to 5km.
+    Output: Dictionary with the list of long stop_ids, short stop_ids and dictionaries with long stop id as key
+    and short_id, distance in m from centre point, and walking time as values. Results
+    are ordered by stations nearest to the start destination.
     """
     default_radius=1 #km
     station_list=[]

@@ -63,8 +63,6 @@ class SearchByStop(views.APIView):
                                                             weather,
                                                             routes,
                                                             trips)
-        #return Response(machine_learning_inputs)
-
         results = self.get_arrival_times(machine_learning_inputs)
         results = self.format_results(results)
         return Response(results)
@@ -101,7 +99,10 @@ class SearchByStop(views.APIView):
     def get_day_and_date(self):
         """
         input: None
-        output: return day and date in dict
+        output: return day and date in dict in different formats.
+        'date' returns date in format d-m-Y. 'month' returns month as a value(1-12)
+        'day_long' returns day as a word in lowercase. 'day' is a number between (0-6)
+        with 0 being Monday
         """
         date = datetime.today().strftime('%d-%m-%Y')
         if self.request.GET.get("date") == "null" or self.request.GET.get("date") is None:
@@ -146,7 +147,8 @@ class SearchByStop(views.APIView):
     def get_bus_stop_info(self, stop_number):
             """
             Input: bus stop number as a string
-            Output: List of Routes that server that bus stop as list
+            Output: List of Routes that server that bus stop as list. If the
+            bus stop long_id doesn't have a matching shortID, None is returned.
             """
             filename = os.path.join(dirname, "frontEndBusInfo.json")
             with open(filename) as json_file:
@@ -187,7 +189,8 @@ class SearchByStop(views.APIView):
 
     def serialize_machine_learning_input(self,time, day, month, date, stop_number, weather, routes, trips):
         """
-        Input: weather data as json/dict, routes as list, direction as int
+        Input: day as int, time as string, month as int, date as string, stop_number as short_stop_id
+        weather as dict, routes as list and trips as a dictionary with route as key.
         Output: machine learning inputs as json
 
         """
@@ -208,7 +211,7 @@ class SearchByStop(views.APIView):
         """
         Input: machine learning inputs as json
         Output: machine learning predictions as dictionary/json
-        Note: output format depends on if we serialize here or somewhere else
+        Note: machine learning predictions as dictionary
         """
         date=datetime.strptime(machine_learning_inputs['date'],'%d-%m-%Y')
         time=datetime.strptime(machine_learning_inputs['time'], '%H:%M:%S').time()
@@ -218,22 +221,35 @@ class SearchByStop(views.APIView):
         for route in machine_learning_inputs['trips'].keys():
             predictions_dict[route]={}
             stop_num=[]
-            df=pd.DataFrame(columns=['temperature_NORM','PROGRNUMBER_NORM','month','day'])
+            df=pd.DataFrame(columns=['temperature_NORM','PROGRNUMBER','month','day'])
             for num in range(0, len(machine_learning_inputs['trips'][route])):
                 if machine_learning_inputs['trips'][route][num].stop_sequence not in stop_num:
                     stop_num+=machine_learning_inputs['trips'][route][num].stop_sequence,
+                    #load the model
+                    #filename = os.path.join(dirname, 'pickle_'+str(route)+".csv")
+                    #modelDict = pickle.load(open(filename), 'rb')
+                    #file.close()
+                    #model = newDict['model']
+                    #drops any columns not needed by model
+                    # df = df.reindex(columns = modelDict['features'])
                     filename = os.path.join(dirname, '46A.pkl')
                     model = pickle.load(open(filename,'rb'))
                     df=df.append({
                         "temperature_NORM":machine_learning_inputs['weather']['temperature'],
-                        "PROGRNUMBER_NORM":num,
+                        "PROGRNUMBER":num,
                         "month": machine_learning_inputs['month'],
                         "day": machine_learning_inputs['day']
                         }, ignore_index=True)
+            #scale input for predictions as in training
+            scaler = MinMaxScaler(feature_range = (0,1))
+            df = scaler.fit_transform(df)
+            #make predictions for df
             predictions_list=model.predict(df)
+            #store this routes predicted times
             for i in range(0, len(stop_num)):
                 predictions_dict[route][stop_num[i]]=predictions_list[i]
 
+        #change arrival time for each trip
         for route in machine_learning_inputs['trips'].keys():
             for num in range(0, len(machine_learning_inputs['trips'][route])):
                 arrival_time=(datetime.combine(date, machine_learning_inputs['trips'][route][num].arrival_time)+timedelta(seconds=predictions_dict[route][machine_learning_inputs['trips'][route][num].stop_sequence])).time()
@@ -509,6 +525,10 @@ class SearchByDestination(SearchByStop):
         }
 
     def make_transit_segment(self, start_lat, start_lon, end_lat, end_lon, end_name, route, start_stop, end_stop, trip_headsign):
+        """
+        input: Strings(starting coordinates, end coordinates, destination name, route number, starting stop, end stop, trip_headsign)
+        output: transit segment as json
+        """
         return {
                 "instruction": "Bus towards "+end_name,
                 "trip_headsign": trip_headsign,
@@ -525,6 +545,10 @@ class SearchByDestination(SearchByStop):
         }
 
     def format_direct_route(self, trips, start_coord, end_coord, start_stations, end_stations, time):
+        """
+        input: trips is a querset holding stoptime objects. Start and end coordinates. Start and end stations. The time as a string.
+        output: results in a list
+        """
         results=[]
         for trip in trips:
             route=[]
@@ -536,6 +560,10 @@ class SearchByDestination(SearchByStop):
         return results
 
     def format_bus_crossover(self, trips, start_coord, end_coord, start_stations, end_stations, time):
+        """
+        input: trips is a querset holding stoptime objects. Start and end coordinates. Start and end stations. The time as a string.
+        output: results in a list
+        """
         results=[]
         for trip in trips:
             route=[]
@@ -550,6 +578,11 @@ class SearchByDestination(SearchByStop):
         return results
 
     def get_routes_for_list_of_stops(self, list_stop_short):
+        """
+        input: a list of short stop_ids
+        output: results as a dictionary with all stop_ids as keys with routes
+        as values, and all as key and all routes as values
+        """
         results={'all':[]}
         for stop in list_stop_short:
             #get all routes that serve a stop
@@ -566,7 +599,7 @@ class SearchByDestination(SearchByStop):
         Input: start poition as dictionary with lat long as keys, end position as dictionary with lat long
                as keys.
         Our own routing which finds a direct route from one station to another.
-        Output: 10 routes from start to stop order by stop_ids(for future walking calc)
+        Output: All valid trips for each route in the nearest start station to the user with valid trips.
         """
         #holds information 'start_stations', 'end_stations, 'date', 'start_time', 'end_time' for query
         inputs={}
@@ -631,6 +664,12 @@ class SearchByDestination(SearchByStop):
         # start_routes={'all':['9'], 37:['9']}
         # end_stations={'list_stop_long':['8220DB000895'], 'list_stop_short':[895], '8220DB000895':{'short':895}}
         # end_routes={'all':['140', '142'], 895:['140', '142']}
+        """
+        Input: start poition as dictionary with lat long as keys, end position as dictionary with lat long
+               as keys.
+        When no direct route is possible, our app looks for a route with a stop_id as a direct crossover
+        Output: All valid trips for each route with each leg in a list in the nearest start station to the user with valid trips.
+        """
 
         stoptimes_all_start_stops=get_relevant_stop_times_per_routes_and_stops(start_stations['list_stop_short'], start_routes['all'], services, time)
         possible_crossovers_stops_leg1=StopTimes.objects.filter(trip_id__in=stoptimes_all_start_stops).values('stop__stopid_short')
@@ -656,6 +695,8 @@ class SearchByDestination(SearchByStop):
 
 
     def format_response(self, results):
+        """
+        """
         response = []
         count = 0
         #results = results[:3]
