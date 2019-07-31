@@ -5,12 +5,9 @@ import "../Static/StyleSheet/ResultPage_Stop_Route.css";
 const ResultTable_StopRoute = props => {
   const { data } = props;
 
-  console.log(data);
-
   return (
     <div>
-      {console.log(data)}
-      {props.data.map((x, y) => (
+      {props.data.directions.map((x, y) => (
         //    Loop throught
         <div className="row resultRows">
           <div className="col-4 busNumber">
