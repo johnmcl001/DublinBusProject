@@ -27,7 +27,8 @@ class YourLocationOrSearch extends React.Component {
         <div>
           <GoogleAddressSearch
             comment="Set Your Start Point"
-            onUpdatePosition={this.props.onUpdatePosition}
+          onUpdatePosition={this.props.onUpdatePosition}
+          onUpdateHome={this.props.onUpdateHome}
           />
         </div>
       );

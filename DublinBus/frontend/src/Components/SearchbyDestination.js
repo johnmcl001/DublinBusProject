@@ -28,10 +28,10 @@ class SearchbyDestination extends Component {
       currentLocation_long: null,
 
       startLocation_lat: null,
-      startLocation_long: null,
+      startLocation_lon: null,
 
       destination_lat: null,
-      destination_long: null,
+      destination_lon: null,
 
       start: "",
       end: ""
@@ -48,18 +48,18 @@ class SearchbyDestination extends Component {
 
   updateCurrentPosition(e) {
     this.setState({
-      startLocation_lat: e.latitude,
-      startLocation_long: e.longitude,
-      start: e.place
+      startLat: e.latitude,
+      startLon: e.longitude,
+      start: e.home
     });
   }
 
   setDestination(e) {
     //set Co-ordinate for destination box
     this.setState({
-      destination_lat: e.latitude,
-      destination_long: e.longitude,
-      end: e.place
+      destinationLat: e.latitude,
+      destinationLon: e.longitude,
+      end: e.home
     });
   }
 
@@ -85,7 +85,7 @@ class SearchbyDestination extends Component {
   setPosition(position) {
     this.setState({
       currentLocation_lat: position.coords.latitude,
-      currentLocation_long: position.coords.longitude
+      currentLocation_lon: position.coords.longitude
     });
   }
 
@@ -221,7 +221,7 @@ class SearchbyDestination extends Component {
             <p>NotificationButton locate here</p>
           </div>
           <Link
-            to={`/ResultPageDestination/${this.state.startLocation_lat}/${this.state.startLocation_long}/${this.state.destination_lat}/${this.state.destination_long}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}/${this.state.start}/${this.state.end}`}
+            to={`/ResultPageDestination/${this.state.startLat}/${this.state.startLon}/${this.state.destinationLat}/${this.state.destinationLon}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}/${this.state.start}/${this.state.end}`}
           >
             <button
               type="button"

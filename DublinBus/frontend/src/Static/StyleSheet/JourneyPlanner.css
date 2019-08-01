@@ -90,25 +90,25 @@
     font-size: 16px !important;
 }
 
-#button_5 {
-    background-color: #F65314;
-}
+/*#button_4 {*/
+    /*background-color: #F65314;*/
+/*}*/
 
-#button_4 {
-    background-color: #7CBB00;
-}
+/*#button_3 {*/
+    /*background-color: #7CBB00;*/
+/*}*/
 
-#button_3 {
-    background-color: #00A1F1;
-}
+/*#button_2 {*/
+    /*background-color: #00A1F1;*/
+/*}*/
 
-#button_2 {
-    background-color: #FFBB00;
-}
+/*#button_1 {*/
+    /*background-color: #FFBB00;*/
+/*}*/
 
-#button_1 {
-    background-color: #146EB4;
-}
+/*#button_0 {*/
+    /*background-color: #146EB4;*/
+/*}*/
 
 .Delete_bottom {
     margin: auto;
@@ -144,15 +144,24 @@
 
 .ListofAllAttractions {
     height: 95%;
-    width: 360px;
+    width: 340px;
     position: fixed;
     z-index: 1;
     top: 16%;
-    right: 2%;
+    right: 1%;
   height: 80vh;
-    background-color: white;
+    /*background-color: white;*/
     overflow-y: scroll;
+    background-color: transparent;
+
+
 }
+
+/* Let's get this party started */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
 
 /*This is for JourneyPlanner_slideShow*/
 .JourneyPannerListButton{

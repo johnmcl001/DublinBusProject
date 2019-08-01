@@ -444,7 +444,7 @@ class TouristPlannerTest(TestCase):
 
         self.factory = RequestFactory()
 
-        self.request = self.factory.get("/api/touristplanner/?attraction0=Trinity+College+Dublin&attraction1=The+Spire&attraction2=Guinness+Storehouse&attraction3=Westin&attraction4=null&home=Westin")
+        self.request = self.factory.get("""/api/touristplanner/?attractions=["Trinity+College+Dublin","The+Spire","Guinness+Storehouse"]&home=Westin""")
         self.test_view = self.setup_view(TouristPlanner(),
                                                   self.request)
 

@@ -6,11 +6,15 @@ import "../Static/StyleSheet/ResultPageDestination.css";
 import JourneyPlanner_Table from "./JourneyPlanner_Table";
 import DataProvider from "./DataProvider";
 import JouneryPlanner_ToVisitPiont from "./JourneyPlanner";
+import JourneyPlannerResultsDisplay from "./JourneyPlannerResultsDisplay";
 
 //This Component is the Result page of Search By Destination
 class JourneyPlaner_ResultPage extends Component {
   render() {
-    const color = ["#F65314", "#7CBB00", "#00A1F1", "#FFBB00", "#146EB4"];
+      const color = ["#F65314", "#7CBB00", "#00A1F1", "#FFBB00", "#146EB4"];
+      var attractions = this.props.match.params.PickedTouristAttraction.split(",")
+      console.log(attractions)
+      console.log(JSON.stringify(attractions))
     return (
       <div
         className="EntireBox  container col-md-12  position-absolute bg-light"
@@ -19,22 +23,18 @@ class JourneyPlaner_ResultPage extends Component {
         <div className="container ">
           <AppViewHeader SearchState={"Real time Information"} />
           <AppViewFavourAndLogin />
-        </div>
+            </div>
+          <DataProvider
+            endpoint="touristplanner"
+            updateMap={this.props.updateMap}
+        attractions={JSON.stringify(attractions)}
+        startLat={this.props.match.params.startLat}
+        startLon={this.props.match.params.startLon}
+        home={this.props.match.params.home}
+            render={data => <JourneyPlannerResultsDisplay data={data} />}
+          />
 
-        <div className="accordion" id="accordionExample">
-          <JourneyPlanner_Table
-            number={1}
-            buttonID={`ResultPageButton_${1}`}
-            cardID={`AttractionStop_${1}`}
-            color={color[1]}
-          />
-          <JourneyPlanner_Table
-            number={2}
-            buttonID={`ResultPageButton_${2}`}
-            cardID={`AttractionStop_${2}`}
-            color={color[2]}
-          />
-        </div>
+
 
         <ResultPageButton />
       </div>

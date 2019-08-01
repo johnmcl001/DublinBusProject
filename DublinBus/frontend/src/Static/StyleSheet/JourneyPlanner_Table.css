@@ -6,6 +6,7 @@
     margin: auto;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 margin-bottom: 20px;
+    ;
 }
 
 .ShowOrders {
@@ -34,4 +35,11 @@ font-weight: bold;
 
 margin: auto;
  margin-bottom:15px ;
+}
+
+.JourneyPlannerResultDisplay{
+    width: 100%;
+}
+.instruction{
+    padding:5px ;
 }
