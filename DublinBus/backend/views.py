@@ -302,6 +302,7 @@ class SearchByDestination(SearchByStop):
                 print('direct route')
                 results=self.sort_routes(dir_routes)
                 results = self.format_response(results)
+                return Response(results)
         crossovers=self.bus_crossover(start_stations, start_routes, end_stations, end_routes, services, time)
         if len(crossovers)!=0:
             print('crossover route')
@@ -472,7 +473,6 @@ class SearchByDestination(SearchByStop):
                                                                                     trips)
                                 #runs our machine learning on all relevant trips
                                 results_end_time = self.get_arrival_times(machine_learning_inputs)
-                                print(leg["route"])
                                 leg['end_time']=results_end_time[0]['arrival_time']
                                 leg['duration_sec']=(datetime.strptime(leg["end_time"],"%H:%M:%S")-datetime.strptime(leg["start_time"],"%H:%M:%S")).total_seconds()
                                 #updates the start_time of next leg as end_time of current leg
@@ -651,6 +651,8 @@ class SearchByDestination(SearchByStop):
                     +" and s2.stop_id=st2.stop_id limit 1;",inputs)
                     if len(trips)>0:
                         results+=trips
+                    else:
+                        print('no result')
             if len(results)!=0:
                 return results
         return []
