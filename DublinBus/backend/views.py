@@ -219,21 +219,19 @@ class SearchByStop(views.APIView):
 
         predictions_dict={}
         for route in machine_learning_inputs['trips'].keys():
+            try:
+                filename = os.path.join(dirname, 'pickles/'+route)
+                dict = pickle.load(open(filename,'rb'))
+            except:
+                filename = os.path.join(dirname, 'pickles/all_routes_model')
+                dict = pickle.load(open(filename,'rb'))
+            model=dict['model']
             predictions_dict[route]={}
             stop_num=[]
             df=pd.DataFrame(columns=['temperature_NORM','PROGRNUMBER','month','day'])
             for num in range(0, len(machine_learning_inputs['trips'][route])):
                 if machine_learning_inputs['trips'][route][num].stop_sequence not in stop_num:
                     stop_num+=machine_learning_inputs['trips'][route][num].stop_sequence,
-                    #load the model
-                    #filename = os.path.join(dirname, 'pickle_'+str(route)+".csv")
-                    #modelDict = pickle.load(open(filename), 'rb')
-                    #file.close()
-                    #model = newDict['model']
-                    #drops any columns not needed by model
-                    # df = df.reindex(columns = modelDict['features'])
-                    filename = os.path.join(dirname, '46A.pkl')
-                    model = pickle.load(open(filename,'rb'))
                     df=df.append({
                         "temperature_NORM":machine_learning_inputs['weather']['temperature'],
                         "PROGRNUMBER":num,
@@ -251,8 +249,7 @@ class SearchByStop(views.APIView):
         for route in machine_learning_inputs['trips'].keys():
             for num in range(0, len(machine_learning_inputs['trips'][route])):
                 arrival_time=(datetime.combine(date, machine_learning_inputs['trips'][route][num].arrival_time)+timedelta(seconds=predictions_dict[route][machine_learning_inputs['trips'][route][num].stop_sequence])).time()
-                if arrival_time>=time:
-                    results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M:%S"), 'stop':machine_learning_inputs['trips'][route][num].stop, 'trip_id':machine_learning_inputs['trips'][route][num].trip_id},
+                results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M:%S"), 'stop':machine_learning_inputs['trips'][route][num].stop, 'trip_id':machine_learning_inputs['trips'][route][num].trip_id},
 
         return self.sort_results(results)
 
@@ -726,6 +723,7 @@ class SearchByDestination(SearchByStop):
                 route_breakdown["directions"] += [route_dict]
 
             response += [route_breakdown]
+
         return response
 
     """        for i in range(0,len(results)):
@@ -813,6 +811,7 @@ class TouristPlanner(views.APIView):
         """
         attractions = self.get_attractions()
         home = self.get_home()
+
         home_coords = self.get_home_coords()
         attractions = self.remove_home_from_attractions(attractions, home)
         attractions = list(permutations(attractions))
@@ -851,6 +850,7 @@ class TouristPlanner(views.APIView):
                 "attraction": best_route[0][i] + " to " + best_route[0][i+1],
                 "start_lat": start_lat,
                 "start_lon": start_lon,
+
                 "end_lat": str(end_lat),
                 "end_lon": str(end_lon)
             }]
@@ -939,6 +939,7 @@ class TouristPlanner(views.APIView):
         Input: home as string
         Output: home coordinates as dicitonary
         """
+
         lat = self.request.GET.get("startLat")
         lon = self.request.GET.get("startLon")
         return {"lat": lat, "lon": lon}
