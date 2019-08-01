@@ -190,9 +190,6 @@ class JourneyPlanner extends Component {
     }
 
     removeAttractionFromSelected(attraction) {
-        {
-            //    To remove selected attraction from selected
-        }
         this.setState(prevState => ({
                     PickedTouristAttraction: prevState.PickedTouristAttraction.filter(el => el.name != attraction.name)
                 }
@@ -202,6 +199,7 @@ class JourneyPlanner extends Component {
             }
         );
         delete this.state.submittedAttractions[this.state.submittedAttractions.indexOf(attraction.name)]
+        console.log("jjj")
     }
 
 

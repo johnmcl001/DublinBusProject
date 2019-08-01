@@ -811,7 +811,6 @@ class TouristPlanner(views.APIView):
         """
         attractions = self.get_attractions()
         home = self.get_home()
-
         home_coords = self.get_home_coords()
         attractions = self.remove_home_from_attractions(attractions, home)
         attractions = list(permutations(attractions))
@@ -862,7 +861,12 @@ class TouristPlanner(views.APIView):
         Input: request from user
         Output: attractions as array
         """
-        return literal_eval(self.request.GET.get("attractions", ["this", "didn't", "work"]))
+        attractions = literal_eval(self.request.GET.get("attractions", ["this", "didn't", "work"]))
+        results = []
+        for attraction in attractions:
+            if attraction != "":
+                results += [attraction]
+        return results
 
     def get_home(self):
         """
