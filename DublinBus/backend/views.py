@@ -335,7 +335,7 @@ class SearchByDestination(SearchByStop):
         time=datetime.strptime(time, '%H:%M:%S').time()
         time=int(datetime.combine(date, time).timestamp())
         key = os.getenv("GOOGLE")
-        if mode=='transit':
+        if mode=='transit' or mode=="TRANSIT":
             call = "https://maps.googleapis.com/maps/api/directions/json?origin="\
             +str(start_coords['lat'])+','+str(start_coords['lon'])+"&destination="+str(end_coords['lat'])+','+str(end_coords['lon'])+"&key="\
             + key + "&mode=transit&transit_mode=bus&alternatives=true&region=ie&departure_time="+str(time)
