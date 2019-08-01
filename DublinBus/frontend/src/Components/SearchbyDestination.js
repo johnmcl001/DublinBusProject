@@ -50,7 +50,7 @@ class SearchbyDestination extends Component {
     this.setState({
       startLat: e.latitude,
       startLon: e.longitude,
-      start: e.place
+      start: e.home
     });
   }
 
@@ -59,7 +59,7 @@ class SearchbyDestination extends Component {
     this.setState({
       destinationLat: e.latitude,
       destinationLon: e.longitude,
-      end: e.place
+      end: e.home
     });
   }
 
