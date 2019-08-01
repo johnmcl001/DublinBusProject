@@ -37,7 +37,7 @@ class App extends Component {
                 component={ResultPage_Stop_Route}
               />
               <Route
-                path="/JourneyPlannerResultPage/"
+                path="/JourneyPlannerResultPage/:startLat/:startLon/:startDateToBackend/:startTimeToBackend/:PickedTouristAttraction/:home"
                 component={JourneyPlannerResultPage}
               />
 

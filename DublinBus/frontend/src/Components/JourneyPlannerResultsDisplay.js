@@ -6,6 +6,7 @@ class JourneyPlannerResultsDisplay extends Component {
     constructor(props){
         super(props);
     }
+
     render (){
         const color = ["#F65314", "#7CBB00", "#00A1F1", "#FFBB00", "#146EB4"];
         return(
@@ -21,10 +22,11 @@ class JourneyPlannerResultsDisplay extends Component {
             color={color[x.number]}
             startLat={x.start_lat}
             startLon={x.start_lon}
-            endLat={x.end_lat}
-            endLon={x.end_lon}
+            destinationLat={x.end_lat}
+           destinationLon={x.end_lon}
           />
-        </div>
+               {console.log(this.props)}
+           </div>
         ))
         )
     }

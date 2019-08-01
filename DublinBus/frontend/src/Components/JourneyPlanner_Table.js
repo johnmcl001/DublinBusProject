@@ -10,8 +10,8 @@ class JourneyPlanner_Table extends React.Component {
     this.state = {
       startLat: this.props.startLat,
       startLon:this.props.startLon,
-      endLat: this.props.endLat,
-      endLon: this.props.endLon,
+      destinationLat: this.props.destinationLat,
+      destinationLon: this.props.destinationLon,
       route: ""
     }
     this.displayRoute = this.displayRoute.bind(this);
@@ -25,8 +25,8 @@ displayRoute() {
             endpoint="destination"
             startLat={this.state.startLat}
             startLon={this.state.startLon}
-            destinationLat={this.state.endLat}
-            destinationLon={this.state.endLon}
+            destinationLat={this.state.destinationLat}
+            destinationLon={this.state.destinationLon}
             render={data => <JourneyPlannerRouteTable data={data} />}
           />
     })

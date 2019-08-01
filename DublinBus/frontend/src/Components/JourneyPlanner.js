@@ -36,11 +36,13 @@ class JourneyPlanner extends Component {
             currentLocation_lat: null,
             currentLocation_long: null,
 
-            startLocation_lat: null,
-            startLocation_long: null,
+            startLat: null,
+            startLon: null,
+            home: null,
 
             PickedTouristAttraction: [],
             ListOfAllAttractions: [],
+            submittedAttractions: [],
 
             bgColor: [
                 '#F65314',
@@ -56,11 +58,17 @@ class JourneyPlanner extends Component {
         this.handleChangeTime = this.handleChangeTime.bind(this);
 
         this.updateCurrentPosition = this.updateCurrentPosition.bind(this);
+        this.updateHome = this.updateHome.bind(this);
 
         this.setPosition = this.setPosition.bind(this);
         this.ToRemoveSelectedCardsFromListOfAllTouristCard_AfterSelect = this.ToRemoveSelectedCardsFromListOfAllTouristCard_AfterSelect.bind(this)
     }
 
+    updateHome(newHome){
+        this.setState({
+            home: newHome
+        })
+    }
 
     componentDidMount() {
         {
@@ -90,8 +98,9 @@ class JourneyPlanner extends Component {
 
     updateCurrentPosition(e) {
         this.setState({
-            startLocation_lat: e.latitude,
-            startLocation_long: e.longitude
+            startLat: e.latitude,
+            startLon: e.longitude,
+            home: e.home
         });
     }
 
@@ -141,7 +150,7 @@ class JourneyPlanner extends Component {
         {
             //    This function is for add card from the listed of Tourist Attraction into tourist to visit point components
         }
-
+        console.log(this.state.PickedTouristAttraction)
         if (this.state.PickedTouristAttraction.length <= 4) {
             this.setState({
                     PickedTouristAttraction: [...this.state.PickedTouristAttraction, attractions],
@@ -163,6 +172,7 @@ class JourneyPlanner extends Component {
 
 
         }
+        this.state.submittedAttractions.push(attractions.name)
     }
 
 
@@ -191,6 +201,7 @@ class JourneyPlanner extends Component {
                 this.ToAddCardBackToAllCardList(attraction)
             }
         );
+        delete this.state.submittedAttractions[this.state.submittedAttractions.indexOf(attraction.name)]
     }
 
 
@@ -219,7 +230,6 @@ class JourneyPlanner extends Component {
 
 
     render() {
-        console.log(this.state.startLocation_lat == null)
 
         return (
             <div>
@@ -245,7 +255,7 @@ class JourneyPlanner extends Component {
 
                                     <div className="col-10 JourneyPlanerInput ">
                                         <YourLocationOrSearch
-                                            onUpdatePosition={this.updateCurrentPosition}
+            onUpdatePosition={this.updateCurrentPosition}
                                         />
                                     </div>
                                     {/*Start location Ends here*/}
@@ -330,20 +340,13 @@ class JourneyPlanner extends Component {
                     </div>
 
 
-                    <Link
+
+
+                        <Link
 
                         // This is submit button
 
-                        to={`/JourneyPlannerResultPage/`}>
-                        {/*<Link*/}
-
-                        {/*    // This is submit button*/}
-
-                        {/*    to={`/JourneyPlannerResultPage/${this.state.startLocation_lat}*/}
-                        {/*    /${this.state.startLocation_long}*/}
-                        {/*    /${this.state.startDateToBackEnd}*/}
-                        {/*    /${this.state.startTimeToBackEnd}*/}
-                        {/*    /${this.state.PickedTouristAttraction}`}>*/}
+                        to={`/JourneyPlannerResultPage/${this.state.startLat}/${this.state.startLon}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}/${this.state.submittedAttractions}/${this.state.home}`}>
 
                         <button
                             type="button"

@@ -1,6 +1,6 @@
 import React from 'react'
 import {FaInfoCircle} from "react-icons/fa";
-import "../Static/StyleSheet/WarningAlert.css";
+//import "../Static/StyleSheet/WarningAlert.css";
 
 //This is Component is the attraction that tourist selected and planed to visit
 

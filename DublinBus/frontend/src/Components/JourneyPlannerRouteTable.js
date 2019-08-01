@@ -22,12 +22,12 @@ const JourneyPlannerRouteTable = ({ data }) =>
               role="tabpanel"
               aria-labelledby="pills-home-tab"
             >
-
+          {console.log(data)}
               {data[0].directions.map((x, y) => (
                 //    Loop throught
                 <div>
-                  <div className="row instruction border border-secondary ">
-                    <p className="Icons_ResultPage border border-secondary">
+                  <div className="row instruction border border-secondary " >
+                      <p className="Icons_ResultPage border border-secondary" >
                       {x.travel_mode == "WALKING" ? (
                         <FaWalking className="Icon" />
                       ) : (
@@ -49,15 +49,6 @@ const JourneyPlannerRouteTable = ({ data }) =>
               ))}
 
 
-                            <div className="row result_destination  " style={{backgroundColor: color}}>
-                                <p className="Icons_destination ">
-                                    <FaMapMarkerAlt className="Icon"/>
-                                </p>
-
-                                <p className="destination_text ">
-                                    Your Destination
-                                </p>
-                            </div>
             </div>
           </div>
         </div>

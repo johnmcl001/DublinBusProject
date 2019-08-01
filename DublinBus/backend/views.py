@@ -280,10 +280,10 @@ class SearchByDestination(SearchByStop):
         time = self.get_time()
         day_info = self.get_day_and_date()
         weather = self.get_weather(time, day_info["date"])
-        start_coords = {"lat": self.get_coords("startpointLat"),
-                        "lon": self.get_coords("startpointLon")}
-        end_coords = {"lat": self.get_coords("departureLat"),
-                        "lon": self.get_coords("departureLon")}
+        start_coords = {"lat": float(self.get_coords("startLat")),
+                        "lon": float(self.get_coords("startLon"))}
+        end_coords = {"lat": float(self.get_coords("destinationLat")),
+                        "lon": float(self.get_coords("destinationLon"))}
         start_stations=get_stations_nearby(start_coords["lat"],
                                                 start_coords["lon"])
         end_stations=get_stations_nearby(end_coords["lat"],
@@ -302,7 +302,6 @@ class SearchByDestination(SearchByStop):
                 print('direct route')
                 results=self.sort_routes(dir_routes)
                 results = self.format_response(results)
-                return Response(results)
         crossovers=self.bus_crossover(start_stations, start_routes, end_stations, end_routes, services, time)
         if len(crossovers)!=0:
             print('crossover route')
@@ -326,7 +325,7 @@ class SearchByDestination(SearchByStop):
         Output: coords as dict
         """
         coords = self.request.GET.get(point)
-        return literal_eval(coords)
+        return coords
 
     def get_route(self, time, date, start_coords, end_coords, mode='transit'):
 
@@ -702,9 +701,9 @@ class SearchByDestination(SearchByStop):
             route_breakdown["directions"] = []
             for i in range(0, len(result['journey'])):
                 if int(result["journey"][i]["duration_sec"]) == 0:
-                    time = 0,
+                    time = 0
                 elif int(result["journey"][i]["duration_sec"]) < 60:
-                    time = 1,
+                    time = 1
                 else:
                     time = result["journey"][i]["duration_sec"] // 60
                 route_dict = {
@@ -812,7 +811,7 @@ class TouristPlanner(views.APIView):
         """
         attractions = self.get_attractions()
         home = self.get_home()
-        home_coords = self.get_home_coords(home)
+        home_coords = self.get_home_coords()
         attractions = self.remove_home_from_attractions(attractions, home)
         attractions = list(permutations(attractions))
         attractions = self.convert_tuples_to_list(attractions)
@@ -850,8 +849,8 @@ class TouristPlanner(views.APIView):
                 "attraction": best_route[0][i] + " to " + best_route[0][i+1],
                 "start_lat": start_lat,
                 "start_lon": start_lon,
-                "end_lat": end_lat,
-                "end_lon": end_lon
+                "end_lat": str(end_lat),
+                "end_lon": str(end_lon)
             }]
 
         return results
@@ -862,7 +861,6 @@ class TouristPlanner(views.APIView):
         Output: attractions as array
         """
         return literal_eval(self.request.GET.get("attractions", ["this", "didn't", "work"]))
-
 
     def get_home(self):
         """
@@ -934,35 +932,14 @@ class TouristPlanner(views.APIView):
 
             return lowest_cost_permutation, minimum
 
-    def get_home_coords(self, home):
+    def get_home_coords(self):
         """
         Input: home as string
         Output: home coordinates as dicitonary
         """
-
-        if Touristattractions.objects.filter(name__contains=home).exists():
-            info = Touristattractions.objects.filter(name__contains=home)[0]
-            return {"lat": info.lat, "lon": info.lon}
-        else:
-            call = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input="+home.replace(" ", "+")+"&inputtype=textquery&fields=photos,formatted_address,name,opening_hours,geometry&key=" + os.getenv("GOOGLE")
-            response = requests.get(call).text
-            info = json.loads(response)["candidates"][0]
-            name = info["name"]
-            lat = info["geometry"]["location"]["lat"]
-            lon = info["geometry"]["location"]["lng"]
-
-            new_place = Touristattractions(
-                name = name,
-                lat = lat,
-                lon = lon,
-                description = "",
-                rating = 0.0,
-                raters = 0,
-                address = ""
-            )
-
-            new_place.save()
-            return {"lat": lat, "lon": lon}
+        lat = self.request.GET.get("startLat")
+        lon = self.request.GET.get("startLon")
+        return {"lat": lat, "lon": lon}
 
 
 

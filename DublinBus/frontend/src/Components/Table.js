@@ -29,7 +29,8 @@ const Table = ({ data }) =>
               >
                 {data[0].duration} Mins
               </a>
-            </li>
+          </li>
+          {/*
             <li className="nav-item">
               <a
                 className="nav-link"
@@ -43,7 +44,6 @@ const Table = ({ data }) =>
                 {data[1].duration} Mins
               </a>
           </li>
-          {/*
             <li className="nav-item">
               <a
                 className="nav-link"
@@ -91,6 +91,7 @@ const Table = ({ data }) =>
                 </div>
               ))}
             </div>
+                      {/*
             <div
               className="tab-pane fade"
               id="pills-profile"
@@ -121,7 +122,6 @@ const Table = ({ data }) =>
                 </div>
               ))}
             </div>
-                      {/*
             <div
               className="tab-pane fade"
               id="pills-contact"

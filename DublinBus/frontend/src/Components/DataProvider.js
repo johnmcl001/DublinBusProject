@@ -10,14 +10,14 @@ class DataProvider extends Component {
     stopnumber: PropTypes.string,
     route: PropTypes.string,
     towards: PropTypes.string,
-    departureLat: PropTypes.string,
-    departureLon: PropTypes.string,
-    startpointLat: PropTypes.string,
-    startpointLon: PropTypes.string,
+    destinationLat: PropTypes.string,
+    destinationLon: PropTypes.string,
+    startLat: PropTypes.string,
+    startLon: PropTypes.string,
     destination: PropTypes.string,
     time: PropTypes.string,
     date: PropTypes.string,
-    attractions: PropTypes.array,
+    attractions: PropTypes.string,
     home: PropTypes.string
   };
   state = {
@@ -27,7 +27,8 @@ class DataProvider extends Component {
     proxy: "http://localhost:8000/api/"
   };
 
-  componentDidMount() {
+    componentDidMount() {
+        console.log(this.props)
     axios({
       method: "get",
       url: "http://localhost:8000/api/" + this.props.endpoint + "/",
@@ -35,10 +36,10 @@ class DataProvider extends Component {
         stopnumber: this.props.stopnumber,
         route: this.props.route,
         towards: this.props.towards,
-        departureLat: this.props.destinationLat,
-        departureLon: this.props.destinationLon,
-        startpointLat: this.props.startLat,
-        startpointLon: this.props.startLon,
+        destinationLat: this.props.destinationLat,
+        destinationLon: this.props.destinationLon,
+        startLat: this.props.startLat,
+        startLon: this.props.startLon,
         time: this.props.time,
         date: this.props.date,
         attractions: this.props.attractions,
@@ -62,7 +63,7 @@ class DataProvider extends Component {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-          console.log(response.data[0].directions)
+          console.log(response.data)
         return response.data;
       })
       .then(data => this.setState({ data: data, loaded: true }));

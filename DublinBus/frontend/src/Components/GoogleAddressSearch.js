@@ -34,7 +34,8 @@ const PlacesWithStandaloneSearchBox = compose(
           this.props.onUpdatePosition({
             latitude: this.state.places[0].geometry.location.lat(),
             longitude: this.state.places[0].geometry.location.lng(),
-            place: this.state.places[0].address_components[0].long_name
+              place: this.state.places[0].address_components[0].long_name,
+              home: this.state.places[0].name
           });
         }
       });
