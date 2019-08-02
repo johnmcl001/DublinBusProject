@@ -44,20 +44,22 @@ def get_direction( day, date, route_number, stop_number):
     headsigns=Trips.objects.filter(service_id__in=services, route__in=route_ids).values('trip_headsign','direction_id').distinct()
     return headsigns
 
-def get_station_number( name, dest_lat, dest_lon):
+def get_station_number( name, dest_lat, dest_lon, route):
     """
-    Input: Station name and coordinates
+    Input: Station name and coordinates and a route that serves it.
     Used to match a station name with it's dublinBus stopID
     Output: Short stop id
     """
     num_of_stations_with_name=Stops.objects.filter(stop_name=name).count()
     if num_of_stations_with_name!=1:
         #Finds stations within 500m of the coordinates and returns 1
-        for station in Stops.objects.raw('SELECT stop_id, stopID_short,'\
+        for station in Stops.objects.raw('SELECT s.stop_id, s.stopID_short,'\
         +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
         + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\
-        +' * sin( radians( stop_lat ) ) ) ) AS distance FROM website.stops HAVING distance < '\
-        +'%(default_radius)s ORDER BY distance LIMIT 0 , 1;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(.5)}):
+        +' * sin( radians( stop_lat ) ) ) ) AS distance FROM website.stops as s,'\
+        +' website.stop_times as st where st.stop_id=s.stop_id and '\
+        +'st.route_short_name=%(route)s HAVING distance < '\
+        +'%(default_radius)s ORDER BY distance LIMIT 0 , 1;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(2), 'route':str(route)}):
             return station.stopid_short
     else:
         return Stops.objects.get(stop_name=name).stopid_short
