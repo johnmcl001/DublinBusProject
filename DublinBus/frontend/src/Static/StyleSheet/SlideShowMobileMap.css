@@ -82,6 +82,7 @@
 
 
 .slide-pane__header {
+
  display: flex;
  flex: 0 0 64px;
  align-items: center;
@@ -89,9 +90,13 @@
  height: 64px;
  border-bottom: 5px solid rgba(0,0,0,0.1);
  color: white;
+    padding-right: 0!important;
+       padding-left: 0!important;
 
 }
+
 .slide-pane .slide-pane__title {
+     width: 100%!important;
  font-size: 23px;
  font-weight: bold;
  max-width: 85%;
@@ -102,7 +107,7 @@
  padding: 0;
 }
 .slide-pane__close {
- margin-left: 24px;
+ margin-left: 10px;
  padding: 16px;
 opacity: 1;
  cursor: pointer;
@@ -116,7 +121,7 @@ opacity: 1;
 }
 .slide-pane__content {
  position: relative;
- overflow-y: auto;
+ overflow :hidden!important;
  padding: 0;
  flex: 1 1 auto;
  margin-bottom:5px ;
@@ -126,13 +131,19 @@ opacity: 1;
 
 /*End here */
 
+.MobileMap{
+    padding-right: 0!important;
+     padding-left: 0!important;
 
-
+}
 .ResultPageButton {
     margin: auto;
+    /*padding:auto;*/
+
     margin-top: 20px;
     height: 35px;
      margin-bottom: 40px;
+
 }
 
 .ResultPageButton button {
@@ -174,4 +185,9 @@ opacity: 1;
     font-size: 15px;
 
 }
+}
+
+.MobileShowAllAttraction{
+    overflow-y:scroll ;
+    height: 100%;
 }

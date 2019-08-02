@@ -36,7 +36,7 @@ class JourneyPlanner extends Component {
             currentLocation_lat: null,
             currentLocation_long: null,
 
-            startLat: null,
+            startLat: '',
             startLon: null,
             home: null,
 
@@ -52,7 +52,7 @@ class JourneyPlanner extends Component {
                 '#146EB4',
             ],
 
-
+            warningText: '',
         };
         this.handleChangeDate = this.handleChangeDate.bind(this);
         this.handleChangeTime = this.handleChangeTime.bind(this);
@@ -64,7 +64,41 @@ class JourneyPlanner extends Component {
         this.ToRemoveSelectedCardsFromListOfAllTouristCard_AfterSelect = this.ToRemoveSelectedCardsFromListOfAllTouristCard_AfterSelect.bind(this)
     }
 
-    updateHome(newHome){
+    checkEmpty() {
+        {
+            //    To activate Warning alert
+        }
+        if (this.state.startLat.length == 0) {
+
+            this.setState({
+                warningText: 'Hey Please Pick Your Start Point'
+            });
+
+            let $ = jQuery;
+
+            (function ($) {
+                $('#JourneyPlannerWarning').modal('toggle')
+            })(jQuery);
+
+
+        } else if (this.state.PickedTouristAttraction.length == 0) {
+
+            this.setState({
+                warningText: 'Hey Please select some location to visit'
+            });
+            let $ = jQuery;
+
+            (function ($) {
+                $('#JourneyPlannerWarning').modal('toggle')
+            })(jQuery);
+
+        } else {
+
+            this.props.history.push(`/JourneyPlannerResultPage/${this.state.startLat}/${this.state.startLon}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}/${this.state.submittedAttractions}/${this.state.home}`);
+        }
+    }
+
+    updateHome(newHome) {
         this.setState({
             home: newHome
         })
@@ -100,7 +134,7 @@ class JourneyPlanner extends Component {
         this.setState({
             startLat: e.latitude,
             startLon: e.longitude,
-            home: e.home
+            home: e.address
         });
     }
 
@@ -228,6 +262,7 @@ class JourneyPlanner extends Component {
 
 
     render() {
+        console.log(this.state.address_name)
 
         return (
             <div>
@@ -253,7 +288,8 @@ class JourneyPlanner extends Component {
 
                                     <div className="col-10 JourneyPlanerInput ">
                                         <YourLocationOrSearch
-            onUpdatePosition={this.updateCurrentPosition}
+                                            onUpdatePosition={this.updateCurrentPosition}
+                                            id='AddressAutoStart'
                                         />
                                     </div>
                                     {/*Start location Ends here*/}
@@ -333,32 +369,20 @@ class JourneyPlanner extends Component {
                         </form>
                     </div>
 
-                    <div className="row NotificationButton border border-secondary">
-                        <p>NotificationButton locate here</p>
-                    </div>
 
 
-
-
-                        <Link
-
-                        // This is submit button
-
-                        to={`/JourneyPlannerResultPage/${this.state.startLat}/${this.state.startLon}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}/${this.state.submittedAttractions}/${this.state.home}`}>
 
                         <button
                             type="button"
                             className="btn btn-warning col-7"
                             id="SubmitButton"
+                            onClick={this.checkEmpty.bind(this)}
                         >
                             Submit
                         </button>
 
-                        <button type="button" className="btn btn-danger">
-                            Create an Event
-                        </button>
 
-                    </Link>
+
 
                 </div>
 
@@ -375,7 +399,15 @@ class JourneyPlanner extends Component {
 
                 </Accordion>
 
-                <WarningAlert color={'#146EB4'}/>
+                   <WarningAlert color={'#146EB4'} id={'JourneyPlannerAlertBox'} title={'Information'}
+                              content={'Sorry, You can only select five attraction.'}
+
+                />
+                <WarningAlert color={'#F65314'} id={'JourneyPlannerWarning'} title={'Warning'}
+                              content={this.state.warningText}
+
+                />
+
 
             </div>
         );

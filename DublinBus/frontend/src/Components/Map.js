@@ -42,6 +42,12 @@ class Map extends Component {
           lat: 53.3501,
           lng: -6.2661
         }}
+
+            defaultOptions={{
+
+            disableDefaultUI: true,
+
+          }}
       >
         <Polyline
           path={this.state.polyline}

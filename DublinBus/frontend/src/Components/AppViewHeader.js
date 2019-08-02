@@ -28,12 +28,17 @@ class AppViewHeader extends Component {
             </a>
           </div>
 
-          <div className="col-8  ccc">
+          <div className="col-8 ">
             <h5>{this.props.SearchState}</h5>
           </div>
 
-          <div className="col-2 container  " id="AppViewDropDown">
-            <DropDownINav />
+          <div className="col-2 container AppViewDropDown  position-relative" id="AppViewDropDown">
+            {/*<DropDownINav />*/}
+           <a onClick={() => window.location.replace("/")}>
+             <p><i class="fas fa-home"></i></p>
+             {/*<p id='Home'>Home</p>*/}
+           </a>
+
           </div>
         </div>
       </div>

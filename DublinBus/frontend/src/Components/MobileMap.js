@@ -5,7 +5,7 @@ import "../Static/StyleSheet/MobileMap.css";
 class mobileMap extends React.Component {
   render() {
     return (
-      <div className="container col-12 position-relative ">
+      <div className="container col-12 position-relative  MobileMap">
         <Map />
 
         {/*<div className="slideShowMapFooter">*/}

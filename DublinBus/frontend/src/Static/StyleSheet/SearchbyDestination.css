@@ -111,8 +111,9 @@
 }
 
 .DestinationAddressLabel {
-    left: 30px;
+    padding-left: 48px;
     margin-bottom: -10px;
+
 
 
 }
@@ -122,6 +123,15 @@
        margin-left: -17px;
 
    }
+    .SearchByDestinationBox {
+    top: 30px;
+    left: 0px;
+    border: black;
+    height: auto;
+}
+
+
+
 }
 
 

@@ -1,8 +1,9 @@
-#EntireBox_SearchRoute{
-   top: 30px;
+#EntireBox_SearchRoute {
+    top: 30px;
     left: 20px;
     border: black;
 }
+
 * {
     box-sizing: border-box;
 }
@@ -11,6 +12,7 @@
     height: 450px;
 
 }
+
 .SearchByRoute button {
     color: white;
     fontSize: 20px;
@@ -23,13 +25,15 @@
     border-radius: 4px;
     resize: vertical;
 }
-#dropdown{
+
+#dropdown {
     display: block;
     margin-left: auto;
     margin-right: auto;
     width: 150px;
     height: 35px;
 }
+
 .SearchByRoute label {
     width: 100%;
     width: 100%;
@@ -68,16 +72,19 @@
     margin: auto;
 
 }
+
 .bottomClass {
     display: block;
     margin-left: auto;
     margin-right: auto;
 
 }
-.bottomClass button{
-width: 100%;
+
+.bottomClass button {
+    width: 100%;
 
 }
+
 /*Responsive layout -
 when the screen is less than 390px wide,
 then change font size and form
@@ -85,6 +92,14 @@ then change font size and form
 @media only screen and (max-width: 420px) {
     .SearchByRoute label {
         font-size: 15px;
+    }
+
+    #EntireBox_SearchRoute {
+        top: 30px;
+        left: 0px;
+        border: black;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
 
     .SearchByRoute form {

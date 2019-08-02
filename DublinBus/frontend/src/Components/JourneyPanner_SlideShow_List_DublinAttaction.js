@@ -23,7 +23,7 @@ class JourneyPanner_SlideShow_List_DublinAttaction extends Component {
 
     render() {
         return (
-            <div className="row  container ResultPageButton position-absolute " id='JourneyPannerListBottom'>
+            <div className="row  ResultPageButton position-absolute " id='JourneyPannerListBottom'>
 
                 <div className="col-8 d-lg-none JourneyPannerListButton  ">
                     <a className="btn btn-warning " style={{width: 'auto'}}
@@ -41,7 +41,7 @@ class JourneyPanner_SlideShow_List_DublinAttaction extends Component {
                     width='100%'
                     onRequestClose={() => this.setState({isPaneOpenLeft: false})}>
 
-                    <div className=" accordion" id="CardAccordion">
+                    <div className=" MobileShowAllAttraction" id="CardAccordion">
 
                         <JourneyPlanner_List_of_All_Tourist_Attraction
                             AddAttactionCardFunction={this.props.AddAttactionCardFunction.bind(this)}

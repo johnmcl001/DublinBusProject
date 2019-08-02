@@ -6,7 +6,7 @@ const ResultTable_StopRoute = props => {
   const { data } = props;
 
   return (
-    <div>
+    <div  className='ResultTableStopRoute'>
       {props.data.directions.map((x, y) => (
         //    Loop throught
         <div className="row resultRows">

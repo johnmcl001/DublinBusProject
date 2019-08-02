@@ -90,26 +90,6 @@
     font-size: 16px !important;
 }
 
-/*#button_4 {*/
-    /*background-color: #F65314;*/
-/*}*/
-
-/*#button_3 {*/
-    /*background-color: #7CBB00;*/
-/*}*/
-
-/*#button_2 {*/
-    /*background-color: #00A1F1;*/
-/*}*/
-
-/*#button_1 {*/
-    /*background-color: #FFBB00;*/
-/*}*/
-
-/*#button_0 {*/
-    /*background-color: #146EB4;*/
-/*}*/
-
 .Delete_bottom {
     margin: auto;
 }
@@ -142,6 +122,11 @@
     background-color: transparent;
 }
 
+
+
+
+
+
 .ListofAllAttractions {
     height: 95%;
     width: 340px;
@@ -164,14 +149,23 @@
 
 
 /*This is for JourneyPlanner_slideShow*/
+
+
+
+
 .JourneyPannerListButton{
+
     color: white;
-    margin: auto;
+         margin: auto;
+     padding-left: 15% !important;
+
+
 }
 .JourneyPannerListButton a{
        height: 40px;
     padding: auto;
 
+ width: 220px !important;
     display: block;
     margin-left: auto;
     margin-top: auto;
@@ -184,4 +178,13 @@
   .modal{
       width: 90%;
   }
+}
+@media only screen and (max-width: 380px) {
+
+
+    .JourneyPannerListButton {
+     padding-left: 10% !important;
+    margin: auto;
+
+}
 }

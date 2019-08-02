@@ -14,6 +14,7 @@ import JourneyPlannerResultPage from "./Components/JourneyPlaner_ResultPage";
 import Map from "./Components/Map";
 import decodePolyline from "decode-google-map-polyline";
 import MobileMap from "./Components/MobileMap";
+import './App.css'
 
 class App extends Component {
   render() {
@@ -21,7 +22,7 @@ class App extends Component {
       <Router>
         <div className="App">
           <Header />
-          <div className="container-fluid position-relative">
+          <div className="container-fluid position-relative appContainer">
             <Map />
             <Switch>
               <Route path="/" exact={true} component={HomePage} />

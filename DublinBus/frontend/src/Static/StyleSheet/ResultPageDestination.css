@@ -2,12 +2,7 @@
 when the screen is less than 390px wide,
 then change font size and form
 */
-@media only screen and (max-width: 420px) {
-    .ResultPageDestination a {
-        font-size: 15px;
-    }
 
-}
 
 #EntireBox_ResultDestination {
     top: 30px;
@@ -120,5 +115,18 @@ then change font size and form
     align-items: center;
     justify-content: center;
        margin: auto;
+
+}
+@media only screen and (max-width: 420px) {
+    .ResultPageDestination a {
+        font-size: 15px;
+    }
+    #EntireBox_ResultDestination {
+    top: 30px;
+    left: 0px;
+    border: black;
+    height: auto;
+}
+
 
 }

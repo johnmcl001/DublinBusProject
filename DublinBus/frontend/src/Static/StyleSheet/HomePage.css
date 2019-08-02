@@ -14,6 +14,9 @@
     padding-bottom: 50px;
     position: relative;
 
+  text-align: center;
+
+
 }
 
 .HomePage  {
@@ -57,7 +60,7 @@
     margin: auto;
     height: 50px;
     width: 65%;
-    margin-left: 17%;
+
     margin-top: 10px;
     margin-bottom: 15px;
     font-size: 19px;
@@ -79,6 +82,46 @@
     }
 
 }
+
+@media only screen and (max-width: 420px) {
+
+#EntireBox_HomePage {
+
+    top: 0;
+    left: 0;
+
+
+}
+
+    .HomePage Button {
+
+    margin: auto;
+    height: 50px;
+    width: 75%;
+
+    margin-top: 10px;
+    margin-bottom: 15px;
+    font-size: 19px;
+}
+
+
+
+}
+
+
+@media only screen and (max-width: 350px) {
+
+
+
+    .HomePage Button {
+
+    font-size: 15px;
+}
+
+
+
+}
+
 
 @keyframes slide {
     0%{
