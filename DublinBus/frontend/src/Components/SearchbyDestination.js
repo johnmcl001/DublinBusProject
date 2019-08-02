@@ -231,10 +231,7 @@ class SearchbyDestination extends Component {
                         </form>
                     </div>
 
-                    <div className="row NotificationButton border border-secondary">
-                        <p>NotificationButton locate here</p>
-                    </div>
-                    {/*<Link*/}
+
 
                     <button
                         type="button"

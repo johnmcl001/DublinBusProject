@@ -109,6 +109,10 @@
     left: -10%;
 }
 
+#SubmitButton{
+    margin-top: 20px;
+}
+
 @media only screen and (max-width: 770px) {
     .JoureyPlaner form {
         height: 320px;
@@ -123,10 +127,6 @@
 }
 
 
-
-
-
-
 .ListofAllAttractions {
     height: 95%;
     width: 340px;
@@ -134,7 +134,7 @@
     z-index: 1;
     top: 16%;
     right: 1%;
-  height: 80vh;
+    height: 80vh;
     /*background-color: white;*/
     overflow-y: scroll;
     background-color: transparent;
@@ -151,40 +151,33 @@
 /*This is for JourneyPlanner_slideShow*/
 
 
-
-
-.JourneyPannerListButton{
+.JourneyPannerListButton {
 
     color: white;
-         margin: auto;
-     padding-left: 15% !important;
+    margin: auto;
+    /*padding-left: 15% !important;*/
 
 
 }
-.JourneyPannerListButton a{
-       height: 40px;
-    padding: auto;
 
- width: 220px !important;
-    display: block;
-    margin-left: auto;
-    margin-top: auto;
-    margin-right: auto;
-    color: white;
-    font-size: 17px;
-    text-align: center;
-}
+
+
 @media only screen and (max-width: 420px) {
-  .modal{
-      width: 90%;
-  }
+    .modal {
+        width: 90%;
+    }
+.JoureyPlaner form{
+    padding-bottom: 100px;
 }
+
+}
+
 @media only screen and (max-width: 380px) {
 
 
     .JourneyPannerListButton {
-     padding-left: 10% !important;
-    margin: auto;
+        /*padding-left: 10% !important;*/
+        margin: auto;
 
-}
+    }
 }

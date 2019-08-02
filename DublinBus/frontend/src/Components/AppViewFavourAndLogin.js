@@ -5,7 +5,7 @@ import "../Static/StyleSheet/AppViewFavourAndLogin.css";
 class AppViewFavourAndLogin extends Component {
   render() {
     return (
-      <div className="container" style={appViewHeader}>
+      <div className="container AppView" style={appViewHeader}>
         <div className="row">
           <div
             className="col-3 "
@@ -13,13 +13,13 @@ class AppViewFavourAndLogin extends Component {
             style={appViewLoginStyle}
           >
             <a>
-              <i className="fa fa-user"></i>
+              {/*<i className="fa fa-user"></i>*/}
             </a>
           </div>
           <div className="col-6 "></div>
           <div className="col-3 ">
             <a style={favourPageStyle} id="favourPage">
-              <i className="fa fa-heart"></i>
+              {/*<i className="fa fa-heart"></i>*/}
             </a>
           </div>
         </div>

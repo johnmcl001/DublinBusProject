@@ -23,9 +23,9 @@ class JourneyPanner_SlideShow_List_DublinAttaction extends Component {
 
     render() {
         return (
-            <div className="row  ResultPageButton position-absolute " id='JourneyPannerListBottom'>
+            <div className="row  col-12  position-absolute ResultPageButton" id='JourneyPannerListBottom'>
 
-                <div className="col-8 d-lg-none JourneyPannerListButton  ">
+                <div className="d-lg-none   JourneyPannerListButton_">
                     <a className="btn btn-warning " style={{width: 'auto'}}
                        onClick={() => this.setState({isPaneOpenLeft: true})}>Show All Attraction
                     </a>
