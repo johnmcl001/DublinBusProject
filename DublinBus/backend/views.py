@@ -285,9 +285,12 @@ class SearchByDestination(SearchByStop):
                                                 start_coords["lon"])
         end_stations=get_stations_nearby(end_coords["lat"],
                                               end_coords["lon"])
+
         services=get_services(day_info['day_long'], day_info['date'])
+
         start_routes=self.get_routes_for_list_of_stops(start_stations['list_stop_short'])
         end_routes=self.get_routes_for_list_of_stops(end_stations['list_stop_short'])
+        print('Checking direct route')
         dir_route = self.find_direct_routes(start_stations,end_stations,
                                             start_routes, end_routes,
                                            services,
@@ -296,20 +299,19 @@ class SearchByDestination(SearchByStop):
             dir_route=self.format_direct_route(dir_route, start_coords, end_coords, start_stations, end_stations, time)
             dir_routes=self.validate(dir_route, time, day_info,weather)
             if len(dir_routes)!=0:
-                print('direct route')
                 results=self.sort_routes(dir_routes)
                 results = self.format_response(results)
                 return Response(results)
+        print('Checking crossover route')
         crossovers=self.bus_crossover(start_stations, start_routes, end_stations, end_routes, services, time)
         if len(crossovers)!=0:
-            print('crossover route')
             crossovers=self.format_bus_crossover(crossovers, start_coords, end_coords, start_stations, end_stations, time)
             crossovers=self.validate(crossovers, time, day_info,weather)
             if len(crossovers)!=0:
                 results=self.sort_routes(crossovers)
                 results = self.format_response(results)
                 return Response(results)
-        print('api')
+        print('Checking API')
         routes = self.get_route(time, day_info['date'], start_coords, end_coords)
         full_journeys = self.get_full_journeys(routes, time)
         full_journeys=self.validate(full_journeys, time, day_info,weather)
@@ -347,6 +349,8 @@ class SearchByDestination(SearchByStop):
         response = requests.get(call)
         if response.status_code == 200:
             route = json.loads(response.text)
+            if route['status']=='ZERO_RESULTS':
+                print('no return from API')
         elif response.status_code == 400:
             route = "not found"
         return route
@@ -369,7 +373,7 @@ class SearchByDestination(SearchByStop):
                 segment["start_lon"] = step["start_location"]["lng"]
                 segment["end_lat"] = step["end_location"]["lat"]
                 segment["end_lon"] = step["end_location"]["lng"]
-                segment["polyline"] = step["polyline"]["points"]
+                #segment["polyline"] = step["polyline"]["points"]
                 segment['distance'] = step["distance"]["value"]
                 segment["travel_mode"] = step["travel_mode"]
                 segment["markers"] = [step["start_location"]["lat"],
@@ -416,15 +420,18 @@ class SearchByDestination(SearchByStop):
                 #is complete
                 if leg["travel_mode"]=="TRANSIT":
                     if not isinstance(leg["departure_stop"], int):
-                        start_stop=get_station_number(leg["departure_stop"], leg["start_lat"], leg["start_lon"])
+                        #needed when station name is given from the API-given with a route
+                        start_stop=get_station_number(leg["departure_stop"], leg["start_lat"], leg["start_lon"], leg['route'])
                     else:
                         start_stop=leg["departure_stop"]
                     if not isinstance(leg["arrival_stop"], int):
-                        end_stop=get_station_number(leg["arrival_stop"], leg["end_lat"], leg["end_lon"])
+                        #needed when station name is given from the API-given with a route
+                        end_stop=get_station_number(leg["arrival_stop"], leg["end_lat"], leg["end_lon"], leg['route'])
                     else:
                         end_stop=leg["arrival_stop"]
                     if end_stop is None:
-                        print('Cant identify stop')
+                        print('Cant identify stop, this route is not served by DB')
+
 
                     #finds all relevant trips that serve the start_stop and journey given by google maps
                     services=get_services(day_info['day_long'],  day_info["date"])
@@ -477,6 +484,8 @@ class SearchByDestination(SearchByStop):
                                     journey[i+1]["start_time"]=leg['end_time']
                                 valid_result=True
                                 break
+                    #print(valid_result)
+                    #print(leg)
                     if valid_result==True:
                         end=leg['end_time']
                     #after the leg has been checked, if no valid result has Been
@@ -648,8 +657,6 @@ class SearchByDestination(SearchByStop):
                     +" and s2.stop_id=st2.stop_id limit 1;",inputs)
                     if len(trips)>0:
                         results+=trips
-                    else:
-                        print('no result')
             if len(results)!=0:
                 return results
         return []
