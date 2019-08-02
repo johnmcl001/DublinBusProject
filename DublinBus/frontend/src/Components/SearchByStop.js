@@ -29,7 +29,7 @@ class SearchByStop extends Component {
   }
 
   updateStop(e) {
-    this.setState({ stopNumber: e });
+    this.setState({ stopNumber: Number(e) });
   }
 
   handleSubmit() {
@@ -38,8 +38,8 @@ class SearchByStop extends Component {
 
       ensureFill() {
 
-        if (Number.isInteger(this.state.stopnumber) && this.state.stopnumber != 0) {
-            this.props.history.push(`/ResultPage_Stop_Route/${this.state.stopnumber}`);
+        if (Number.isInteger(this.state.stopNumber) && this.state.stopNumber != 0) {
+            this.props.history.push(`/ResultPage_Stop_Route/${this.state.stopNumber}/null`);
         } else {
             //This is used to activate the alert box
 
@@ -76,7 +76,7 @@ class SearchByStop extends Component {
                 </div>
 
                 <div className="col-8  bottomClass">
-                    {/*<Link to={`/ResultPage_Stop_Route/${this.state.stopnumber}`}>*/}
+                    {/*<Link to={`/ResultPage_Stop_Route/${this.state.stopNumber}/null`}>*/}
                     <button
                         type="button"
                         className="btn btn-warning "
@@ -89,7 +89,7 @@ class SearchByStop extends Component {
                 </div>
 
                 <WarningAlert color={'#F65314'} id={'SearchByStop'} title={'Warning'}
-                              content={'Please enter your route number'}
+                              content={'Please enter your topnumber'}
 
                 />
             </div>

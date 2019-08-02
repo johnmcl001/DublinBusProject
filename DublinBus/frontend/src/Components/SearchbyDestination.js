@@ -15,97 +15,43 @@ import "react-datepicker/dist/react-datepicker.css";
 
 //This Component is Search by Destination at the mobile view ports
 class SearchbyDestination extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      initial_Date: null,
-      initial_Time: null,
+    constructor(props) {
+        super(props);
+        this.state = {
+            initial_Date: null,
+            initial_Time: null,
 
-      startDateToBackEnd: null,
-      startTimeToBackEnd: null,
+            startDateToBackEnd: null,
+            startTimeToBackEnd: null,
 
-      //Location Co-Ordinate start Here
-      currentLocation_lat: null,
-      currentLocation_long: null,
+            //Location Co-Ordinate start Here
+            currentLocation_lat: null,
+            currentLocation_long: null,
 
-      startLocation_lat: null,
-      startLocation_lon: null,
+            startLat: '',
+            startLon: null,
 
-      destination_lat: null,
-      destination_lon: null,
+            destinationLat: '',
+            destinationLon: null,
 
-      start: "",
-      end: ""
-    };
-    this.handleChangeDate = this.handleChangeDate.bind(this);
-    this.handleChangeTime = this.handleChangeTime.bind(this);
+            start: "",
+            end: ""
+        };
+        this.handleChangeDate = this.handleChangeDate.bind(this);
+        this.handleChangeTime = this.handleChangeTime.bind(this);
 
-    this.updateCurrentPosition = this.updateCurrentPosition.bind(this);
-    this.setDestination = this.setDestination.bind(this);
+        this.updateCurrentPosition = this.updateCurrentPosition.bind(this);
+        this.setDestination = this.setDestination.bind(this);
 
-    this.setPosition = this.setPosition.bind(this);
-    this.getLocation = this.getLocation.bind(this);
-  }
-
-  updateCurrentPosition(e) {
-    this.setState({
-      startLat: e.latitude,
-      startLon: e.longitude,
-      start: e.home
-    });
-  }
-
-  setDestination(e) {
-    //set Co-ordinate for destination box
-    this.setState({
-      destinationLat: e.latitude,
-      destinationLon: e.longitude,
-      end: e.home
-    });
-  }
-
-  handleChangeDate(date) {
-      //set date
-      var day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate()
-      console.log(day)
-      var month = date.getMonth() < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1
-      console.log(month)
-  this.setState({
-      initial_Date: date,
-      startDateToBackEnd:
-        day + "-" + month + "-" + date.getFullYear()
-  });
-  }
-
-  handleChangeTime(Time) {
-      //set time
-      console.log(Time.getSeconds())
-    this.setState({
-      initial_Time: Time,
-      startTimeToBackEnd:
-        Time.getHours() + ":" + Time.getMinutes()
-    });
-  }
-
-  //This is Geolocation ask for current location
-  setPosition(position) {
-    this.setState({
-      currentLocation_lat: position.coords.latitude,
-      currentLocation_lon: position.coords.longitude
-    });
-  }
-
-  //Ask for permission to obtain current locations
-  getLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(this.setPosition);
+        this.setPosition = this.setPosition.bind(this);
+        this.getLocation = this.getLocation.bind(this);
     }
 
     checkEmpty() {
         {
             //    To activate Warning alert
         }
-        if (this.state.startLocation_lat.length == 0) {
+        if (this.state.startLat.length == 0) {
 
             this.setState({
                 warningText: 'Hey, Please Pick Your Start Point'
@@ -116,7 +62,7 @@ class SearchbyDestination extends Component {
                 $('#DestinationWarning').modal('toggle')
             })(jQuery);
 
-        } else if (this.state.destination_lat.length == 0) {
+        } else if (this.state.destinationLat.length == 0) {
 
             this.setState({
                 warningText: 'Hey, Please Pick Your Destination Point'
@@ -150,10 +96,12 @@ class SearchbyDestination extends Component {
 
     handleChangeDate(date) {
         //set date
+        var day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate()
+        var month = date.getMonth() < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1
         this.setState({
             initial_Date: date,
             startDateToBackEnd:
-                date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear()
+                day + "-" + month + "-" + date.getFullYear()
         });
     }
 
@@ -162,7 +110,7 @@ class SearchbyDestination extends Component {
         this.setState({
             initial_Time: Time,
             startTimeToBackEnd:
-                Time.getHours() + ":" + Time.getMinutes() + ":" + Time.getSeconds()
+                Time.getHours() + ":" + Time.getMinutes()
         });
     }
 
