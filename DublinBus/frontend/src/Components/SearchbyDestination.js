@@ -64,20 +64,25 @@ class SearchbyDestination extends Component {
   }
 
   handleChangeDate(date) {
-    //set date
-    this.setState({
+      //set date
+      var day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate()
+      console.log(day)
+      var month = date.getMonth() < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1
+      console.log(month)
+  this.setState({
       initial_Date: date,
       startDateToBackEnd:
-        date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear()
-    });
+        day + "-" + month + "-" + date.getFullYear()
+  });
   }
 
   handleChangeTime(Time) {
-    //set time
+      //set time
+      console.log(Time.getSeconds())
     this.setState({
       initial_Time: Time,
       startTimeToBackEnd:
-        Time.getHours() + ":" + Time.getMinutes() + ":" + Time.getSeconds()
+        Time.getHours() + ":" + Time.getMinutes()
     });
   }
 
