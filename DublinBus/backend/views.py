@@ -24,6 +24,7 @@ from itertools import permutations
 from .queries import *
 from django.db.models import Q, F
 from sklearn.preprocessing import MinMaxScaler
+import polyline
 load_dotenv(find_dotenv(), override=True)
 
 
@@ -384,6 +385,7 @@ class SearchByDestination(SearchByStop):
                         segment["num_stops"] = step["transit_details"]["num_stops"]
                         segment["arrival_stop"] = step["transit_details"]["arrival_stop"]["name"]
                         segment["departure_stop"] = step["transit_details"]["departure_stop"]["name"]
+                        segment["polyline"] = self.decode_polyline(step["polyline"]["points"])
                 if valid_journey==False:
                     break
                 segment["duration_sec"] = step["duration"]["value"]
@@ -392,7 +394,6 @@ class SearchByDestination(SearchByStop):
                 segment["start_lon"] = step["start_location"]["lng"]
                 segment["end_lat"] = step["end_location"]["lat"]
                 segment["end_lon"] = step["end_location"]["lng"]
-                segment["polyline"] = step["polyline"]["points"]
                 segment['distance'] = step["distance"]["value"]
                 segment["travel_mode"] = step["travel_mode"]
                 segment["markers"] = [step["start_location"]["lat"],
@@ -608,8 +609,15 @@ class SearchByDestination(SearchByStop):
             results+=route,
         return results
 
+    def decode_polyline(self, encoded):
+        decoded=polyline.decode(encoded)
+        polyline=[]
+        for tup in decoded:
+            polyline+={'lat':tup[0], 'lng':tup[1]},
+        return polyline
+
+
     def get_polyline_coords(self, results):
-        print(results)
         for full_journey in results:
             for leg in full_journey['journey']:
                 if leg['travel_mode']=='TRANSIT':
