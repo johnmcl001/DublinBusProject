@@ -49,7 +49,9 @@ class SearchByStop(views.APIView):
         stop_number = self.request.GET.get("stopnumber")
         time = self.get_time()
         day_info = self.get_day_and_date()
+        return Response(day_info)
         weather = self.get_weather(time, day_info["date"])
+        return Response(weather)
         bus_stop_info = self.get_bus_stop_info(stop_number)
         routes = self.get_routes(bus_stop_info)
         services=get_services(day_info['day_long'], day_info['date'])
@@ -92,7 +94,7 @@ class SearchByStop(views.APIView):
         input: None
         output: either time specified in url or time now as string
         """
-        now = datetime.now().strftime("%H:%M:%S")
+        now = datetime.now().strftime("%H:%M")
         if self.request.GET.get("time", now) == "null":
             return now
         return self.request.GET.get("time", now)
@@ -123,27 +125,24 @@ class SearchByStop(views.APIView):
         Input: time and date as strings
         Output: weather conditions for prediction as json or dictionary
         """
-        weatherResult=Forecast.objects.filter(date=date)
-        for result in weatherResult:
-            if result.end_time=="00:00":
-                result.end_time="24:00"
-                if result.start_time <= (datetime.strptime(time,"%H:%M:%S")+timedelta(minutes=60)).strftime("%H:%M") < result.end_time:
-                    forecast = {
-                        "temperature": result.temperature,
-                        "cloud": result.cloud_percent,
-                        "rain": result.rain,
-                        "description": result.description,
-                    }
-                    return forecast
+        weather_result = Forecast.objects.filter(date=str(date))
+        for result in weather_result:
+            if result.start_time <= (datetime.strptime(time, "%H:%M")).strftime("%H:%M") < result.end_time:
+                forecast = {
+                    "temperature": result.temperature,
+                    "cloud": result.cloud_percent,
+                    "rain": result.rain,
+                    "description": result.description,
+                }
+                return forecast
             else:
-                if datetime.strptime(result.start_time, "%H:%M") <= (datetime.strptime(time,"%H:%M:%S")+timedelta(minutes=60)) < datetime.strptime(result.end_time, "%H:%M"):
-                    forecast = {
-                        "temperature": result.temperature,
-                        "cloud": result.cloud_percent,
-                        "rain": result.rain,
-                        "description": result.description,
-                    }
-                    return forecast
+                forecast = {
+                    "temperature": result.temperature,
+                    "cloud": result.cloud_percent,
+                    "rain": result.rain,
+                    "description": result.description,
+                }
+        return forecast
 
     def get_bus_stop_info(self, stop_number):
             """
@@ -215,7 +214,7 @@ class SearchByStop(views.APIView):
         Note: machine learning predictions as dictionary
         """
         date=datetime.strptime(machine_learning_inputs['date'],'%d-%m-%Y')
-        time=datetime.strptime(machine_learning_inputs['time'], '%H:%M:%S').time()
+        time=datetime.strptime(machine_learning_inputs['time'], '%H:%M').time()
         results=[]
 
         predictions_dict={}
@@ -250,7 +249,7 @@ class SearchByStop(views.APIView):
         for route in machine_learning_inputs['trips'].keys():
             for num in range(0, len(machine_learning_inputs['trips'][route])):
                 arrival_time=(datetime.combine(date, machine_learning_inputs['trips'][route][num].arrival_time)+timedelta(seconds=predictions_dict[route][machine_learning_inputs['trips'][route][num].stop_sequence])).time()
-                results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M:%S"), 'stop':machine_learning_inputs['trips'][route][num].stop, 'trip_id':machine_learning_inputs['trips'][route][num].trip_id},
+                results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M"), 'stop':machine_learning_inputs['trips'][route][num].stop, 'trip_id':machine_learning_inputs['trips'][route][num].trip_id},
 
         return self.sort_results(results)
 
@@ -339,7 +338,7 @@ class SearchByDestination(SearchByStop):
         Output: route as json
         """
         date=datetime.strptime(date,'%d-%m-%Y')
-        time=datetime.strptime(time, '%H:%M:%S').time()
+        time=datetime.strptime(time, '%H:%M').time()
         time=int(datetime.combine(date, time).timestamp())
         key = os.getenv("GOOGLE")
         call = "https://maps.googleapis.com/maps/api/directions/json?origin="\
@@ -403,7 +402,7 @@ class SearchByDestination(SearchByStop):
                 if count==0:
                     segment["start_time"]=time
                     if segment["travel_mode"] == "WALKING":
-                        segment["end_time"]=(datetime.strptime(segment["start_time"],"%H:%M:%S")+timedelta(seconds=segment["duration_sec"])).strftime('%H:%M:%S')
+                        segment["end_time"]=(datetime.strptime(segment["start_time"],"%H:%M")+timedelta(seconds=segment["duration_sec"])).strftime('%H:%M')
                 segments += [segment]
                 count+=1
             if valid_journey:
@@ -447,7 +446,7 @@ class SearchByDestination(SearchByStop):
                 #if leg is walking end time can be calculated by addition
                 if leg["travel_mode"]=="WALKING":
                     valid_result=True
-                    leg["end_time"]=(datetime.strptime(leg["start_time"],"%H:%M:%S")+timedelta(seconds=leg["duration_sec"])).strftime('%H:%M:%S')
+                    leg["end_time"]=(datetime.strptime(leg["start_time"],"%H:%M")+timedelta(seconds=leg["duration_sec"])).strftime('%H:%M')
                     if i !=len(journey)-1:
                         journey[i+1]["start_time"]=leg['end_time']
 
@@ -519,7 +518,7 @@ class SearchByDestination(SearchByStop):
                     #found break out of the journey and dont add to results
                     if valid_result==False:
                         break
-            duration=str((datetime.strptime(end,"%H:%M:%S")-datetime.strptime(start,"%H:%M:%S")).total_seconds())
+            duration=str((datetime.strptime(end,"%H:%M")-datetime.strptime(start,"%H:%M")).total_seconds())
             if valid_result==True and {'duration':duration, 'journey':journey} not in valid_results:
                 valid_results+={'duration':duration, 'journey':journey},
         return valid_results
@@ -654,8 +653,8 @@ class SearchByDestination(SearchByStop):
         #holds information 'start_stations', 'end_stations, 'date', 'start_time', 'end_time' for query
         inputs={}
         #get time 30 minutes before hand to allow for prediction model difference
-        inputs['start_time']=(datetime.strptime(time,"%H:%M:%S")-timedelta(minutes=30)).strftime('%H:%M:%S')
-        inputs['end_time']=(datetime.strptime(time,"%H:%M:%S")+timedelta(minutes=60)).strftime('%H:%M:%S')
+        inputs['start_time']=(datetime.strptime(time,"%H:%M")-timedelta(minutes=30)).strftime('%H:%M')
+        inputs['end_time']=(datetime.strptime(time,"%H:%M")+timedelta(minutes=60)).strftime('%H:%M')
 
         common_routes=[]
         index=0
@@ -738,7 +737,7 @@ class SearchByDestination(SearchByStop):
         crossover_routes=self.get_routes_for_list_of_stops(crossover_stations['list_stop_short'])
         all_leg1s=self.find_direct_routes(start_stations, crossover_stations, start_routes, crossover_routes, services, time)
         for leg1 in all_leg1s:
-            leg2=self.find_direct_routes({'list_stop_long':[leg1.end_stop_id_long], 'list_stop_short':[leg1.end_stop_id], leg1.end_stop_id_long:{'short':leg1.end_stop_id}}, end_stations, {'all':sorted(list(dict.fromkeys(crossover_routes[leg1.end_stop_id]))), leg1.end_stop_id:crossover_routes[leg1.end_stop_id]}, end_routes, services, leg1.arrival_time.strftime("%H:%M:%S"))
+            leg2=self.find_direct_routes({'list_stop_long':[leg1.end_stop_id_long], 'list_stop_short':[leg1.end_stop_id], leg1.end_stop_id_long:{'short':leg1.end_stop_id}}, end_stations, {'all':sorted(list(dict.fromkeys(crossover_routes[leg1.end_stop_id]))), leg1.end_stop_id:crossover_routes[leg1.end_stop_id]}, end_routes, services, leg1.arrival_time.strftime("%H:%M"))
             if len(leg2)!=0:
                 results+=[leg1, leg2[0]],
         return results
@@ -763,6 +762,14 @@ class SearchByDestination(SearchByStop):
                 route_dict = {
                     "instruction": result["journey"][i]["instruction"],
                     "time": time,
+                    "start_time": result["journey"][i]["start_time"],
+                    "end_time": result["journey"][i]["end_time"],
+                    "markers": {
+                        "startLat": result["journey"][i]["markers"][0],
+                        "startLon": result["journey"][i]["markers"][1],
+                        "endLat": result["journey"][i]["markers"][2],
+                        "endLon": result["journey"][i]["markers"][3],
+                    }
                 }
                 route_dict["travel_mode"] = ""
                 if result["journey"][i]["travel_mode"] == "TRANSIT":
@@ -773,8 +780,8 @@ class SearchByDestination(SearchByStop):
                 if route_dict["travel_mode"] != "WALKING":
                     route_dict["instruction"] = route_dict["instruction"].replace("Bus", route_dict["travel_mode"])
                 route_breakdown["duration"] = 0
-                for time in route_breakdown["directions"]:
-                    route_breakdown["duration"] += time["time"]
+                route_breakdown["duration"] += result["duration"] // 60
+                route_breakdown["start_time"] = 0
                 route_breakdown["directions"] += [route_dict]
 
             response += [route_breakdown]
