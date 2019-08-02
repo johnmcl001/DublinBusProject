@@ -24,7 +24,7 @@ from itertools import permutations
 from .queries import *
 from django.db.models import Q, F
 from sklearn.preprocessing import MinMaxScaler
-import polyline
+import polyline as pl
 load_dotenv(find_dotenv(), override=True)
 
 
@@ -378,13 +378,13 @@ class SearchByDestination(SearchByStop):
                     elif not Routes.objects.filter(route_short_name=step["transit_details"]["line"]["short_name"]).exists():
                         print('Not Valid Route')
                         valid_journey=False
+                    if valid_journey==False:
+                        break
                     else:
                         segment["num_stops"] = step["transit_details"]["num_stops"]
                         segment["arrival_stop"] = step["transit_details"]["arrival_stop"]["name"]
                         segment["departure_stop"] = step["transit_details"]["departure_stop"]["name"]
                         segment["polyline"] = self.decode_polyline(step["polyline"]["points"])
-                if valid_journey==False:
-                    break
                 segment["duration_sec"] = step["duration"]["value"]
                 segment["instruction"] = step["html_instructions"]
                 segment["start_lat"] = step["start_location"]["lat"]
@@ -600,14 +600,14 @@ class SearchByDestination(SearchByStop):
             leg2=trip[1]
             end_name='destination'
             route+=self.make_walking_segment(start_coord['lat'], start_coord['lon'], leg1.start_lat, leg1.start_lon, leg1.start_stop_name, start_stations[leg1.start_stop_id_long]['walking_time'], start_stations[leg1.start_stop_id_long]['distance'], time),
-            route+=self.make_transit_segment(leg1.start_lat, leg1.start_lon, leg1.end_lat, leg1.end_lon, leg1.end_stop_name, leg1.route_short_name, leg1.start_stop_id, leg1.end_stop_id, leg1.trip_headsign, trip.start_num, trip.end_num, trip.trip_id),
-            route+=self.make_transit_segment(leg2.start_lat, leg2.start_lon, leg2.end_lat, leg2.end_lon, leg2.end_stop_name, leg2.route_short_name, leg2.start_stop_id, leg2.end_stop_id, leg2.trip_headsign, trip.start_num, trip.end_num, trip.trip_id),
+            route+=self.make_transit_segment(leg1.start_lat, leg1.start_lon, leg1.end_lat, leg1.end_lon, leg1.end_stop_name, leg1.route_short_name, leg1.start_stop_id, leg1.end_stop_id, leg1.trip_headsign, leg1.start_num, leg1.end_num, leg1.trip_id),
+            route+=self.make_transit_segment(leg2.start_lat, leg2.start_lon, leg2.end_lat, leg2.end_lon, leg2.end_stop_name, leg2.route_short_name, leg2.start_stop_id, leg2.end_stop_id, leg2.trip_headsign, leg2.start_num, leg2.end_num, leg2.trip_id),
             route+=self.make_walking_segment(leg2.end_lat, leg2.end_lon, end_coord["lat"], end_coord['lon'], end_name, end_stations[leg2.end_stop_id_long]['walking_time'], end_stations[leg2.end_stop_id_long]['distance']),
             results+=route,
         return results
 
     def decode_polyline(self, encoded):
-        decoded=polyline.decode(encoded)
+        decoded=pl.decode(encoded)
         polyline=[]
         for tup in decoded:
             polyline+={'lat':tup[0], 'lng':tup[1]},
@@ -615,6 +615,7 @@ class SearchByDestination(SearchByStop):
 
 
     def get_polyline_coords(self, results):
+        print(results)
         for full_journey in results:
             for leg in full_journey['journey']:
                 if leg['travel_mode']=='TRANSIT':
@@ -622,7 +623,7 @@ class SearchByDestination(SearchByStop):
                     #try with  markers
                     for stop in StopTimes.objects.filter(trip_id=leg['trip_id'], stop_sequence__gte=leg['start_seq'], stop_sequence__lte=leg['end_seq']).select_related('stop'):
                         leg['polyline']+={'lat':stop.stop.stop_lat, 'lng':stop.stop.stop_lon},
-            return results
+        return results
 
     def get_routes_for_list_of_stops(self, list_stop_short):
         """
@@ -772,6 +773,8 @@ class SearchByDestination(SearchByStop):
                 route_dict["travel_mode"] = ""
                 if result["journey"][i]["travel_mode"] == "TRANSIT":
                     route_dict["travel_mode"] = result["journey"][i]["route"]
+                    route_dict['polyline']=result["journey"][i]['polyline']
+
                 else:
                     route_dict["travel_mode"] = "WALKING"
 
@@ -783,7 +786,6 @@ class SearchByDestination(SearchByStop):
                 route_breakdown["directions"] += [route_dict]
 
             response += [route_breakdown]
-
         return response
 
     """        for i in range(0,len(results)):
