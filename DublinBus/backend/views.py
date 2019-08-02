@@ -49,9 +49,7 @@ class SearchByStop(views.APIView):
         stop_number = self.request.GET.get("stopnumber")
         time = self.get_time()
         day_info = self.get_day_and_date()
-        return Response(day_info)
         weather = self.get_weather(time, day_info["date"])
-        return Response(weather)
         bus_stop_info = self.get_bus_stop_info(stop_number)
         routes = self.get_routes(bus_stop_info)
         services=get_services(day_info['day_long'], day_info['date'])
@@ -490,7 +488,7 @@ class SearchByDestination(SearchByStop):
                             #FUNCTION: get_predicted_arrival_time_at_destination
                             #runs machine learning to find predicted arrival time
                             trips=StopTimes.objects.get(trip_id=res['trip_id'], stop__stopid_short=end_stop)
-                            leg['end_time']=trips.arrival_time.strftime('%H:%M:%S')
+                            leg['end_time']=trips.arrival_time.strftime('%H:%M')
                             trips=self.format_trips_into_dict_with_routes_as_key([trips])
                             machine_learning_inputs = self.serialize_machine_learning_input(
                                                                                 leg['end_time'],
@@ -504,7 +502,7 @@ class SearchByDestination(SearchByStop):
                             #runs our machine learning on all relevant trips
                             results_end_time = self.get_arrival_times(machine_learning_inputs)
                             leg['end_time']=results_end_time[0]['arrival_time']
-                            leg['duration_sec']=(datetime.strptime(leg["end_time"],"%H:%M:%S")-datetime.strptime(leg["start_time"],"%H:%M:%S")).total_seconds()
+                            leg['duration_sec']=(datetime.strptime(leg["end_time"],"%H:%M")-datetime.strptime(leg["start_time"],"%H:%M")).total_seconds()
                             #updates the start_time of next leg as end_time of current leg
                             if i !=len(journey)-1:
                                 journey[i+1]["start_time"]=leg['end_time']
