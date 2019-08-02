@@ -707,6 +707,14 @@ class SearchByDestination(SearchByStop):
                 route_dict = {
                     "instruction": result["journey"][i]["instruction"],
                     "time": time,
+                    "start_time": result["journey"][i]["start_time"],
+                    "end_time": result["journey"][i]["end_time"],
+                    "markers": {
+                        "startLat": result["journey"][i]["markers"][0],
+                        "startLon": result["journey"][i]["markers"][1],
+                        "endLat": result["journey"][i]["markers"][2],
+                        "endLon": result["journey"][i]["markers"][3],
+                    }
                 }
                 route_dict["travel_mode"] = ""
                 if result["journey"][i]["travel_mode"] == "TRANSIT":
@@ -717,8 +725,8 @@ class SearchByDestination(SearchByStop):
                 if route_dict["travel_mode"] != "WALKING":
                     route_dict["instruction"] = route_dict["instruction"].replace("Bus", route_dict["travel_mode"])
                 route_breakdown["duration"] = 0
-                for time in route_breakdown["directions"]:
-                    route_breakdown["duration"] += time["time"]
+                route_breakdown["duration"] += result["duration"] // 60
+                route_breakdown["start_time"] = 0
                 route_breakdown["directions"] += [route_dict]
 
             response += [route_breakdown]
