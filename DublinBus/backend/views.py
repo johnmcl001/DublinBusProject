@@ -287,6 +287,7 @@ class SearchByDestination(SearchByStop):
         services=get_services(day_info['day_long'], day_info['date'])
         start_routes=self.get_routes_for_list_of_stops(start_stations['list_stop_short'])
         end_routes=self.get_routes_for_list_of_stops(end_stations['list_stop_short'])
+
         print('Checking direct route')
         dir_route = self.find_direct_routes(start_stations,end_stations,
                                             start_routes, end_routes,
@@ -300,6 +301,7 @@ class SearchByDestination(SearchByStop):
                 results=self.get_polyline_coords(results)
                 results = self.format_response(results)
                 return Response(results)
+
         print('Checking crossover route')
         crossovers=self.bus_crossover(start_stations, start_routes, end_stations, end_routes, services, time)
         if len(crossovers)!=0:
@@ -310,6 +312,7 @@ class SearchByDestination(SearchByStop):
                 results=self.get_polyline_coords(results)
                 results = self.format_response(results)
                 return Response(results)
+
         print('Checking API')
         routes = self.get_route(time, day_info['date'], start_coords, end_coords)
         full_journeys = self.get_full_journeys(routes, time)
@@ -381,11 +384,13 @@ class SearchByDestination(SearchByStop):
                     if valid_journey==False:
                         break
                     else:
+                        segment['route']=step["transit_details"]["line"]["short_name"]
                         segment["num_stops"] = step["transit_details"]["num_stops"]
                         segment["arrival_stop"] = step["transit_details"]["arrival_stop"]["name"]
+                        segment["arrival_stop"]=get_station_number(segment["arrival_stop"], step["start_location"]["lat"], step["start_location"]["lng"], segment['route'])
                         segment["departure_stop"] = step["transit_details"]["departure_stop"]["name"]
+                        segment["departure_stop"]=get_station_number(segment["departure_stop"], step["end_location"]["lat"], step["end_location"]["lng"], segment['route'])
                         segment["polyline"] = self.decode_polyline(step["polyline"]["points"])
-                        segment['route']=step["transit_details"]["line"]["short_name"]
                 segment["duration_sec"] = step["duration"]["value"]
                 segment["instruction"] = step["html_instructions"]
                 segment["start_lat"] = step["start_location"]["lat"]
@@ -408,26 +413,58 @@ class SearchByDestination(SearchByStop):
                 all_routes+=segments,
         return all_routes
 
-    def get_possible_start_station_predicted_arrival_times(self, day_word, day_digit, date, month, start_stop, route, start_time, weather ):
+    def get_possible_start_station_predicted_arrival_times(self, day_info, start_stop, leg, weather ):
         """
         Inputs: date info in different formats, start_stop id(short), route(short), start_time and weather
         Used to find all stop_time objects with predicted arrival_times which serve this stop and route at the given time.
         Output: List of dictionaries containing ML predicted arrival times and all relevant info.
         """
-        services=get_services(day_word,  date)
-        trips=get_relevant_stop_times_per_routes_and_stops([start_stop], [route],  services, start_time)
+        services=get_services(day_info['day_long'],  day_info["date"])
+        trips=get_relevant_stop_times_per_routes_and_stops([start_stop], [leg["route"]],  services, leg["start_time"])
         trips=self.format_trips_into_dict_with_routes_as_key(trips)
         machine_learning_inputs = self.serialize_machine_learning_input(
-                                                            start_time,
-                                                            day_digit,
-                                                            month,
-                                                            date,
+                                                            leg["start_time"],
+                                                            day_info['day'],
+                                                            day_info["month"],
+                                                            day_info["date"],
                                                             start_stop,
                                                             weather,
-                                                            route,
+                                                            leg["route"],
                                                             trips)
         #runs our machine learning on all relevant trips
         return self.get_arrival_times(machine_learning_inputs)
+
+    def get_predicted_arrival_time_at_destination(self, leg, results, end_stop, day_info, weather, i):
+        #only changes to True if there is a valid trip for this journey
+        for res in results:
+            #no walking as first stage.
+            if (i==0 and res['arrival_time']>= time) or (i>0 and res['arrival_time']>=leg['start_time']):
+                index=results.index(res)
+                leg['later_bus_arrivals']=results[index:]
+                leg['start_time']=res['arrival_time']
+                if StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop).count()==0:
+                    print('no valid trips')
+                    break
+                #FUNCTION: get_predicted_arrival_time_at_destination
+                #runs machine learning to find predicted arrival time
+                trips=StopTimes.objects.get(trip_id=res['trip_id'], stop__stopid_short=end_stop)
+                leg['end_time']=trips.arrival_time.strftime('%H:%M')
+                trips=self.format_trips_into_dict_with_routes_as_key([trips])
+                machine_learning_inputs = self.serialize_machine_learning_input(
+                                                                    leg['end_time'],
+                                                                    day_info["day"],
+                                                                    day_info["month"],
+                                                                    day_info["date"],
+                                                                    end_stop,
+                                                                    weather,
+                                                                    leg["route"],
+                                                                    trips)
+                #runs our machine learning on all relevant trips
+                results_end_time = self.get_arrival_times(machine_learning_inputs)
+                leg['end_time']=results_end_time[0]['arrival_time']
+                leg['duration_sec']=(datetime.strptime(leg["end_time"],"%H:%M")-datetime.strptime(leg["start_time"],"%H:%M")).total_seconds()
+                return leg
+        return []
 
     def validate(self, full_journeys, time, day_info, weather):
         """
@@ -442,6 +479,7 @@ class SearchByDestination(SearchByStop):
             #loop for each leg per journey and check if the leg is valid.
             for i in range(0, len(journey)):
                 leg=journey[i]
+
                 #if leg is walking end time can be calculated by addition
                 if leg["travel_mode"]=="WALKING":
                     valid_result=True
@@ -449,73 +487,18 @@ class SearchByDestination(SearchByStop):
                     if i !=len(journey)-1:
                         journey[i+1]["start_time"]=leg['end_time']
 
-
-                #if leg is transit, we must run our machine learning model to
-                #ensure a bus will arrive after the previous stage of the journey
-                #is complete
                 if leg["travel_mode"]=="TRANSIT":
-                    #FUNCTION: validate_stops_from_api
-                    if not isinstance(leg["departure_stop"], int):
-                        #needed when station name is given from the API-given with a route
-                        start_stop=get_station_number(leg["departure_stop"], leg["start_lat"], leg["start_lon"], leg['route'])
-                    else:
-                        start_stop=leg["departure_stop"]
-                    if not isinstance(leg["arrival_stop"], int):
-                        #needed when station name is given from the API-given with a route
-                        end_stop=get_station_number(leg["arrival_stop"], leg["end_lat"], leg["end_lon"], leg['route'])
-                    else:
-                        end_stop=leg["arrival_stop"]
-                    if end_stop is None:
-                        print('Cant identify stop, this route is not served by DB')
-                        #journey can't be served
-                        #break
-
-                    results = self.get_possible_start_station_predicted_arrival_times(day_info['day_long'], day_info['day'], day_info["date"], day_info["month"], start_stop, leg["route"], leg["start_time"], weather)
-                    #finds all relevant trips that serve the start_stop and journey given by google maps
-
-                    #loops through the results and runs machine learning on bus arrival times at destination
                     valid_result=False
-                    #updates start, end and journey duration in legs.
-                    for res in results:
-                        #no walking as first stage.
-                        if (i==0 and res['arrival_time']>= time) or (i>0 and res['arrival_time']>=leg['start_time']):
-                            index=results.index(res)
-                            leg['later_bus_arrivals']=results[index:]
-                            leg['start_time']=res['arrival_time']
-                            if StopTimes.objects.filter(trip_id=res['trip_id'], stop__stopid_short=end_stop).count()==0:
-                                print('no valid trips')
-                                valid_result=False
-                                break
-                            #FUNCTION: get_predicted_arrival_time_at_destination
-                            #runs machine learning to find predicted arrival time
-                            trips=StopTimes.objects.get(trip_id=res['trip_id'], stop__stopid_short=end_stop)
-                            leg['end_time']=trips.arrival_time.strftime('%H:%M')
-                            trips=self.format_trips_into_dict_with_routes_as_key([trips])
-                            machine_learning_inputs = self.serialize_machine_learning_input(
-                                                                                leg['end_time'],
-                                                                                day_info["day"],
-                                                                                day_info["month"],
-                                                                                day_info["date"],
-                                                                                end_stop,
-                                                                                weather,
-                                                                                leg["route"],
-                                                                                trips)
-                            #runs our machine learning on all relevant trips
-                            results_end_time = self.get_arrival_times(machine_learning_inputs)
-                            leg['end_time']=results_end_time[0]['arrival_time']
-                            leg['duration_sec']=(datetime.strptime(leg["end_time"],"%H:%M")-datetime.strptime(leg["start_time"],"%H:%M")).total_seconds()
-                            #updates the start_time of next leg as end_time of current leg
-                            if i !=len(journey)-1:
-                                journey[i+1]["start_time"]=leg['end_time']
-                            valid_result=True
-                            break
-                    #print(valid_result)
-                    #print(leg)
-                    if valid_result==True:
+
+                    results = self.get_possible_start_station_predicted_arrival_times(day_info, leg["departure_stop"], leg, weather)
+                    leg=self.get_predicted_arrival_time_at_destination(leg, results, leg["arrival_stop"], day_info, weather, i)
+
+                    if leg:
+                        if i !=len(journey)-1:
+                            journey[i+1]["start_time"]=leg['end_time']
+                        valid_result=True
                         end=leg['end_time']
-                    #after the leg has been checked, if no valid result has Been
-                    #found break out of the journey and dont add to results
-                    if valid_result==False:
+                    else:
                         break
             duration=str((datetime.strptime(end,"%H:%M")-datetime.strptime(start,"%H:%M")).total_seconds())
             if valid_result==True and {'duration':duration, 'journey':journey} not in valid_results:
