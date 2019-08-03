@@ -95,6 +95,7 @@ def get_stations_nearby(dest_lat, dest_lon, num_stations=8, radius=5):
 
     station_dict={'list_stop_long':[], 'list_stop_short':[]}
     for station in station_list:
+
         station_dict['list_stop_long']+=station.stop_id,
         station_dict['list_stop_short']+=station.stopid_short,
         station_dict[station.stop_id]={'short': station.stopid_short, 'distance':round(station.distance*1000), 'walking_time':walking_time(station.distance)}
