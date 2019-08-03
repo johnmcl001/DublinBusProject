@@ -385,6 +385,7 @@ class SearchByDestination(SearchByStop):
                         segment["arrival_stop"] = step["transit_details"]["arrival_stop"]["name"]
                         segment["departure_stop"] = step["transit_details"]["departure_stop"]["name"]
                         segment["polyline"] = self.decode_polyline(step["polyline"]["points"])
+                        segment['route']=step["transit_details"]["line"]["short_name"]
                 segment["duration_sec"] = step["duration"]["value"]
                 segment["instruction"] = step["html_instructions"]
                 segment["start_lat"] = step["start_location"]["lat"]
@@ -615,7 +616,6 @@ class SearchByDestination(SearchByStop):
 
 
     def get_polyline_coords(self, results):
-        print(results)
         for full_journey in results:
             for leg in full_journey['journey']:
                 if leg['travel_mode']=='TRANSIT':
@@ -651,10 +651,8 @@ class SearchByDestination(SearchByStop):
         """
         #holds information 'start_stations', 'end_stations, 'date', 'start_time', 'end_time' for query
         inputs={}
-        #get time 30 minutes before hand to allow for prediction model difference
         inputs['start_time']=(datetime.strptime(time,"%H:%M")-timedelta(minutes=30)).strftime('%H:%M')
-        inputs['end_time']=(datetime.strptime(time,"%H:%M")+timedelta(minutes=60)).strftime('%H:%M')
-
+        inputs['end_time']=(datetime.strptime(time,"%H:%M")+timedelta(minutes=30)).strftime('%H:%M')
         common_routes=[]
         index=0
         for start_route in start_routes['all']:
