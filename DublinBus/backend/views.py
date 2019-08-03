@@ -148,7 +148,7 @@ class SearchByStop(views.APIView):
             Output: List of Routes that server that bus stop as list. If the
             bus stop long_id doesn't have a matching shortID, None is returned.
             """
-            filename = os.path.join(dirname, "frontEndBusInfo.json")
+            filename = os.path.join(dirname, "BusInfo.json")
             with open(filename) as json_file:
                         busStopInfo = json.load(json_file)
             try:
