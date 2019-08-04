@@ -50,8 +50,7 @@ class SearchByStop(views.APIView):
         time = self.get_time()
         day_info = self.get_day_and_date()
         weather = self.get_weather(time, day_info["date"])
-        bus_stop_info = self.get_bus_stop_info(stop_number)
-        routes = self.get_routes(bus_stop_info)
+        routes = self.get_routes(str(stop_number))
         services=get_services(day_info['day_long'], day_info['date'])
         trips=get_relevant_stop_times_per_routes_and_stops(stop_number, routes, services, time)
         trips=self.format_trips_into_dict_with_routes_as_key(trips)
@@ -74,17 +73,13 @@ class SearchByStop(views.APIView):
         Output: formatted results as json
         """
         formatted_results = {"directions": []}
-        count=0
         for i in range(0, len(results)):
-            if count==10:
-                break
             formatted_results["directions"] += [
                 {
                     "instruction": results[i]["route"],
                     "time": results[i]["arrival_time"]
                 }
             ]
-            count+=1
         return formatted_results
 
     def get_time(self):
@@ -148,7 +143,7 @@ class SearchByStop(views.APIView):
             Output: List of Routes that server that bus stop as list. If the
             bus stop long_id doesn't have a matching shortID, None is returned.
             """
-            filename = os.path.join(dirname, "BusInfo.json")
+            filename = os.path.join(dirname, "stop_with_routes.json")
             with open(filename) as json_file:
                         busStopInfo = json.load(json_file)
             try:
@@ -159,7 +154,7 @@ class SearchByStop(views.APIView):
                 busStopInfo=None
             return busStopInfo
 
-    def get_routes(self, bus_stop_info):
+    def get_routes(self, stop_number):
         """
         Input: Http request, bus_stop_info
         Ouput: route(s) as list
@@ -167,7 +162,10 @@ class SearchByStop(views.APIView):
         if self.request.GET.get("route") != "null" and self.request.GET.get("route") is not None:
             routes = [self.request.GET.get("route")]
         else:
-            routes = bus_stop_info["routes"][0]
+            filename = os.path.join(dirname, "stop_with_routes.json")
+            with open(filename) as json_file:
+                busStopInfo = json.load(json_file)
+                routes = busStopInfo[stop_number]
         return routes
 
     def format_trips_into_dict_with_routes_as_key(self, trips):
@@ -387,9 +385,9 @@ class SearchByDestination(SearchByStop):
                         segment['route']=step["transit_details"]["line"]["short_name"]
                         segment["num_stops"] = step["transit_details"]["num_stops"]
                         segment["arrival_stop"] = step["transit_details"]["arrival_stop"]["name"]
-                        segment["arrival_stop"]=get_station_number(segment["arrival_stop"], step["start_location"]["lat"], step["start_location"]["lng"], segment['route'])
+                        segment["arrival_stop"]=get_station_number(segment["arrival_stop"], step["end_location"]["lat"], step["end_location"]["lng"], segment['route'])
                         segment["departure_stop"] = step["transit_details"]["departure_stop"]["name"]
-                        segment["departure_stop"]=get_station_number(segment["departure_stop"], step["end_location"]["lat"], step["end_location"]["lng"], segment['route'])
+                        segment["departure_stop"]=get_station_number(segment["departure_stop"], step["start_location"]["lat"], step["start_location"]["lng"], segment['route'])
                         segment["polyline"] = self.decode_polyline(step["polyline"]["points"])
                 segment["duration_sec"] = step["duration"]["value"]
                 segment["instruction"] = step["html_instructions"]
@@ -503,6 +501,7 @@ class SearchByDestination(SearchByStop):
             duration=str((datetime.strptime(end,"%H:%M")-datetime.strptime(start,"%H:%M")).total_seconds())
             if valid_result==True and {'duration':duration, 'journey':journey} not in valid_results:
                 valid_results+={'duration':duration, 'journey':journey},
+        #print(valid_results)
         return valid_results
 
     def sort_routes(self, results):
@@ -618,10 +617,8 @@ class SearchByDestination(SearchByStop):
         for stop in list_stop_short:
             #get all routes that serve a stop
             if stop!=None:
-                bus_stop_info = self.get_bus_stop_info(str(stop))
-                if bus_stop_info!=None:
-                    results['all']+= self.get_routes(bus_stop_info)
-                    results[stop]=self.get_routes(bus_stop_info)
+                results['all']+= self.get_routes(str(stop))
+                results[stop]=self.get_routes(str(stop))
         results['all'] = sorted(list(dict.fromkeys(results['all'])))
         return results
 
@@ -658,10 +655,6 @@ class SearchByDestination(SearchByStop):
             inputs['services']+=service.service_id,
         #Finds all trip info for direct routes from one of the given start stations and stop stations
         #within a given time on a specific day.
-        #Attributes returned
-        #'trip_id', 'arrival_time', 'departure_time', 'trip_headsign', 'route_short_name',
-        #'start_stop_id', start_stop_id_long', start_stop_name, 'start_lat', 'start_lon', 'start_num',
-        #''end_stop_id', 'end_lat', 'end_lon', 'end_num', end_stop_id_long, end_stop_name'
         for start_station in start_stations['list_stop_long']:
             results=[]
             inputs['common_routes']=[]
@@ -686,13 +679,9 @@ class SearchByDestination(SearchByStop):
                         results+=trips
             if len(results)!=0:
                 return results
-        return []
+        return results
 
     def bus_crossover(self, start_stations, start_routes, end_stations, end_routes, services, time):
-        # start_stations={'list_stop_long':['8220DB000037'], 'list_stop_short':['37'], '8220DB000037':{'short':37}}
-        # start_routes={'all':['9'], 37:['9']}
-        # end_stations={'list_stop_long':['8220DB000895'], 'list_stop_short':[895], '8220DB000895':{'short':895}}
-        # end_routes={'all':['140', '142'], 895:['140', '142']}
         """
         Input: start poition as dictionary with lat long as keys, end position as dictionary with lat long
                as keys.
@@ -768,37 +757,6 @@ class SearchByDestination(SearchByStop):
 
             response += [route_breakdown]
         return response
-
-    """        for i in range(0,len(results)):
-            result=results[i]
-            route_breakdown = {"instructions": {'total_journey_time':[], 'instruction_breakdown':[]}, "markers": [], "polylines": [], "busInfo": {'route':[]}, "travel_mode": []}
-            route_breakdown['instructions']['total_journey_time']=result['duration']
-            for j in range(0, len(result['route'])):
-                segment=result['route'][j]
-                route_breakdown['travel_mode']+=segment['travel_mode'],
-                if segment['travel_mode']=='WALKING':
-                    route_breakdown["instructions"]['instruction_breakdown']+=[segment['instruction']+ '\t Distance'+str(segment['distance'])+'km.']
-                else:
-                    route_breakdown["instructions"]['instruction_breakdown']+=[segment['instruction']]
-                if segment['travel_mode']=='TRANSIT':
-                    route_breakdown["instructions"]['instruction_breakdown'][j]+="\nDeparture stop: "+str(segment['arrival_stop'])
-                    route_breakdown["instructions"]['instruction_breakdown'][j]+="\nPredicted bus departure time: "+str(segment['arrival_stop'])
-                    route_breakdown["instructions"]['instruction_breakdown'][j]+="\nArrival stop: "+str(segment['arrival_stop'])
-                    if len(segment['later_bus_arrivals']) !=0:
-                        route_breakdown["instructions"]['instruction_breakdown'][j]+="\nLater departure times: "
-                        for k in range(0, len(segment['later_bus_arrivals'])):
-                            route_breakdown["instructions"]['instruction_breakdown'][j]+=str(segment['later_bus_arrivals'][k]['arrival_time'])+","
-                        route_breakdown["instructions"]['instruction_breakdown'][j]=route_breakdown["instructions"]['instruction_breakdown'][j][:-1]
-                route_breakdown["instructions"]['instruction_breakdown'][j]+='\nJourney leg travel time: '+str(segment['duration_sec'])
-                for marker in segment['markers']:
-                    if marker not in route_breakdown['markers']:
-                            route_breakdown['markers']+=marker,
-                if 'polyline' in segment.keys():
-                    route_breakdown['polylines']+=segment['polyline'],
-                if segment['travel_mode']=='TRANSIT':
-                    route_breakdown['busInfo']['route']+=segment['route'],
-            response+=route_breakdown,
-    """
 
 
 
