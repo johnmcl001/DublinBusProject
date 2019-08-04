@@ -27,8 +27,8 @@ def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, se
     if not isinstance(route_numbers, list):
         stop_numbers=[route_numbers]
     #get time 30 minutes before hand to allow for prediction model difference
-    start_time=(datetime.strptime(time,"%H:%M")-timedelta(minutes=30)).strftime('%H:%M')
-    end_time=(datetime.strptime(time,"%H:%M")+timedelta(minutes=60)).strftime('%H:%M')
+    start_time=(datetime.strptime(time,"%H:%M")-timedelta(minutes=45)).strftime('%H:%M')
+    end_time=(datetime.strptime(time,"%H:%M")+timedelta(minutes=45)).strftime('%H:%M')
     stop_times=StopTimes.objects.filter(service_id__in=services, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short__in=stop_numbers, route_short_name__in=route_numbers).order_by('departure_time')
     return stop_times
 
@@ -87,7 +87,7 @@ def get_stations_nearby(dest_lat, dest_lon, num_stations=8, radius=5):
         +' ( 6371 * acos( cos( radians(%(dest_lat)s) ) * cos( radians( stop_lat ) ) *'\
         + ' cos( radians( stop_lon ) - radians(%(dest_lon)s) ) + sin( radians(%(dest_lat)s) )'\
         +' * sin( radians( stop_lat ) ) ) ) AS distance FROM website.stops HAVING distance < '\
-        +'%(default_radius)s ORDER BY distance limit 20;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(default_radius)})
+        +'%(default_radius)s ORDER BY distance limit 30;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(default_radius)})
         default_radius+=.5
     if (len(list(station_list))==0):
         print("No stations found nearby")
