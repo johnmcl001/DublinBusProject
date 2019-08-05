@@ -39,7 +39,6 @@ class DataProvider extends Component {
   };
 
     componentDidMount() {
-        console.log(this.props)
     axios({
       method: "get",
       url: "http://localhost:8000/api/" + this.props.endpoint + "/",
@@ -58,23 +57,12 @@ class DataProvider extends Component {
       }
     })
       .then(response => {
-        /*
-        let polyline = [];
-        let arr = [];
-        console.log(response.data)
-        for (var i = 0; i < response.data.polylines.length; i++) {
-          arr = decodePolyline(response.data.polylines[i]);
-          console.log(arr);
-          for (var j = 0; j < arr.length; j++) {
-            polyline.push(arr[j]);
-          }
-        }
-        this.props.updateMap(polyline, response.data.markers);
-        */
+        console.log(response.data[0].directions[1].polyline)
+        this.props.updateMap(response.data[0].directions[1].polyline);
+
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-          console.log(response.data)
         return response.data;
       })
       .then(data => this.setState({ data: data, loaded: true }));

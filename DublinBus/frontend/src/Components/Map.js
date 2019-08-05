@@ -9,6 +9,7 @@ import {
 import "../Static/StyleSheet/Map.css";
 import MarkerContainer from "./MarkerContainer.js";
 import * as stationkeys from "./frontEndBusInfo.json";
+import ls from "local-storage";
 
 class Map extends Component {
   constructor(props) {
@@ -16,7 +17,7 @@ class Map extends Component {
     this.state = {
       //Holds markers we need to mark route/stops
       markers: this.props.markers,
-      polyline: this.props.polyline
+      polyline: this.props.polyline.length == 0 ? ls.get("polyline") : this.props.polyline
     };
     this.polyCoords = this.props.mapData;
   }
@@ -25,10 +26,11 @@ class Map extends Component {
   };
 
   componentWillReceiveProps({ props }) {
-    this.setState({ polyline: this.props.polyline });
-    this.setState({ markers: this.props.markers });
+    this.setState({ polyline: ls.get("polyline") || this.props.polyline });
+    this.props.polyline.length == 0 ? ls.set("polyline", ls.get("polyline")) : ls.set("polyline", this.props.polyline)
     console.log(this.props);
   }
+
 
   render() {
     {

@@ -16,14 +16,30 @@ import decodePolyline from "decode-google-map-polyline";
 import MobileMap from "./Components/MobileMap";
 import './App.css'
 
+const polyLine = [];
+
 class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      polyline: [],
+      markers: []
+    };
+    this.updateMap = this.updateMap.bind(this);
+  }
+
+  updateMap = (newLine) => {
+    this.setState({ polyline: newLine });
+    console.log(this.state.polyline)
+  };
+
   render() {
     return (
       <Router>
         <div className="App">
           <Header />
           <div className="container-fluid position-relative appContainer">
-            <Map />
+            <Map polyline={this.state.polyline} />
             <Switch>
               <Route path="/" exact={true} component={HomePage} />
               <Route
