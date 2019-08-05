@@ -31,9 +31,10 @@ class App extends Component {
     this.updateMap = this.updateMap.bind(this);
   }
 
-  updateMap = (newLine, newMarkers) => {
-    this.setState({ polyline: newLine });
-    this.setState({ markers: newMarkers })
+  updateMap = (newMapInfo) => {
+    console.log(newMapInfo)
+    this.setState({ polyline: newMapInfo[0].hasOwnProperty("map") ? newMapInfo[0].map.polyline : [] });
+    this.setState({ markers: newMapInfo[0].hasOwnProperty("map") ? newMapInfo[0].map.markers : [] })
   };
 
   render() {
@@ -59,7 +60,12 @@ class App extends Component {
               />
               <Route
                 path="/JourneyPlannerResultPage/:startLat/:startLon/:startDateToBackend/:startTimeToBackend/:PickedTouristAttraction/:home"
-                component={JourneyPlannerResultPage}
+                render={({ updateMap, match }) => (
+                  <JourneyPlannerResultPage
+                    updateMap={this.updateMap}
+                    match={match}
+                  />
+                )}
               />
 
               <Route

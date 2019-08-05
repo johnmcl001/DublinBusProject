@@ -18,15 +18,16 @@ class JourneyPlanner_Table extends React.Component {
   }
 
 displayRoute() {
-  console.log("here")
+  console.log(console.log(this.props))
     this.setState({
         route:
             <DataProvider
             endpoint="destination"
-            startLat={this.state.startLat}
-            startLon={this.state.startLon}
-            destinationLat={this.state.destinationLat}
-            destinationLon={this.state.destinationLon}
+            updateMap={this.props.updateMap}
+            startLat={this.state.startLat.toString()}
+            startLon={this.state.startLon.toString()}
+            destinationLat={this.state.destinationLat.toString()}
+            destinationLon={this.state.destinationLon.toString()}
             render={data => <JourneyPlannerRouteTable data={data} />}
           />
     })

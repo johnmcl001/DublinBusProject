@@ -27,11 +27,11 @@ class JourneyPlaner_ResultPage extends Component {
           <DataProvider
             endpoint="touristplanner"
             updateMap={this.props.updateMap}
-        attractions={JSON.stringify(attractions)}
-        startLat={this.props.match.params.startLat}
-        startLon={this.props.match.params.startLon}
-        home={this.props.match.params.home}
-            render={data => <JourneyPlannerResultsDisplay data={data} />}
+            attractions={JSON.stringify(attractions)}
+            startLat={this.props.match.params.startLat}
+            startLon={this.props.match.params.startLon}
+            home={this.props.match.params.home}
+            render={data => <JourneyPlannerResultsDisplay updateMap={this.props.updateMap} data={data} />}
           />
 
 

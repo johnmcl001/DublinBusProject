@@ -44,8 +44,8 @@ class Map extends Component {
       <GoogleMap
         defaultZoom={11}
         defaultCenter={{
-          lat: this.props.markers[0].lat,
-          lng: this.props.markers[0].lng
+          lat: 53.309418194004,
+          lng: -6.21877482979353
         }}
 
             defaultOptions={{

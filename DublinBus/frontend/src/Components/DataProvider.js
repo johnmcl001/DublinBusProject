@@ -58,8 +58,7 @@ class DataProvider extends Component {
     })
       .then(response => {
         console.log(response.data)
-        this.props.updateMap(response.data[0].map.polyline,
-                             response.data[0].map.markers)
+        this.props.updateMap(response.data)
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }

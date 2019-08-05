@@ -24,6 +24,7 @@ class JourneyPlannerResultsDisplay extends Component {
             startLon={x.start_lon}
             destinationLat={x.end_lat}
            destinationLon={x.end_lon}
+           updateMap={this.props.updateMap}
           />
                {console.log(this.props)}
            </div>
