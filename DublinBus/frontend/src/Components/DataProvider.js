@@ -2,6 +2,12 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import decodePolyline from "decode-google-map-polyline";
+import loading from "../Static/img/loading.gif"
+
+const imgStyle = {
+  leftMargin: "auto",
+  rightMargin: "auto"
+};
 
 class DataProvider extends Component {
   static propTypes = {
@@ -23,7 +29,12 @@ class DataProvider extends Component {
   state = {
     data: [],
     loaded: false,
-    placeholder: "Loading...",
+    placeholder: <img
+                  src={loading}
+                  alt="loading..."
+                  width="120"
+                  height="120"
+                  />,
     proxy: "http://localhost:8000/api/"
   };
 

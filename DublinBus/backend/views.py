@@ -118,6 +118,7 @@ class SearchByStop(views.APIView):
         Input: time and date as strings
         Output: weather conditions for prediction as json or dictionary
         """
+        date = datetime.strptime(date, "%d-%m-%Y").strftime("%d-%m-%y")
         weather_result = Forecast.objects.filter(date=str(date))
         for result in weather_result:
             if result.start_time <= (datetime.strptime(time, "%H:%M")).strftime("%H:%M") < result.end_time:
