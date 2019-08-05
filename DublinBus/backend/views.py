@@ -297,6 +297,7 @@ class SearchByDestination(SearchByStop):
             if len(dir_routes)!=0:
                 results=self.sort_routes(dir_routes)
                 results=self.get_polyline_coords(results)
+                print(results[0])
                 results = self.format_response(results)
                 return Response(results)
 
@@ -721,6 +722,7 @@ class SearchByDestination(SearchByStop):
         for result in results:
             route_breakdown = {}
             route_breakdown["directions"] = []
+            route_breakdown["map"] = {"markers": [], "polyline": []}
             for i in range(0, len(result['journey'])):
                 if int(result["journey"][i]["duration_sec"]) == 0:
                     time = 0
@@ -733,18 +735,26 @@ class SearchByDestination(SearchByStop):
                     "time": time,
                     "start_time": result["journey"][i]["start_time"],
                     "end_time": result["journey"][i]["end_time"],
-                    "markers": {
-                        "startLat": result["journey"][i]["markers"][0],
-                        "startLon": result["journey"][i]["markers"][1],
-                        "endLat": result["journey"][i]["markers"][2],
-                        "endLon": result["journey"][i]["markers"][3],
-                    }
+                    "travel_mode": "",
+
                 }
-                route_dict["travel_mode"] = ""
+                marker = {
+                    "lat": result["journey"][i]["markers"][0],
+                    "lng": result["journey"][i]["markers"][1],
+                    "route": "",
+                    "stop": ""
+                }
+                if i == 0:
+                    route_breakdown["map"]["polyline"] += [{
+                        "lat": marker["lat"],
+                        "lng": marker["lng"]
+                    }]
+
                 if result["journey"][i]["travel_mode"] == "TRANSIT":
                     route_dict["travel_mode"] = result["journey"][i]["route"]
-                    route_dict['polyline']=result["journey"][i]['polyline']
-
+                    marker["route"] = result["journey"][i]["route"]
+                    marker["stop"] = result["journey"][i]["arrival_stop"]
+                    route_breakdown["map"]["polyline"] += result["journey"][i]['polyline']
                 else:
                     route_dict["travel_mode"] = "WALKING"
 
@@ -754,6 +764,18 @@ class SearchByDestination(SearchByStop):
                 route_breakdown["duration"] += result["duration"] // 60
                 route_breakdown["start_time"] = 0
                 route_breakdown["directions"] += [route_dict]
+                route_breakdown["map"]["markers"] += [marker]
+
+                if i == len(result):
+                    print("here")
+                    route_breakdown["map"]["markers"] += [{
+                        "lat": result["journey"][i]["markers"][2],
+                        "lng": result["journey"][i]["markers"][3],
+                    }]
+                    route_breakdown["map"]["polyline"] += [{
+                        "lat": result["journey"][i]["markers"][2],
+                        "lng": result["journey"][i]["markers"][3],
+                    }]
 
             response += [route_breakdown]
         return response

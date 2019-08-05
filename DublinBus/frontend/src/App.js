@@ -23,14 +23,17 @@ class App extends Component {
     super();
     this.state = {
       polyline: [],
-      markers: []
+      markers: [{
+        "lat": 53.309418194004,
+        "lng": -6.21877482979353
+      }]
     };
     this.updateMap = this.updateMap.bind(this);
   }
 
-  updateMap = (newLine) => {
+  updateMap = (newLine, newMarkers) => {
     this.setState({ polyline: newLine });
-    console.log(this.state.polyline)
+    this.setState({ markers: newMarkers })
   };
 
   render() {
@@ -39,7 +42,8 @@ class App extends Component {
         <div className="App">
           <Header />
           <div className="container-fluid position-relative appContainer">
-            <Map polyline={this.state.polyline} />
+            <Map polyline = {this.state.polyline} markers = {this.state.markers}/>
+
             <Switch>
               <Route path="/" exact={true} component={HomePage} />
               <Route

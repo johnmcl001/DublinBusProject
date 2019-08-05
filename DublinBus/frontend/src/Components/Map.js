@@ -16,21 +16,24 @@ class Map extends Component {
     super(props);
     this.state = {
       //Holds markers we need to mark route/stops
-      markers: this.props.markers,
-      polyline: this.props.polyline.length == 0 ? ls.get("polyline") : this.props.polyline
+      polyline: []
     };
-    this.polyCoords = this.props.mapData;
+    this.polyCoords = this.props.polyline;
+
   }
   addPolyline = props => {
-    this.polyCoords.push(props);
+    this.polyCoords.push(props.polyline);
   };
 
-  componentWillReceiveProps({ props }) {
-    this.setState({ polyline: ls.get("polyline") || this.props.polyline });
-    this.props.polyline.length == 0 ? ls.set("polyline", ls.get("polyline")) : ls.set("polyline", this.props.polyline)
-    console.log(this.props);
+  componentWillReceiveProps() {
+    this.setState({ polyline: this.props.polyline });
   }
 
+  onClick(route, stopNumber){
+    console.log("here")
+    console.log(route)
+    console.log(stopNumber)
+  }
 
   render() {
     {
@@ -41,8 +44,8 @@ class Map extends Component {
       <GoogleMap
         defaultZoom={11}
         defaultCenter={{
-          lat: 53.3501,
-          lng: -6.2661
+          lat: this.props.markers[0].lat,
+          lng: this.props.markers[0].lng
         }}
 
             defaultOptions={{
@@ -52,11 +55,22 @@ class Map extends Component {
           }}
       >
         <Polyline
-          path={this.state.polyline}
+          path={this.props.polyline}
           strokeColor="#0000FF"
           strokeOpacity={0.8}
           strokeWeight={2}
         />
+        {console.log(this.props.polyline)}
+          {this.props.markers.map((x, y) => (
+            <Marker
+          position={{
+            lat: x.lat,
+            lng: x.lng
+          }}
+        />
+          ))}
+
+
       </GoogleMap>
     ));
 

@@ -7,6 +7,7 @@ import {
   FaMapMarkerAlt,
   FaBus
 } from "react-icons/fa";
+import Map from "./Map"
 
 const Table = ({ data }) =>
   !data.length ? (
@@ -14,6 +15,7 @@ const Table = ({ data }) =>
   ) : (
     <div>
       <div className="row "></div>
+
       <div className="container border border-primary">
         <div className="container ResultPageDestination  ">
           <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">

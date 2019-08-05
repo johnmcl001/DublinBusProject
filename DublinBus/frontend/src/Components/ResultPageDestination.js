@@ -5,12 +5,12 @@ import ResultPageButton from "./SlideShowMobileMap";
 import "../Static/StyleSheet/ResultPageDestination.css";
 import DataProvider from "./DataProvider";
 import Table from "./Table";
+import Map from "./Map"
 
 import { FaWalking, FaLevelDownAlt, FaMapMarkerAlt } from "react-icons/fa";
 //This Component is the Result page of Search By Destination
 class ResultPageDestination extends Component {
   render() {
-    console.log(this.props);
     return (
       <div
         className="EntireBox  container col-md-12  position-absolute bg-light"

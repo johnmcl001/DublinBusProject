@@ -57,9 +57,9 @@ class DataProvider extends Component {
       }
     })
       .then(response => {
-        console.log(response.data[0].directions[1].polyline)
-        this.props.updateMap(response.data[0].directions[1].polyline);
-
+        console.log(response.data)
+        this.props.updateMap(response.data[0].map.polyline,
+                             response.data[0].map.markers)
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
