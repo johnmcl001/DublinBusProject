@@ -33,7 +33,8 @@ class GoogleAddressSearch extends Component {
         this.props.onUpdatePosition({
             latitude: this.autocomplete.getPlace().geometry.location.lat(),
             longitude: this.autocomplete.getPlace().geometry.location.lng(),
-            address: this.autocomplete.getPlace().address_components[0].short_name + ' ' + this.autocomplete.getPlace().address_components[1].short_name
+            address: this.autocomplete.getPlace().address_components[0].short_name + ' ' + this.autocomplete.getPlace().address_components[1].short_name,
+            home: this.autocomplete.getPlace().address_components[0].short_name
 
         });
 

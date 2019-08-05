@@ -72,6 +72,7 @@ class SearchbyDestination extends Component {
                 $('#DestinationWarning').modal('toggle')
             })(jQuery);
         } else {
+            console.log(this.state.start)
             this.props.history.push(`/ResultPageDestination/${this.state.startLat}/${this.state.startLon}/${this.state.destinationLat}/${this.state.destinationLon}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}/${this.state.start}/${this.state.end}`);
         }
     }
