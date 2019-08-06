@@ -64,22 +64,42 @@ class SearchByStop(views.APIView):
                                                             routes,
                                                             trips)
         results = self.get_arrival_times(machine_learning_inputs)
-        results = self.format_results(results)
+        stop_coords = self.get_stop_coords(stop_number)
+        results = self.format_results(results, stop_coords)
         return Response(results)
 
-    def format_results(self, results):
+    def get_stop_coords(self, stop_number):
+        """
+        Input: stop number as string
+        Output: stop coordinates as dictionary
+        """
+        query_result = Stops.objects.filter(stopid_short=stop_number)[0]
+        coords = {
+            "lat": query_result.stop_lat,
+            "lng": query_result.stop_lon
+        }
+        return coords
+
+    def format_results(self, results, stop_coords):
         """
         Input: results as json
         Output: formatted results as json
         """
-        formatted_results = {"directions": []}
+
+        formatted_results = [{"directions": [], "map": {"markers": [], "polyline": []}}]
+        count=0
         for i in range(0, len(results)):
-            formatted_results["directions"] += [
+            if count==10:
+                break
+            formatted_results[0]["directions"] += [
                 {
                     "instruction": results[i]["route"],
                     "time": results[i]["arrival_time"]
                 }
             ]
+
+            count+=1
+        formatted_results[0]["map"]["markers"] += [stop_coords]
         return formatted_results
 
     def get_time(self):

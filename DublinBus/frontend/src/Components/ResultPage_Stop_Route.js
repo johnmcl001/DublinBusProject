@@ -11,6 +11,10 @@ class ResultPage_Stop_Route extends Component {
   constructor(props) {
     super(props);
   }
+
+    componentWillUnmount(){
+    this.props.updateMap([{"none": "none"}])
+  }
   render() {
     return (
       <div
@@ -40,6 +44,7 @@ class ResultPage_Stop_Route extends Component {
 
             <DataProvider
               endpoint="stop"
+              updateMap={this.props.updateMap}
               stopnumber={this.props.match.params.stopnumber}
               route={this.props.match.params.route}
               render={data => <ResultTable_StopRoute data={data} />}

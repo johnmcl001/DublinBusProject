@@ -57,7 +57,6 @@ class DataProvider extends Component {
       }
     })
       .then(response => {
-        console.log(response.data)
         this.props.updateMap(response.data)
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });

@@ -7,6 +7,10 @@ class JourneyPlannerResultsDisplay extends Component {
         super(props);
     }
 
+  componentWillUnmount(){
+    this.props.updateMap([{"none": "none"}])
+  }
+
     render (){
         const color = ["#F65314", "#7CBB00", "#00A1F1", "#FFBB00", "#146EB4"];
         return(

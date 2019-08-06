@@ -10,6 +10,11 @@ import Map from "./Map"
 import { FaWalking, FaLevelDownAlt, FaMapMarkerAlt } from "react-icons/fa";
 //This Component is the Result page of Search By Destination
 class ResultPageDestination extends Component {
+
+  componentWillUnmount(){
+    this.props.updateMap([{"none": "none"}])
+  }
+
   render() {
     return (
       <div

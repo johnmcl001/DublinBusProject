@@ -23,10 +23,7 @@ class App extends Component {
     super();
     this.state = {
       polyline: [],
-      markers: [{
-        "lat": 53.309418194004,
-        "lng": -6.21877482979353
-      }]
+      markers: []
     };
     this.updateMap = this.updateMap.bind(this);
   }
@@ -56,7 +53,12 @@ class App extends Component {
               <Route path="/JourneyPlanner" component={JourneyPlanner} />
               <Route
                 path="/ResultPage_Stop_Route/:stopnumber/:route"
-                component={ResultPage_Stop_Route}
+                render={({ updateMap, match }) => (
+                  <ResultPage_Stop_Route
+                    updateMap={this.updateMap}
+                    match={match}
+                  />
+                )}
               />
               <Route
                 path="/JourneyPlannerResultPage/:startLat/:startLon/:startDateToBackend/:startTimeToBackend/:PickedTouristAttraction/:home"

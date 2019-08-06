@@ -27,6 +27,7 @@ class Map extends Component {
 
   componentWillReceiveProps() {
     this.setState({ polyline: this.props.polyline });
+    console.log(this.props.markers)
   }
 
   onClick(route, stopNumber){
@@ -60,7 +61,6 @@ class Map extends Component {
           strokeOpacity={0.8}
           strokeWeight={2}
         />
-        {console.log(this.props.polyline)}
           {this.props.markers.map((x, y) => (
             <Marker
           position={{

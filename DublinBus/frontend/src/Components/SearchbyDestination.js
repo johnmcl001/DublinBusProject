@@ -131,9 +131,12 @@ class SearchbyDestination extends Component {
 
     componentDidMount() {
         this.getLocation();
+        console.log(this.props)
     }
 
+
     render() {
+
 
         return (
             <div>

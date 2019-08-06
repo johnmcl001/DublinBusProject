@@ -7,7 +7,7 @@ const ResultTable_StopRoute = props => {
 
   return (
     <div  className='ResultTableStopRoute'>
-      {props.data.directions.map((x, y) => (
+      {props.data[0].directions.map((x, y) => (
         //    Loop throught
         <div className="row resultRows">
           <div className="col-4 busNumber">
