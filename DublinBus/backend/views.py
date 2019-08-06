@@ -801,46 +801,6 @@ class SearchByDestination(SearchByStop):
         return response
 
 
-
-class StopsAutocomplete(views.APIView):
-
-    def get(self, request):
-        """
-        Input: User HTTP request
-        Output: List of stops for a specific route, direction, day
-        """
-        params = self.get_params()
-        day = datetime.today().strftime('%A').lower()
-        stops = self.get_stops(params, day)
-        return Response(stops)
-
-    def get_params(self):
-        """
-        Input: None
-        Output: Route, direction, day as dict
-        """
-        params = {}
-        params["route"] = self.request.GET.get("route", None)
-        params["direction"] = self.request.GET.get("direction", None)
-        return params
-
-
-    def get_stops(self, params, day):
-        """
-        Input: sql query as string
-        Output: stops for route given direction and day as list
-        """
-        query ="select distinct s.stopID_short, s.stop_name, s.stop_id from stops s, stop_times st, trips t, routes r, calendar c where s.stop_id = st.stop_id and st.trip_id = t.trip_id and t.route_id = r.route_id and t.service_id = c.service_id and r.route_short_name = %s and st.stop_headsign = %s"
-        stops = list(Stops.objects.raw(query, [params["route"], params["direction"]]))
-
-        stop_list = []
-        for stop in stops:
-            stop_list += [str(stop.stopid_short) + ", " + str(stop.stop_name)]
-
-
-        return stop_list
-
-
 class TouristPlanner(views.APIView):
     """
     Returns best route through series of tourist destinations
@@ -1023,3 +983,60 @@ class RouteView(generics.ListCreateAPIView):
     """
     queryset = Routes.objects.all()
     serializer_class = RouteSerializer
+
+class directions(views.APIView):
+
+    def get(self, request):
+        stop_number = self.get_params("stopnumber")
+        route_number = self.get_params("route")
+        date = datetime.today().strftime("%d-%m-%Y")
+        day = datetime.today().weekday()
+        day_long = datetime.strptime(date, '%d-%m-%Y').strftime('%A').lower()
+        directions = get_direction(day_long, date, route_number, stop_number)
+        return Response(directions)
+
+    def get_params(self, param):
+        """
+        Input: None
+        Output: Route, direction, day as dict
+        """
+        result = self.request.GET.get(param, None)
+        return result
+
+class StopsAutocomplete(views.APIView):
+
+    def get(self, request):
+        """
+        Input: User HTTP request
+        Output: List of stops for a specific route, direction, day
+        """
+        params = self.get_params()
+        day = datetime.today().strftime('%A').lower()
+        stops = self.get_stops(params, day)
+        return Response(stops)
+
+    def get_params(self):
+        """
+        Input: None
+        Output: Route, direction, day as dict
+        """
+        params = {}
+        params["route"] = self.request.GET.get("route", None)
+        params["direction"] = self.request.GET.get("direction", None)
+        return params
+
+
+    def get_stops(self, params, day):
+        """
+        Input: sql query as string
+        Output: stops for route given direction and day as list
+        """
+        query = "select distinct s.stopID_short, s.stop_id from stops s, stop_times st, trips t where s.stop_id = st.stop_id and st.trip_id = t.trip_id and t.direction_id = %s and st.route_short_name = %s"
+
+        stops = list(Stops.objects.raw(query, [params["direction"], params["route"]]))
+
+        stop_list = []
+        for stop in stops:
+            stop_list += [str(stop.stopid_short) + ", " + str(stop.stop_name)]
+
+        return stop_list

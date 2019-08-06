@@ -37,15 +37,31 @@ class SearchByRoute extends Component {
   }
 
   updateDirection(e) {
+    console.log(e)
     this.setState({ direction: e });
+    console.log(this.state.direction)
   }
 
   updateStop(e) {
     this.setState({ stopNumber: e.substring(0, e.indexOf(",")) });
   }
 
-  updateDirectionAutocomplete(e) {
-    this.setState({ directionAutocomplete: routeList[e] });
+  updateDirectionAutocomplete (e) {
+    axios({
+      method: "get",
+      url: "http://localhost:8000/api/directions/",
+      params: {
+        route: this.state.routeNumber,
+      }
+    })
+      .then(response => {
+        if (response.status !== 200) {
+          return this.setState({ placeholder: "Something went wrong" });
+        }
+        return response.data;
+      })
+      .then(data => this.setState({ directionAutocomplete: data, loaded: true }));
+      console.log(this.state.directionAutocomplete)
   }
 
   updateStopAutocomplete(e) {
@@ -61,6 +77,7 @@ class SearchByRoute extends Component {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
+        console.log(response.data)
         return response.data;
       })
       .then(data => this.setState({ stopsAutocomplete: data, loaded: true }));

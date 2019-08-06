@@ -37,7 +37,6 @@ const Autocomplete = props => {
     updateShowSuggestions(false);
     updateUserInput(e.currentTarget.innerText);
     props.updateState(e.currentTarget.innerText);
-    props.updateAutocomplete(e.currentTarget.innerText);
   };
 
   const onKeyDown = e => {
