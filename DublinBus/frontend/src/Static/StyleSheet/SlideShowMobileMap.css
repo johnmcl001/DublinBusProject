@@ -136,6 +136,38 @@ opacity: 1;
      padding-left: 0!important;
 
 }
+<<<<<<< HEAD
+.ResultPageButton {
+  margin: auto;
+     align-items: center;
+  margin-left:-35px !important;
+    padding-right:0 !important;
+=======
+
+
+.ShowMapAndFare {
+    margin: auto;
+    /*padding:auto;*/
+>>>>>>> fix show map css on Journey planner result page,
+
+}
+.JourneyPannerListButton_{
+    margin: auto;
+    padding-top:10px;
+
+}
+
+.ShowMapAndFare button {
+    height: 40px;
+    width: 220px !important;
+    color: white !important;
+    font-size: 17px;
+    text-align: center;
+}
+
+
+
+}
 .ResultPageButton {
   margin: auto;
      align-items: center;

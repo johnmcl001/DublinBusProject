@@ -16,7 +16,7 @@ class ButtonAtResultPage extends Component {
 
   render() {
     return (
-      <div className="row container ResultPageButton position-relative ">
+      <div className="row container ShowMapAndFare position-relative ">
         <div className="col-12 d-none d-md-block">
           <button className=" btn btn-warning " style={{ width: "150px" }}>
             € Show Fare

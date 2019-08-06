@@ -37,7 +37,10 @@ class SearchbyDestination extends Component {
             destinationLon: null,
 
             start: "",
-            end: ""
+            end: "",
+
+            useSearchLocation: true
+
         };
         this.handleChangeDate = this.handleChangeDate.bind(this);
         this.handleChangeTime = this.handleChangeTime.bind(this);
@@ -116,12 +119,15 @@ class SearchbyDestination extends Component {
         });
     }
 
+
     //This is Geolocation ask for current location
     setPosition(position) {
         this.setState({
-            currentLocation_lat: position.coords.latitude,
-            currentLocation_lon: position.coords.longitude
+
+            startLat: position.coords.latitude,
+            startLon: position.coords.longitude
         });
+        console.log(this.state.startLocation_lat)
     }
 
     //Ask for permission to obtain current locations
@@ -131,9 +137,15 @@ class SearchbyDestination extends Component {
         }
     }
 
-    componentDidMount() {
-        this.getLocation();
-        console.log(this.props)
+    useCurrentLocation() {
+        this.setState({useSearchLocation: false});
+        this.getLocation()
+    }
+
+    useSearchLocation() {
+        this.setState({useSearchLocation: true});
+
+
     }
 
 
@@ -164,7 +176,12 @@ class SearchbyDestination extends Component {
                                     <div className="col-10 row_input ">
                                         <YourLocationOrSearch
                                             onUpdatePosition={this.updateCurrentPosition}
-                                            id='AddressAutoStart'
+                                            useCurrentLocation={this.useCurrentLocation.bind(this)}
+                                            useSearchLocation={this.useSearchLocation.bind(this)}
+                                            useuseSearchLocation_State={this.state.useSearchLocation}
+
+                                            id='JourneyPlannerStart'
+
                                         />
                                     </div>
                                 </div>
@@ -189,8 +206,6 @@ class SearchbyDestination extends Component {
                                         <FaMapMarkerAlt className="icon " id="icon_destination"/>
                                     </div>
                                 </div>
-
-
 
 
                                 <h5>When: </h5>

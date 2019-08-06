@@ -53,6 +53,9 @@ class JourneyPlanner extends Component {
             ],
 
             warningText: '',
+            useSearchLocation: true
+
+
         };
         this.handleChangeDate = this.handleChangeDate.bind(this);
         this.handleChangeTime = this.handleChangeTime.bind(this);
@@ -261,6 +264,34 @@ class JourneyPlanner extends Component {
     //End here - managing button color (each selected attraction) for Picked Attraction
 
 
+    //This is Geolocation ask for current location
+    setPosition(position) {
+        this.setState({
+
+            startLat: position.coords.latitude,
+            startLon: position.coords.longitude
+        });
+        console.log(this.state.startLocation_lat)
+    }
+
+    //Ask for permission to obtain current locations
+    getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(this.setPosition);
+        }
+    }
+
+    useCurrentLocation() {
+        this.setState({useSearchLocation: false});
+        this.getLocation()
+    }
+
+    useSearchLocation() {
+        this.setState({useSearchLocation: true});
+
+
+    }
+
     render() {
         console.log(this.state.address_name)
 
@@ -289,7 +320,12 @@ class JourneyPlanner extends Component {
                                     <div className="col-10 JourneyPlanerInput ">
                                         <YourLocationOrSearch
                                             onUpdatePosition={this.updateCurrentPosition}
-                                            id='AddressAutoStart'
+                                            useCurrentLocation={this.useCurrentLocation.bind(this)}
+                                            useSearchLocation={this.useSearchLocation.bind(this)}
+                                            useuseSearchLocation_State={this.state.useSearchLocation}
+
+                                            id='JourneyPlannerStart'
+
                                         />
                                     </div>
                                     {/*Start location Ends here*/}
@@ -372,18 +408,14 @@ class JourneyPlanner extends Component {
                     </div>
 
 
-
-
-                        <button
-                            type="button"
-                            className="btn btn-warning col-7"
-                            id="SubmitButton"
-                            onClick={this.checkEmpty.bind(this)}
-                        >
-                            Submit
-                        </button>
-
-
+                    <button
+                        type="button"
+                        className="btn btn-warning col-7"
+                        id="SubmitButton"
+                        onClick={this.checkEmpty.bind(this)}
+                    >
+                        Submit
+                    </button>
 
 
                 </div>
@@ -401,7 +433,7 @@ class JourneyPlanner extends Component {
 
                 </Accordion>
 
-                   <WarningAlert color={'#146EB4'} id={'JourneyPlannerAlertBox'} title={'Information'}
+                <WarningAlert color={'#146EB4'} id={'JourneyPlannerAlertBox'} title={'Information'}
                               content={'Sorry, You can only select five attraction.'}
 
                 />
