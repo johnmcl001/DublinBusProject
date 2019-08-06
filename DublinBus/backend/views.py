@@ -317,7 +317,6 @@ class SearchByDestination(SearchByStop):
             if len(dir_routes)!=0:
                 results=self.sort_routes(dir_routes)
                 results=self.get_polyline_coords(results)
-                print(results[0])
                 results = self.format_response(results)
                 return Response(results)
 
