@@ -57,13 +57,23 @@ class DataProvider extends Component {
       }
     })
       .then(response => {
+        if (response.data.length == 0){
+          console.log("empty array")
+          this.setState({ placeholder: "No routes possible at this time" })
+          return
+        } else {
         this.props.updateMap(response.data)
-        if (response.status !== 200) {
-          return this.setState({ placeholder: "Something went wrong" });
-        }
-        return response.data;
+        console.log("yy")
+        this.setState({ data: response.data, loaded: true })
+        return
+      }
       })
-      .then(data => this.setState({ data: data, loaded: true }));
+      .then()
+      .catch(error => {
+        if (error.response){
+          this.setState({ placeholder: "No routes possible at this time" })
+        }
+      });
   }
   render() {
     const { data, loaded, placeholder } = this.state;
