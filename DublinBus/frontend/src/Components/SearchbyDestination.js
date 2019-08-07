@@ -10,6 +10,8 @@ import WarningAlert from "./WarningAlert";
 import * as $ from "jquery";
 // npm install react-datepicker --save
 import DatePicker from "react-datepicker";
+import { addDays } from 'date-fns';
+
 
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -202,6 +204,8 @@ class SearchbyDestination extends Component {
                                             selected={this.state.initial_Date}
                                             onChange={this.handleChangeDate}
                                             placeholderText="Today"
+                                            minDate={new Date()}
+                                            maxDate={addDays(new Date(), 9)}
                                         />
                                     </div>
                                 </div>
@@ -220,7 +224,7 @@ class SearchbyDestination extends Component {
                                             dateFormat="hh:mm:ss aa"
                                             timeCaption="Time"
                                             placeholderText="Now"
-                                        />
+                                            />
                                     </div>
                                 </div>
                             </div>

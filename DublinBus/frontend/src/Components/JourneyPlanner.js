@@ -11,7 +11,7 @@ import JourneyPlanner_List_of_All_Tourist_Attraction from './JourneyPlanner_List
 import axios from "axios"
 import WarningAlert from './WarningAlert'
 import {Button, Accordion, Card} from 'react-bootstrap';
-
+import { addDays } from 'date-fns';
 import 'bootstrap';
 import * as $ from "jquery";
 
@@ -309,6 +309,8 @@ class JourneyPlanner extends Component {
                                             selected={this.state.initial_Date}
                                             onChange={this.handleChangeDate}
                                             placeholderText="Today"
+                                            minDate={new Date()}
+                                            maxDate={addDays(new Date(), 9)}
                                         />
                                     </div>
                                     <div className="col-6 ">
