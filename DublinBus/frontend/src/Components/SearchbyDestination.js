@@ -123,11 +123,10 @@ class SearchbyDestination extends Component {
     //This is Geolocation ask for current location
     setPosition(position) {
         this.setState({
-
             startLat: position.coords.latitude,
-            startLon: position.coords.longitude
+            startLon: position.coords.longitude,
+            start: "CurrentLocation"
         });
-        console.log(this.state.startLocation_lat)
     }
 
     //Ask for permission to obtain current locations
