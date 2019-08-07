@@ -38,7 +38,6 @@ class App extends Component {
     return (
       <Router>
         <div className="App">
-          <Header />
           <div className="container-fluid position-relative appContainer">
             <Map polyline = {this.state.polyline} markers = {this.state.markers}/>
 

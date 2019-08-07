@@ -12,7 +12,7 @@ import DataProvider from "./DataProvider";
 class JourneyPlaner_ResultPage extends Component {
 
     render() {
-        const color = ['#F65314', '#7CBB00', '#00A1F1', '#FFBB00', '#146EB4']
+        const color = ['#F65314', '#7CBB00', '#00A1F1', '#FFBB00', '#146EB4','#E32934','#004883']
         return (
 
             <div

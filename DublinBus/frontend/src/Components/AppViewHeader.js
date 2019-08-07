@@ -12,7 +12,7 @@ class AppViewHeader extends Component {
   returnBack() {
     //Return to previous page and ensure the weather widget to load.
     if (this.props.Return === "toHomePage") {
-      return window.location.replace("./");
+      return window.location.replace("/");
     } else {
       return window.history.go(-1);
     }

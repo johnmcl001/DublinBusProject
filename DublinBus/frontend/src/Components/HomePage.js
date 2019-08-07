@@ -6,12 +6,9 @@ import "../Static/StyleSheet/HomePage.css";
 //This Component is the HomePage of the mobile view port
 
 class HomePage extends Component {
-  // Both are refresh page
-  // window.location=document.referrer
-  //    ,window.location.replace("./")
 
   render() {
-    // ,window.location.replace("./")
+
 
     return (
       <div
@@ -33,7 +30,7 @@ class HomePage extends Component {
           </div>
         </div>
         <div className="container HomePageContains">
-          <AppViewFavourAndLogin />
+
           <div className="container  ">
             <div className="row ">
               <Link to={"/SearchByStop"} className="LinkCss ">

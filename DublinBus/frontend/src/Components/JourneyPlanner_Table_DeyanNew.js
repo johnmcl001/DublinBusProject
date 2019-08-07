@@ -15,20 +15,24 @@ class JourneyPlanner_Table extends React.Component {
             <React.Fragment>
 
                 {/*This is the show section ,which displays the name of the attraction*/}
-                <div className="row">
-                    <Accordion.Toggle className='row position-relative JourneyPlanner_Table col-10 '
+                <div className=" resultDisplay">
+                    <Accordion.Toggle className=' JourneyPlanner_Table '
                                       style={{borderTop: `5px solid ${color}`}}
                                       as={Button} variant="link"
                                       eventKey={this.props.buttonID}>
+                        <div className='row'>
 
-                        <div className='col-2  ShowOrders position-absolute' style={{backgroundColor: color}}>
-                            <p className='NumberingOrders position-absolute'>{this.props.number}</p>
+                            <div className=' NumberContainer '>
+                                <div className=' position-relative ShowOrders  '
+                                     style={{backgroundColor: color}}>
+                                    <p className='NumberingOrders  position-absolute '>{this.props.number}</p>
 
-                        </div>
-
-                        <h4 className='col-10 AttractionName ' style={{color: this.props.color}}>Guinness
-                            Storehouse</h4>
-
+                                </div>
+                            </div>
+                                    <h5 className=' AttractionName'
+                                        style={{color: this.props.color}}>Guinness
+                                        Storehouse container containercontainer</h5>
+                                </div>
                     </Accordion.Toggle>
                 </div>
 

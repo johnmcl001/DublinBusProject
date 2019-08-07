@@ -37,6 +37,7 @@ displayRoute() {
     const color = this.props.color;
     return (
       <React.Fragment>
+
         <div
           className="row position-relative JourneyPlanner_Table col-11  "
           style={{ borderTop: `5px solid ${color}` }}
@@ -46,6 +47,7 @@ displayRoute() {
           aria-expanded="false"
           onClick={this.displayRoute}
         >
+
           <div
             className="col-2  ShowOrders position-absolute"
             style={{ backgroundColor: color }}

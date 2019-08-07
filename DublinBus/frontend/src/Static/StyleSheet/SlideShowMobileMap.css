@@ -121,7 +121,7 @@ opacity: 1;
 }
 .slide-pane__content {
  position: relative;
- overflow :hidden!important;
+ /*overflow :hidden!important;*/
  padding: 0;
  flex: 1 1 auto;
  margin-bottom:5px ;
@@ -137,29 +137,28 @@ opacity: 1;
 
 }
 .ResultPageButton {
-    margin: auto;
-    /*padding:auto;*/
+  margin: auto;
+     align-items: center;
+  margin-left:-35px !important;
+    padding-right:0 !important;
 
-    margin-top: 20px;
-    height: 35px;
-     margin-bottom: 40px;
+}
+.JourneyPannerListButton_{
+    margin: auto;
+    padding-top:10px;
 
 }
 
-.ResultPageButton button {
+.JourneyPannerListButton_ a{
     height: 40px;
-    padding: auto;
-
-    display: block;
-    margin-left: auto;
-    margin-top: auto;
-    margin-right: auto;
-    color: white;
+    width: 220px !important;
+    color: white !important;
     font-size: 17px;
     text-align: center;
-
-
 }
+
+
+
 @media only screen and (max-width: 420px) {
   .ResultPageButton button {
       font-size: 15px;
@@ -188,6 +187,6 @@ opacity: 1;
 }
 
 .MobileShowAllAttraction{
-    overflow-y:scroll ;
+    overflow-y:scroll !important;
     height: 100%;
 }

@@ -79,24 +79,14 @@ class Map extends Component {
         <div className="d-none d-lg-block d-md-none">
           <div
             id="map-container-google-1 "
-            className="z-depth-1-half map-container border border-primary"
+
+            /*Deyan comment out below line to Make map full screen , Just ensure It is ok to be removed */
+            // className="z-depth-1-half map-container border border-primary"
           >
-            <MapWithAMarker
-              containerElement={
-                <div
-                  style={{
-                    height: `100vh`
-                  }}
-                />
-              }
-              mapElement={
-                <div
-                  style={{
-                    height: `100vh`
-                  }}
-                />
-              }
-            />
+       <MapWithAMarker
+     containerElement={<div style={{ height: `100vh`,width:'100%'}} />}
+     mapElement={<div style={{ height: `100%` }} />}
+   />
           </div>{" "}
         </div>{" "}
       </div>
