@@ -317,6 +317,7 @@ class SearchByDestination(SearchByStop):
             if len(dir_routes)!=0:
                 results=self.sort_routes(dir_routes)
                 results=self.get_polyline_coords(results)
+                print(results)
                 results = self.format_response(results)
                 return Response(results)
 
@@ -328,6 +329,7 @@ class SearchByDestination(SearchByStop):
             if len(crossovers)!=0:
                 results=self.sort_routes(crossovers)
                 results=self.get_polyline_coords(results)
+                print(results)
                 results = self.format_response(results)
                 return Response(results)
 
@@ -339,6 +341,7 @@ class SearchByDestination(SearchByStop):
             return Response(full_journeys)
         full_journeys=self.validate(full_journeys, time, day_info,weather)
         results=self.sort_routes(full_journeys)
+        print(results[0])
         results = self.format_response(results)
         return Response(results)
 
@@ -779,11 +782,25 @@ class SearchByDestination(SearchByStop):
 
                 if route_dict["travel_mode"] != "WALKING":
                     route_dict["instruction"] = route_dict["instruction"].replace("Bus", route_dict["travel_mode"])
+
+
                 route_breakdown["duration"] = 0
                 route_breakdown["duration"] += result["duration"] // 60
                 route_breakdown["start_time"] = 0
                 route_breakdown["directions"] += [route_dict]
                 route_breakdown["map"]["markers"] += [marker]
+
+                if route_dict["travel_mode"] == "WALKING" and i != len(result["journey"])-1:
+                    arrive_time = datetime.strptime(result["journey"][i]["end_time"], "%H:%M")
+                    depart_time = datetime.strptime(result["journey"][i+1]["start_time"], "%H:%M")
+                    wait_time = depart_time - arrive_time
+                    wait_time = wait_time.seconds // 60
+                    waiting = {
+                        "instruction": "Wait for bus",
+                        "time": wait_time,
+                        "travel_mode": "WALKING"
+                    }
+                    route_breakdown["directions"] += [waiting]
 
                 if i == len(result):
                     print("here")

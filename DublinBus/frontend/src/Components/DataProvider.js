@@ -68,7 +68,6 @@ class DataProvider extends Component {
         return
       }
       })
-      .then()
       .catch(error => {
         if (error.response){
           this.setState({ placeholder: "No routes possible at this time" })
