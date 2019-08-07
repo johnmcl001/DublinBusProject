@@ -46,7 +46,7 @@ class ButtonAtResultPage extends Component {
           width="100%"
           onRequestClose={() => this.setState({ isPaneOpenLeft: false })}
         >
-          <MobileMap />
+          <MobileMap markers={this.props.markers} polyline={this.props.polyline}/>
         </SlidingPane>
       </div>
     );

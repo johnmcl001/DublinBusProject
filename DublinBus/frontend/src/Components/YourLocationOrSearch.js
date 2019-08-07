@@ -7,15 +7,11 @@ import { FaCrosshairs, FaSearchLocation } from "react-icons/fa";
 class YourLocationOrSearch extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { inputText: "From Your Current Location"};
-
-
+    this.state = { inputText: "From Your Current Location" };
   }
 
-
-
   renderInputField() {
-    if (this.props.useuseSearchLocation_State ==true   ) {
+    if (this.props.useuseSearchLocation_State == true) {
       return (
         <div>
           <GoogleAddressSearch
@@ -37,11 +33,9 @@ class YourLocationOrSearch extends React.Component {
   }
 
   renderButton() {
-
     let button;
 
-    if (this.props.useuseSearchLocation_State==true) {
-
+    if (this.props.useuseSearchLocation_State == true) {
       button = (
         <div>
           <a onClick={this.props.useCurrentLocation}>
@@ -69,7 +63,5 @@ class YourLocationOrSearch extends React.Component {
     );
   }
 }
-
-
 
 export default YourLocationOrSearch;

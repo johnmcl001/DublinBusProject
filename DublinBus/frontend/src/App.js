@@ -14,7 +14,7 @@ import JourneyPlannerResultPage from "./Components/JourneyPlaner_ResultPage";
 import Map from "./Components/Map";
 import decodePolyline from "decode-google-map-polyline";
 import MobileMap from "./Components/MobileMap";
-import './App.css'
+import "./App.css";
 
 const polyLine = [];
 
@@ -28,25 +28,42 @@ class App extends Component {
     this.updateMap = this.updateMap.bind(this);
   }
 
-  updateMap = (newMapInfo) => {
-    console.log(newMapInfo)
-    this.setState({ polyline: newMapInfo[0].hasOwnProperty("map") ? newMapInfo[0].map.polyline : [] });
-    this.setState({ markers: newMapInfo[0].hasOwnProperty("map") ? newMapInfo[0].map.markers : [] })
+  updateMap = newMapInfo => {
+    console.log(newMapInfo);
+    this.setState({
+      polyline: newMapInfo[0].hasOwnProperty("map")
+        ? newMapInfo[0].map.polyline
+        : []
+    });
+    this.setState({
+      markers: newMapInfo[0].hasOwnProperty("map")
+        ? newMapInfo[0].map.markers
+        : []
+    });
   };
 
   render() {
     return (
       <Router>
+
         <div className="App">
           <div className="container-fluid position-relative appContainer">
-            <Map polyline = {this.state.polyline} markers = {this.state.markers}/>
+            <Map polyline={this.state.polyline} markers={this.state.markers} />
 
             <Switch>
               <Route path="/" exact={true} component={HomePage} />
               <Route
                 path="/SearchByDestination"
-                component={SearchbyDestination}
-              />
+                render={({ updateMap, match, history }) => (
+                  <SearchbyDestination
+                    updateMap={this.updateMap}
+                    match={match}
+                    history={history}
+                    polyline={this.state.polyline}
+                    markers={this.state.markers}
+                  />
+                )}
+                />
               <Route path="/SearchByRoute" component={SearchByRoute} />
               <Route path="/SearchByStop" component={SearchByStop} />
               <Route path="/JourneyPlanner" component={JourneyPlanner} />
@@ -56,6 +73,8 @@ class App extends Component {
                   <ResultPage_Stop_Route
                     updateMap={this.updateMap}
                     match={match}
+                    polyline={this.state.polyline}
+                    markers={this.state.markers}
                   />
                 )}
               />
@@ -75,6 +94,8 @@ class App extends Component {
                   <ResultPageDestination
                     updateMap={this.updateMap}
                     match={match}
+                    polyline={this.state.polyline}
+                    markers={this.state.markers}
                   />
                 )}
               />

@@ -7,7 +7,7 @@ import {
   FaMapMarkerAlt,
   FaBus
 } from "react-icons/fa";
-import Map from "./Map"
+import Map from "./Map";
 
 const Table = ({ data }) =>
   !data.length ? (
@@ -31,8 +31,8 @@ const Table = ({ data }) =>
               >
                 {data[0].duration} Mins
               </a>
-          </li>
-          {/*
+            </li>
+            {/*
             <li className="nav-item">
               <a
                 className="nav-link"
@@ -93,7 +93,7 @@ const Table = ({ data }) =>
                 </div>
               ))}
             </div>
-                      {/*
+            {/*
             <div
               className="tab-pane fade"
               id="pills-profile"

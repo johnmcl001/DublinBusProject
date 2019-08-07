@@ -5,14 +5,13 @@ import ResultPageButton from "./SlideShowMobileMap";
 import "../Static/StyleSheet/ResultPageDestination.css";
 import DataProvider from "./DataProvider";
 import Table from "./Table";
-import Map from "./Map"
+import Map from "./Map";
 
 import { FaWalking, FaLevelDownAlt, FaMapMarkerAlt } from "react-icons/fa";
 //This Component is the Result page of Search By Destination
 class ResultPageDestination extends Component {
-
-  componentWillUnmount(){
-    this.props.updateMap([{"none": "none"}])
+  componentWillUnmount() {
+    this.props.updateMap([{ none: "none" }]);
   }
 
   render() {
@@ -42,7 +41,7 @@ class ResultPageDestination extends Component {
             render={data => <Table data={data} />}
           />
         </div>
-        <ResultPageButton />
+        <ResultPageButton markers={this.props.markers} polyline={this.props.polyline} />
       </div>
     );
   }

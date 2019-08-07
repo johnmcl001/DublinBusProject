@@ -12,9 +12,7 @@ class AppViewFavourAndLogin extends Component {
             id="appViewLoginIcon"
             style={appViewLoginStyle}
           >
-            <a>
-              {/*<i className="fa fa-user"></i>*/}
-            </a>
+            <a>{/*<i className="fa fa-user"></i>*/}</a>
           </div>
           <div className="col-6 "></div>
           <div className="col-3 ">
