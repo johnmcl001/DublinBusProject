@@ -186,7 +186,7 @@ class SearchByDestination(SearchByStop):
         services=get_services(day_info['day_long'], day_info['date'])
         start_routes=self.get_routes_for_list_of_stops(start_stations['list_stop_short'])
         end_routes=self.get_routes_for_list_of_stops(end_stations['list_stop_short'])
-        
+
         dir_route = self.find_direct_routes(start_stations,end_stations,
                                             start_routes, end_routes,
                                            services,
@@ -630,9 +630,10 @@ class SearchByDestination(SearchByStop):
                     marker["route"] = leg["route"]
                     marker["stop"] = leg["arrival_stop"]
                     route_breakdown["map"]["polyline"] += leg['polyline']
+                    route_dict["instruction"] = route_dict["instruction"].replace("Bus", route_dict["travel_mode"])
                 else:
                     route_dict["travel_mode"] = "WALKING"
-                    route_dict["instruction"] = route_dict["instruction"].replace("Bus", route_dict["travel_mode"])
+
 
                 route_breakdown["directions"] += [route_dict]
                 route_breakdown["map"]["markers"] += [marker]
