@@ -15,7 +15,7 @@ def get_services(day, date):
     services=Calendar.objects.filter((Q(**{day:1}, start_date__lte=date, end_date__gte=date) | Q(service_id__in=extra)) & ~Q(service_id__in=not_running))
     return services
 
-def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, services, time):
+def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, services, time, prediction_day):
     """
     Input: list of routes, list of stop numbers
     Filters trips that run for the given day, 30 mins before the time and upto
@@ -27,9 +27,12 @@ def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, se
     if not isinstance(route_numbers, list):
         stop_numbers=[route_numbers]
     #get time 30 minutes before hand to allow for prediction model difference
-    start_time=(datetime.strptime(time,"%H:%M")-timedelta(minutes=45)).strftime('%H:%M')
+    start_time=(datetime.strptime(time,"%H:%M")).strftime('%H:%M')
     end_time=(datetime.strptime(time,"%H:%M")+timedelta(minutes=45)).strftime('%H:%M')
-    stop_times=StopTimes.objects.filter(service_id__in=services, departure_time__gte=start_time, departure_time__lte=end_time, stop__stopid_short__in=stop_numbers, route_short_name__in=route_numbers).order_by('departure_time')
+    variable_column = 'predicted_arrival_times_'+str(prediction_day)
+    filter_gt = variable_column + '__' + 'gte'
+    filter_lt = variable_column + '__' + 'lte'
+    stop_times=StopTimes.objects.filter(service_id__in=services, **{ filter_gt: start_time }, **{ filter_lt: end_time }, stop__stopid_short__in=stop_numbers, route_short_name__in=route_numbers).order_by(variable_column)
     return stop_times
 
 
@@ -59,7 +62,7 @@ def get_station_number( name, dest_lat, dest_lon, route):
         +' * sin( radians( stop_lat ) ) ) ) AS distance FROM website.stops as s,'\
         +' website.stop_times as st where st.stop_id=s.stop_id and '\
         +'st.route_short_name=%(route)s HAVING distance < '\
-        +'%(default_radius)s ORDER BY distance LIMIT 0 , 1;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(2), 'route':str(route)}):
+        +'%(default_radius)s ORDER BY distance LIMIT 0 , 1;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(5), 'route':str(route)}):
             return station.stopid_short
     else:
         return Stops.objects.get(stop_name=name).stopid_short
@@ -95,8 +98,8 @@ def get_stations_nearby(dest_lat, dest_lon, num_stations=8, radius=5):
 
     station_dict={'list_stop_long':[], 'list_stop_short':[]}
     for station in station_list:
-
-        station_dict['list_stop_long']+=station.stop_id,
-        station_dict['list_stop_short']+=station.stopid_short,
-        station_dict[station.stop_id]={'short': station.stopid_short, 'distance':round(station.distance*1000), 'walking_time':walking_time(station.distance)}
+        if station.stopid_short!=None:
+            station_dict['list_stop_long']+=station.stop_id,
+            station_dict['list_stop_short']+=station.stopid_short,
+            station_dict[station.stop_id]={'short': station.stopid_short, 'distance':round(station.distance*1000), 'walking_time':walking_time(station.distance)}
     return station_dict
