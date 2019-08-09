@@ -649,7 +649,8 @@ class SearchByDestination(SearchByStop):
                         "time": wait_time,
                         "travel_mode": "WALKING"
                     }
-                    route_breakdown["directions"] += [waiting]
+                    if wait_time>0:
+                        route_breakdown["directions"] += [waiting]
                 elif i != len(result["journey"])-1 and result["journey"][i+1]["travel_mode"] == "TRANSIT":
                     arrive_time = datetime.strptime(leg["end_time"], "%H:%M")
                     depart_time = datetime.strptime(result["journey"][i+1]["start_time"], "%H:%M")
