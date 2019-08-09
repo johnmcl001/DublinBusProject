@@ -549,7 +549,7 @@ class SearchByDestination(SearchByStop):
                     +"st1.predicted_arrival_times_%(prediction_time)s<=%(end_time)s and st2.predicted_arrival_times_%(prediction_time)s>%(start_time)s"\
                     +" and st1.trip_id=t.trip_id and t.service_id in %(services)s and st1.trip_id=st2.trip_id"\
                     +"  and r.route_id=t.route_id and s1.stop_id=st1.stop_id "\
-                    +" and s2.stop_id=st2.stop_id order by st1.predicted_arrival_times_%(prediction_time)s limit 3;",inputs)
+                    +" and s2.stop_id=st2.stop_id order by st1.predicted_arrival_times_%(prediction_time)s limit 1;",inputs)
                     if len(trips)>0:
                         results+=trips
             if len(results)!=0:
@@ -580,7 +580,6 @@ class SearchByDestination(SearchByStop):
             crossover_stations[crossover['stop_id']]={'short': crossover['stopid_short']}
         crossover_routes=self.get_routes_for_list_of_stops(crossover_stations['list_stop_short'])
         all_leg1s=self.find_direct_routes(start_stations, crossover_stations, start_routes, crossover_routes, services, time, prediction_day)
-        #print(all_leg1s)
         for leg1 in all_leg1s:
             leg2=self.find_direct_routes({'list_stop_long':[leg1.end_stop_id_long], 'list_stop_short':[leg1.end_stop_id], leg1.end_stop_id_long:{'short':leg1.end_stop_id, 'walking_time':0}}, end_stations, {'all':sorted(list(dict.fromkeys(crossover_routes[leg1.end_stop_id]))), leg1.end_stop_id:crossover_routes[leg1.end_stop_id]}, end_routes, services, leg1.arrival_time.strftime("%H:%M"), prediction_day)
             if len(leg2)!=0:
