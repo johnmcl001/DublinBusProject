@@ -663,7 +663,9 @@ class SearchByDestination(SearchByStop):
                         "time": wait_time,
                         "travel_mode": "WALKING"
                     }
-                    route_breakdown["directions"] += [waiting]
+                    if wait_time>0:
+                        route_breakdown["directions"] += [waiting]
+                    
 
                 if i == len(result):
                     route_breakdown["map"]["markers"] += [{
