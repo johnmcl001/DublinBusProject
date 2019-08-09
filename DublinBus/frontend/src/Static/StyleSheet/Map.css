@@ -4,11 +4,34 @@ overflow:hidden;
 padding-bottom:56.25%;
 position:relative;
 height:0;
+
 }
 .map-container iframe{
 left:0;
 top:0;
-height:100%;
+height:80%;
 width:100%;
 position:absolute;
+}
+
+
+
+.icon_map_1{
+    color: gray;
+
+margin-left:5px;
+    margin-top: 5px;
+
+}
+.currentLocationIcon_map a{
+margin-left: auto;
+    margin-right: auto;
+}
+.currentLocationIcon_map{
+    top: 60px;
+    right: 30px;
+      width: 45px;
+    height: 45px;
+    background-color: white;
+    z-index: 2;
 }

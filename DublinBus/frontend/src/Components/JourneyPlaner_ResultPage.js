@@ -40,7 +40,7 @@ class JourneyPlaner_ResultPage extends Component {
           )}
         />
 
-        <ResultPageButton />
+        <ResultPageButton markers={this.props.markers} polyline={this.props.polyline} />
       </div>
     );
   }
