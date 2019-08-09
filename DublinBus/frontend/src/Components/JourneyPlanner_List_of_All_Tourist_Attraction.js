@@ -5,11 +5,12 @@ class JourneyPlanner_List_of_All_Tourist_Attraction extends Component {
   render() {
     return (
       <React.Fragment>
+      {console.log(this.props)}
         {this.props.ListOfAllAttractions.map((cardInfo, Index) => (
           <Cards
             key={cardInfo.id}
             name={cardInfo.name}
-            img={cardInfo.img}
+            href={"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&key=AIzaSyDBnVde8R4LpYQapr6-zbAHPD5Xcva9H_c&photo_reference=" + cardInfo.image}
             description={cardInfo.description}
             buttonID={`CardButton_${Index}`}
             cardID={`CardAttraction_${Index}`}

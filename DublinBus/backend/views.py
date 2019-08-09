@@ -341,7 +341,6 @@ class SearchByDestination(SearchByStop):
             return Response(full_journeys)
         full_journeys=self.validate(full_journeys, time, day_info,weather)
         results=self.sort_routes(full_journeys)
-        print(results[0])
         results = self.format_response(results)
         return Response(results)
 
@@ -783,9 +782,6 @@ class SearchByDestination(SearchByStop):
                 if route_dict["travel_mode"] != "WALKING":
                     route_dict["instruction"] = route_dict["instruction"].replace("Bus", route_dict["travel_mode"])
 
-
-                route_breakdown["duration"] = 0
-                route_breakdown["duration"] += result["duration"] // 60
                 route_breakdown["start_time"] = 0
                 route_breakdown["directions"] += [route_dict]
                 route_breakdown["map"]["markers"] += [marker]
@@ -813,6 +809,9 @@ class SearchByDestination(SearchByStop):
                         "lng": result["journey"][i]["markers"][3],
                     }]
 
+            route_breakdown["duration"] = 0
+            for duration in route_breakdown["directions"]:
+                route_breakdown["duration"] += duration["time"]
             response += [route_breakdown]
         return response
 
@@ -998,15 +997,14 @@ class GetTouristAttractions(generics.ListCreateAPIView):
     Handles returning results from database for journey planner attraction info
     """
     queryset = Touristattractions.objects.all()
-    serializer_class = RouteSerializer
+    serializer_class = TouristSerializer
 
+"""
 class RouteView(generics.ListCreateAPIView):
-    """
-    Shows routes table
-    """
+    #Shows routes table
     queryset = Routes.objects.all()
     serializer_class = RouteSerializer
-
+"""
 class directions(views.APIView):
 
     def get(self, request):

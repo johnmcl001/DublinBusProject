@@ -11,10 +11,10 @@ class JourneyPlanner_Card extends React.Component {
         <div className="card col-12 Card_allAttraction">
           <img
             className="card-img-top"
-            src={this.props.img}
+            src={this.props.href}
             alt="Card image cap"
           />
-
+{console.log(this.props)}
           <div className="cardBody">
             <Accordion.Toggle
               as={Button}

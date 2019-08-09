@@ -103,7 +103,7 @@ class JourneyPlanner extends Component {
 
     axios({
       method: "get",
-      url: "http://csi420-01-vm9.ucd.ie/api/attractions/",
+      url: "http://localhost:8000/api/attractions/",
       params: {
         route: this.state.routeNumber,
         direction: this.state.direction
