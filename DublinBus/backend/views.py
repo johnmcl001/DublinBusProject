@@ -449,10 +449,9 @@ class SearchByDestination(SearchByStop):
             end_name='destination'
             route+=self.make_walking_segment(start_coord['lat'], start_coord['lon'], leg1.start_lat, leg1.start_lon, leg1.start_stop_name, start_stations[leg1.start_stop_id_long]['walking_time'], start_stations[leg1.start_stop_id_long]['distance'], time),
             route+=self.make_transit_segment(leg1.departure_time, leg1.arrival_time, leg1.start_lat, leg1.start_lon, leg1.end_lat, leg1.end_lon, leg1.end_stop_name, leg1.route_short_name, leg1.start_stop_id, leg1.end_stop_id, leg1.trip_headsign, leg1.start_num, leg1.end_num, leg1.trip_id),
-            route+={"travel_mode":'Waiting', 'duration_sec':round((datetime.strptime(leg2.departure_time.strftime('%H:%M'),"%H:%M")-datetime.strptime(leg1.arrival_time.strftime('%H:%M'),"%H:%M")).total_seconds())},
             route+=self.make_transit_segment(leg2.departure_time, leg2.arrival_time, leg2.start_lat, leg2.start_lon, leg2.end_lat, leg2.end_lon, leg2.end_stop_name, leg2.route_short_name, leg2.start_stop_id, leg2.end_stop_id, leg2.trip_headsign, leg2.start_num, leg2.end_num, leg2.trip_id),
             route+=self.make_walking_segment(leg2.end_lat, leg2.end_lon, end_coord["lat"], end_coord['lon'], end_name, end_stations[leg2.end_stop_id_long]['walking_time'], end_stations[leg2.end_stop_id_long]['distance'], (datetime.combine(date.today(), leg2.arrival_time)).strftime('%H:%S')),
-            duration=str((datetime.strptime(route[4]['end_time'],"%H:%M")-datetime.strptime(route[0]['start_time'],"%H:%M")).total_seconds())
+            duration=str((datetime.strptime(route[3]['end_time'],"%H:%M")-datetime.strptime(route[0]['start_time'],"%H:%M")).total_seconds())
             if float(duration)<0:
                 duration=float(duration)+86400
                 duration=str(round(duration))
