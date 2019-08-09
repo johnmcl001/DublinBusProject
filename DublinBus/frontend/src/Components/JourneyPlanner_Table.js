@@ -41,8 +41,11 @@ updateTimeThree(newtime) {
 }
 
 displayRoute() {
+    if (this.state != ""){
+      this.props.updateMap([{ none: "none" }]);
+    }
     this.setState({
-        route:
+        route: this.state.route == "" ?
             <DataProvider
             endpoint="destination"
             updateMap={this.props.updateMap}
@@ -51,7 +54,7 @@ displayRoute() {
             destinationLat={this.state.destinationLat.toString()}
             destinationLon={this.state.destinationLon.toString()}
             render={data => <JourneyPlannerRouteTable data={data} color={this.props.color}/>}
-          />
+          /> : ""
     })
 }
 
