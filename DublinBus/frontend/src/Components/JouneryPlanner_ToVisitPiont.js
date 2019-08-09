@@ -3,6 +3,7 @@ import React from "react";
 //This is Component is the attraction that tourist selected and planed to visit
 class JouneryPlanner_ToVisitPiont extends React.Component {
   render() {
+    console.log(this.props)
     return (
       <React.Fragment>
         {/*This the the button shown on Journey Planner page , after a user pick the attraction to visit*/}
@@ -46,11 +47,6 @@ class JouneryPlanner_ToVisitPiont extends React.Component {
                 </button>
               </div>
               <div className="card">
-                <img
-                  className="card-img-top"
-                  src={this.props.img}
-                  alt="Card image cap"
-                />
 
                 <div className="card-body">
                   <p className="card-text">{this.props.description}</p>

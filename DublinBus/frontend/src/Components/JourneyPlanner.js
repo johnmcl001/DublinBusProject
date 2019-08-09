@@ -302,43 +302,6 @@ class JourneyPlanner extends Component {
                   {/*Start location Ends here*/}
                 </div>
 
-                {/*The date and time picker starts here*/}
-                <div className="row JoureyPlanerTimeLabel ">
-                  <div className="col-6">
-                    <label> Date: </label>
-                  </div>
-                  <div className="col-6">
-                    <label> Time:</label>
-                  </div>
-                </div>
-
-                <div className="row row_fifth ">
-                  <div className="col-6  ">
-                    <DatePicker
-                      selected={this.state.initial_Date}
-                      onChange={this.handleChangeDate}
-                      placeholderText="Today"
-                      minDate={new Date()}
-                      maxDate={addDays(new Date(), 9)}
-                    />
-                  </div>
-                  <div className="col-6 ">
-                    <DatePicker
-                      selected={this.state.initial_Time}
-                      onChange={this.handleChangeTime}
-                      showTimeSelect
-                      showTimeSelectOnly
-                      timeIntervals={15}
-                      dateFormat="h:mm aa"
-                      timeCaption="Time"
-                      placeholderText="Now"
-                    />
-                  </div>
-
-                  {/*The date and time picker Ends here*/}
-                </div>
-
-                {/*List of Tourist To visit Location  */}
                 <div className="col-12 listDestination_label  ">
                   <label> Picked Attraction:</label>
                 </div>
@@ -354,7 +317,7 @@ class JourneyPlanner extends Component {
                           cardID={`attraction_${index}`}
                           key={index}
                           name={cardInfo.name}
-                          img={cardInfo.img}
+                          image={cardInfo.image}
                           description={cardInfo.description}
                           removeAttractionFromSelected={this.removeAttractionFromSelected.bind(
                             this
