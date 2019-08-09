@@ -16,7 +16,7 @@
     border-radius: 10px 10px 0px 0px;
 }
 
-.resultLabel h4 {
+.resultLabel {
     color: white;
     margin-left: 8%;
 }
@@ -136,36 +136,35 @@ opacity: 1;
      padding-left: 0!important;
 
 }
-<<<<<<< HEAD
-.ResultPageButton {
-  margin: auto;
-     align-items: center;
-  margin-left:-35px !important;
-    padding-right:0 !important;
-=======
 
 
 .ShowMapAndFare {
     margin: auto;
     /*padding:auto;*/
->>>>>>> fix show map css on Journey planner result page,
+
+    margin-top: 0px;
+    height: 35px;
+     margin-bottom: 0px;
 
 }
-.JourneyPannerListButton_{
+.showMapButton{
     margin: auto;
-    padding-top:10px;
+
 
 }
-
 .ShowMapAndFare button {
     height: 40px;
-    width: 220px !important;
-    color: white !important;
+    padding: auto;
+    width: 100%;
+
+    display: block;
+    margin: auto;
+    margin-left: auto;
+    margin-top: auto;
+    margin-right: auto;
+    color: white;
     font-size: 17px;
     text-align: center;
-}
-
-
 
 }
 .ResultPageButton {
@@ -195,6 +194,16 @@ opacity: 1;
   .ResultPageButton button {
       font-size: 15px;
   }
+
+      .ShowMapAndFare {
+    margin: auto;
+    /*padding:auto;*/
+
+    margin-top: 15px;
+    height: 35px;
+     margin-bottom: 25px;
+
+}
 }
 
 
@@ -212,6 +221,8 @@ opacity: 1;
 
 
     }
+
+
 #ArrivalLabel {
     font-size: 15px;
 

@@ -17,22 +17,13 @@ class ButtonAtResultPage extends Component {
   render() {
     return (
       <div className="row container ShowMapAndFare position-relative ">
-        <div className="col-12 d-none d-md-block">
-          <button className=" btn btn-warning " style={{ width: "150px" }}>
-            € Show Fare
-          </button>
-        </div>
-        <div className="col-6 d-md-none">
-          <button className=" btn btn-warning ">Show Fare</button>
-        </div>
-        <div className="col-6 d-md-none">
-          <button
-            className="btn btn-warning "
-            onClick={() => this.setState({ isPaneOpenLeft: true })}
-          >
-            Show Map
-          </button>
-        </div>
+
+                <div className="col-8 d-md-none showMapButton">
+                    <button className="btn btn-warning " onClick={() => this.setState({isPaneOpenLeft: true})}>Show
+                        Map
+                    </button>
+                </div>
+
         <SlidingPane
           className="d-md-none"
           closeIcon={
@@ -46,7 +37,7 @@ class ButtonAtResultPage extends Component {
           width="100%"
           onRequestClose={() => this.setState({ isPaneOpenLeft: false })}
         >
-          <MobileMap />
+          <MobileMap polyline={this.props.polyline} markers={this.props.markers}/>
         </SlidingPane>
       </div>
     );

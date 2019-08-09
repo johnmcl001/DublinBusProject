@@ -5,5 +5,4 @@ class Footer extends Component {
     return <div className="App"></div>;
   }
 }
-
 export default Footer;

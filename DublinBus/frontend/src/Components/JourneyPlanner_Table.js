@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "../Static/StyleSheet/JourneyPlanner_Table.css";
 import DataProvider from "./DataProvider";
+import {Button, Accordion, Card} from 'react-bootstrap';
 import JourneyPlannerRouteTable from "./JourneyPlannerRouteTable";
 
 
@@ -12,13 +13,34 @@ class JourneyPlanner_Table extends React.Component {
       startLon:this.props.startLon,
       destinationLat: this.props.destinationLat,
       destinationLon: this.props.destinationLon,
-      route: ""
+      route: "",
+      timeOne: this.props.startTime,
+      timeTwo: "",
+      timeThree: "",
+      timeFour: ""
     }
     this.displayRoute = this.displayRoute.bind(this);
   }
 
+updateTimeTwo(newtime) {
+  this.setState({
+      timeTwo: newTime,
+  })
+}
+
+updateTimeThree(newtime) {
+  this.setState({
+      timeThree: newTime,
+  })
+}
+
+updateTimeThree(newtime) {
+  this.setState({
+      timeThree: newTime,
+  })
+}
+
 displayRoute() {
-  console.log(console.log(this.props))
     this.setState({
         route:
             <DataProvider
@@ -28,7 +50,7 @@ displayRoute() {
             startLon={this.state.startLon.toString()}
             destinationLat={this.state.destinationLat.toString()}
             destinationLon={this.state.destinationLon.toString()}
-            render={data => <JourneyPlannerRouteTable data={data} />}
+            render={data => <JourneyPlannerRouteTable data={data} color={this.props.color}/>}
           />
     })
 }
@@ -37,46 +59,39 @@ displayRoute() {
     const color = this.props.color;
     return (
       <React.Fragment>
+        <Accordion>
+                <div className=" resultDisplay">
 
-        <div
-          className="row position-relative JourneyPlanner_Table col-11  "
-          style={{ borderTop: `5px solid ${color}` }}
-          id={this.props.buttonID}
-          data-toggle="collapse"
-          href={`#${this.props.cardID}`}
-          aria-expanded="false"
-          onClick={this.displayRoute}
-        >
+                    <Accordion.Toggle className=' JourneyPlanner_Table '
+                                      style={{borderTop: `5px solid ${color}`}}
+                                      as={Button} variant="link"
+                                      eventKey={this.props.number}
+                                      onClick={this.displayRoute}>
+                        <div className='row' >
 
-          <div
-            className="col-2  ShowOrders position-absolute"
-            style={{ backgroundColor: color }}
-          >
-            <p className="NumberingOrders position-absolute">
-              {this.props.number}
-            </p>
-          </div>
-          <h4
-            className="col-10 AttractionName "
-            style={{ color: this.props.color }}
-          >
-            {this.props.attraction}
-          </h4>
-        </div>
-        <div className="row " >
-          <div
-            className="collapse "
-            id={this.props.cardID}
-            data-parent="#accordionExample"
-          >
-            <div
-              className="card TableCardBody card-body col-11"
-              style={{ borderColor: color, borderWidth: "2px " }}
-            >
-            {this.state.route}
-            </div>
-          </div>
-        </div>
+                            <div className=' NumberContainer ' >
+                                <div className=' position-relative ShowOrders  '
+                                     style={{backgroundColor: color}}>
+                                    <p className='NumberingOrders  position-absolute '>{this.props.number}</p>
+
+                                </div>
+                            </div>
+                                    <h5 className='AttractionName'
+                                        style={{color: this.props.color}}>{this.props.attraction}</h5>
+                                </div>
+                    </Accordion.Toggle>
+                </div>
+
+
+
+                    <Accordion.Collapse  eventKey={this.props.number}
+                    >
+                        <div>{this.state.route}</div>
+
+                    </Accordion.Collapse>
+                    </Accordion>
+
+
       </React.Fragment>
     );
   }

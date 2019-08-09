@@ -12,8 +12,8 @@ class ResultPage_Stop_Route extends Component {
     super(props);
   }
 
-    componentWillUnmount(){
-    this.props.updateMap([{"none": "none"}])
+  componentWillUnmount() {
+    this.props.updateMap([{ none: "none" }]);
   }
   render() {
     return (
@@ -51,7 +51,7 @@ class ResultPage_Stop_Route extends Component {
             />
           </form>
         </div>
-        <ResultPageButton />
+        <ResultPageButton markers={this.props.markers} polyline={this.props.polyline}/>
       </div>
     );
   }

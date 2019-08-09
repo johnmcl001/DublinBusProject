@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import decodePolyline from "decode-google-map-polyline";
-import loading from "../Static/img/loading.gif"
+import loading from "../Static/img/loading.gif";
 
 const imgStyle = {
   leftMargin: "auto",
@@ -29,16 +29,13 @@ class DataProvider extends Component {
   state = {
     data: [],
     loaded: false,
-    placeholder: <img
-                  src={loading}
-                  alt="loading..."
-                  width="120"
-                  height="120"
-                  />,
+    placeholder: (
+      <img src={loading} alt="loading..." width="120" height="120" />
+    ),
     proxy: "http://localhost:8000/api/"
   };
 
-    componentDidMount() {
+  componentDidMount() {
     axios({
       method: "get",
       url: "http://localhost:8000/api/" + this.props.endpoint + "/",
@@ -53,26 +50,26 @@ class DataProvider extends Component {
         time: this.props.time,
         date: this.props.date,
         attractions: this.props.attractions,
-        home:this.props.home
+        home: this.props.home
       }
     })
       .then(response => {
-        if (response.data.length == 0){
-          console.log("empty array")
-          this.setState({ placeholder: "No routes possible at this time" })
-          return
+        if (response.data.length == 0) {
+          console.log("empty array");
+          this.setState({ placeholder: "No routes possible at this time" });
+          return;
         } else {
-        this.props.updateMap(response.data)
-        console.log("yy")
-        this.setState({ data: response.data, loaded: true })
-        return
-      }
+          this.props.updateMap(response.data);
+          console.log("yy");
+          this.setState({ data: response.data, loaded: true });
+          return;
+        }
       })
       .catch(error => {
-        if (error.response){
-          this.setState({ placeholder: "No routes possible at this time" })
+        if (error.response) {
+          this.setState({ placeholder: "No routes possible at this time" });
         } else if (error.request) {
-          this.setState({ placeholder: "Server down, try again later" })
+          this.setState({ placeholder: "Server down, try again later" });
         }
       });
   }

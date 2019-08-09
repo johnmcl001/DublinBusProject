@@ -6,10 +6,7 @@ import "../Static/StyleSheet/HomePage.css";
 //This Component is the HomePage of the mobile view port
 
 class HomePage extends Component {
-
   render() {
-
-
     return (
       <div
         className="EntireBox HomePage container col-md-12  position-absolute "
@@ -30,7 +27,6 @@ class HomePage extends Component {
           </div>
         </div>
         <div className="container HomePageContains">
-
           <div className="container  ">
             <div className="row ">
               <Link to={"/SearchByStop"} className="LinkCss ">

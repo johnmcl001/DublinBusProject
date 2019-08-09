@@ -685,7 +685,7 @@ class SearchByDestination(SearchByStop):
         return response
 
 
-class TouristPlanner(views.APIView):
+class TouristPlanner(SearchByStop):
     """
     Returns best route through series of tourist destinations
     """
@@ -698,46 +698,53 @@ class TouristPlanner(views.APIView):
         attractions = self.get_attractions()
         home = self.get_home()
         home_coords = self.get_home_coords()
+        time = self.get_time()
+        day_info = self.get_day_and_date()
         attractions = self.remove_home_from_attractions(attractions, home)
         attractions = list(permutations(attractions))
         attractions = self.convert_tuples_to_list(attractions)
         attractions = self.add_home(attractions, home)
         best_route = self.get_best_route(attractions)
-        best_route_formatted = self.format_route(best_route, home, home_coords)
+        best_route_formatted = self.format_route(best_route, home, home_coords, time, day_info["date"])
         return Response(best_route_formatted)
 
-    def format_route(self, best_route, home, home_coords):
+    def format_route(self, best_route, home, home_coords, time, date):
         """
         Input: best route as an array
         Output:best route formatted as json
         """
 
         results = []
+
         for i in range(len(best_route[0])-1):
             if best_route[0][i] != home and best_route[0][i+1] != home:
                 start_lat = Touristattractions.objects.filter(name=best_route[0][i])[0].lat
                 start_lon = Touristattractions.objects.filter(name=best_route[0][i])[0].lon
                 end_lat = Touristattractions.objects.filter(name=best_route[0][i+1])[0].lat
                 end_lon = Touristattractions.objects.filter(name=best_route[0][i+1])[0].lon
+                time = time
             elif best_route[0][i] == home:
                 start_lat = home_coords["lat"]
                 start_lon = home_coords["lon"]
                 end_lat = Touristattractions.objects.filter(name=best_route[0][i+1])[0].lat
                 end_lon = Touristattractions.objects.filter(name=best_route[0][i+1])[0].lon
+                time = time
             else:
                 start_lat = Touristattractions.objects.filter(name=best_route[0][i])[0].lat
                 start_lon = Touristattractions.objects.filter(name=best_route[0][i])[0].lon
                 end_lat = home_coords["lat"]
                 end_lon = home_coords["lon"]
+                time = time
 
             results += [{
                 "number": i+1,
                 "attraction": best_route[0][i] + " to " + best_route[0][i+1],
                 "start_lat": start_lat,
                 "start_lon": start_lon,
-
                 "end_lat": str(end_lat),
-                "end_lon": str(end_lon)
+                "end_lon": str(end_lon),
+                "time": str(time),
+                "date": str(date)
             }]
 
         return results
