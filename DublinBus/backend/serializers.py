@@ -47,7 +47,7 @@ class StopSerializer(serializers.ModelSerializer):
         # Return more specific fields when we know what we want
         fields = "__all__"
 
-class RouteSerializer(serializers.ModelSerializer):
+class TouristSerializer(serializers.ModelSerializer):
     """
     Convert route data from gtfs to json
     """
@@ -56,7 +56,7 @@ class RouteSerializer(serializers.ModelSerializer):
         Meta data for RouteSerializer, model and what to return
         """
         model = Touristattractions
-        fields = ["name", "description", "address"]
+        fields = ["name", "description", "address", "image"]
 
 class StopTimeSerializer(serializers.ModelSerializer):
     """

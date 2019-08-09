@@ -186,8 +186,7 @@ class SearchByDestination(SearchByStop):
         services=get_services(day_info['day_long'], day_info['date'])
         start_routes=self.get_routes_for_list_of_stops(start_stations['list_stop_short'])
         end_routes=self.get_routes_for_list_of_stops(end_stations['list_stop_short'])
-
-        print('Checking direct route')
+        
         dir_route = self.find_direct_routes(start_stations,end_stations,
                                             start_routes, end_routes,
                                            services,
@@ -199,7 +198,6 @@ class SearchByDestination(SearchByStop):
             results = self.format_response(results)
             return Response(results)
 
-        print('Checking crossover route')
         crossovers=self.bus_crossover(start_stations, start_routes, end_stations, end_routes, services, time, day_info['prediction_digit'])
         if len(crossovers)!=0:
             crossovers=self.format_bus_crossover(crossovers, start_coords, end_coords, start_stations, end_stations, time)
@@ -208,7 +206,6 @@ class SearchByDestination(SearchByStop):
             results = self.format_response(results)
             return Response(results)
 
-        print('Checking API')
         routes = self.get_route(time, day_info['date'], start_coords, end_coords)
         full_journeys = self.get_full_journeys(routes, time, services, day_info['prediction_digit'], day_info['date'])
         results=self.sort_routes(full_journeys)
@@ -241,7 +238,7 @@ class SearchByDestination(SearchByStop):
         if response.status_code == 200:
             route = json.loads(response.text)
             if route['status']=='ZERO_RESULTS':
-                print('no return from API')
+                route=[]
         elif response.status_code == 400:
             route = "not found"
         return route
@@ -515,7 +512,6 @@ class SearchByDestination(SearchByStop):
                     index=end_route_index
                     break
         if len(common_routes)==0:
-            print("no common route-no direct")
             return[]
         inputs['start_stations']=tuple(start_stations['list_stop_long'])
         inputs['end_stations']=tuple(end_stations['list_stop_long'])
@@ -570,7 +566,6 @@ class SearchByDestination(SearchByStop):
         possible_crossovers_stops_leg2=StopTimes.objects.filter(trip_id__in=stoptimes_all_end_stops).values('stop__stopid_short')
         crossovers=Stops.objects.filter(Q(stopid_short__in=possible_crossovers_stops_leg1)&Q(stopid_short__in=possible_crossovers_stops_leg2)).values('stop_id', 'stopid_short')
         if not crossovers.exists():
-            print('no crossover')
             return []
         results=[]
         crossover_stations={'list_stop_long':[], 'list_stop_short':[]}
@@ -680,6 +675,7 @@ class SearchByDestination(SearchByStop):
                     }]
             if result_flag:
                 response += [route_breakdown]
+
         return response
 
 
@@ -864,15 +860,14 @@ class GetTouristAttractions(generics.ListCreateAPIView):
     Handles returning results from database for journey planner attraction info
     """
     queryset = Touristattractions.objects.all()
-    serializer_class = RouteSerializer
+    serializer_class = TouristSerializer
 
+"""
 class RouteView(generics.ListCreateAPIView):
-    """
-    Shows routes table
-    """
+    #Shows routes table
     queryset = Routes.objects.all()
     serializer_class = RouteSerializer
-
+"""
 class directions(views.APIView):
 
     def get(self, request):
