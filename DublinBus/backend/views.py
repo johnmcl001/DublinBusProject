@@ -997,15 +997,14 @@ class GetTouristAttractions(generics.ListCreateAPIView):
     Handles returning results from database for journey planner attraction info
     """
     queryset = Touristattractions.objects.all()
-    serializer_class = RouteSerializer
+    serializer_class = TouristSerializer
 
+"""
 class RouteView(generics.ListCreateAPIView):
-    """
-    Shows routes table
-    """
+    #Shows routes table
     queryset = Routes.objects.all()
     serializer_class = RouteSerializer
-
+"""
 class directions(views.APIView):
 
     def get(self, request):

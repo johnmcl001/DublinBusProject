@@ -45,7 +45,6 @@ class JouneryPlanner_ToVisitPiont extends React.Component {
                   X
                 </button>
               </div>
-
               <div className="card">
                 <img
                   className="card-img-top"

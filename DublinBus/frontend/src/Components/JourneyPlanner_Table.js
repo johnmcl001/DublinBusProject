@@ -40,26 +40,20 @@ updateTimeThree(newtime) {
   })
 }
 
-
-  displayRoute() {
-    if (this.state.route != ""){
-      this.props.updateMap([{ none: "none" }])
-    }
+displayRoute() {
     this.setState({
-      route: this.state.route == "" ? (
-        <DataProvider
-          endpoint="destination"
-          updateMap={this.props.updateMap}
-          startLat={this.state.startLat.toString()}
-          startLon={this.state.startLon.toString()}
-          destinationLat={this.state.destinationLat.toString()}
-          destinationLon={this.state.destinationLon.toString()}
-          render={data => <JourneyPlannerRouteTable data={data} />}
-        />
-      ) : ""
-    });
-
-  }
+        route:
+            <DataProvider
+            endpoint="destination"
+            updateMap={this.props.updateMap}
+            startLat={this.state.startLat.toString()}
+            startLon={this.state.startLon.toString()}
+            destinationLat={this.state.destinationLat.toString()}
+            destinationLon={this.state.destinationLon.toString()}
+            render={data => <JourneyPlannerRouteTable data={data} color={this.props.color}/>}
+          />
+    })
+}
 
   render() {
     const color = this.props.color;
@@ -88,24 +82,16 @@ updateTimeThree(newtime) {
                     </Accordion.Toggle>
                 </div>
 
-                <h5
-                  className="AttractionName"
-                  style={{ color: this.props.color }}
-                >
-                  {this.props.attraction}
-                </h5>
-              </div>
-            </Accordion.Toggle>
-          </div>
 
-          <Accordion.Collapse
-            className=" JourneyPlannerResultDisplay"
-            eventKey={this.props.number}
-            variant="link"
-          >
-            <div>{this.state.route}</div>
-          </Accordion.Collapse>
-        </Accordion>
+
+                    <Accordion.Collapse  eventKey={this.props.number}
+                    >
+                        <div>{this.state.route}</div>
+
+                    </Accordion.Collapse>
+                    </Accordion>
+
+
       </React.Fragment>
     );
   }

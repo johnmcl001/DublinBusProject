@@ -24,6 +24,7 @@ class Touristattractions(models.Model):
     rating = models.FloatField(blank=True, null=True)
     raters = models.IntegerField(blank=True, null=True)
     address = models.CharField(max_length=100, blank=True, null=True)
+    image = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
         managed = False
