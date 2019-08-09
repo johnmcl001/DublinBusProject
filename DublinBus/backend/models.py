@@ -229,11 +229,22 @@ class StopTimes(models.Model):
     shape_dist_traveled = models.CharField(max_length=45, blank=True, null=True)
     service_id = models.CharField(max_length=45, blank=True, null=True)
     route_short_name = models.CharField(max_length=45, blank=True, null=True)
+    predicted_arrival_times_0 = models.TimeField(blank=True, null=True)
+    predicted_arrival_times_1 = models.TimeField(blank=True, null=True)
+    predicted_arrival_times_2 = models.TimeField(blank=True, null=True)
+    predicted_arrival_times_3 = models.TimeField(blank=True, null=True)
+    predicted_arrival_times_4 = models.TimeField(blank=True, null=True)
+    predicted_arrival_times_5 = models.TimeField(blank=True, null=True)
+    predicted_arrival_times_6 = models.TimeField(blank=True, null=True)
+    predicted_arrival_times_7 = models.TimeField(blank=True, null=True)
+    predicted_arrival_times_8 = models.TimeField(blank=True, null=True)
+    predicted_arrival_times_9 = models.TimeField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'stop_times'
         unique_together = (('trip_id', 'stop_sequence'),)
+
 
 
 class Stops(models.Model):
