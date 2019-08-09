@@ -10,7 +10,9 @@ then change font size and form
     border: black;
     height: auto;
 }
-
+.DestinationResult{
+    margin-top: 20px;
+}
 .colors {
     background-color: #32CD32;
 }

@@ -22,13 +22,12 @@ class ResultPageDestination extends Component {
       >
         <div className="container ">
           <AppViewHeader SearchState={"Real time Information"} />
-          <AppViewFavourAndLogin />
         </div>
 
-        <div>
-          <h4 className="col-8 resultLabel  ">
+        <div className='DestinationResult'>
+          <h5 className="col-8 resultLabel  ">
             {this.props.match.params.start} to {this.props.match.params.end}
-          </h4>
+          </h5>
           <DataProvider
             endpoint="destination"
             updateMap={this.props.updateMap}

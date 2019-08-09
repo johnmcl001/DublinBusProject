@@ -45,7 +45,7 @@ class GoogleAddressSearch extends Component {
   render() {
     return (
       <section>
-        <Script />
+
 
         <div className="form-group">
           <input

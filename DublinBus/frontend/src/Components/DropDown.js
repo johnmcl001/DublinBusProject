@@ -9,7 +9,6 @@ const DropDown = props => {
         Output: parent state and autocomplete updated
     */
     }
-    console.log(e.currentTarget.value);
     props.updateState(e.currentTarget.value);
     props.updateAutocomplete(e.currentTarget.value);
   };
@@ -31,7 +30,6 @@ const DropDown = props => {
 
   if (!props.suggestions) {
   } else {
-    console.log(props.suggestions[0]);
     optionList = props.suggestions.map((option, index) => {
       return (
         <option key={index} value={option.direction_id} onClick={onClick}>
