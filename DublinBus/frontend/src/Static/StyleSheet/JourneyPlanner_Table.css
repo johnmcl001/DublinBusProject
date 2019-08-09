@@ -45,27 +45,34 @@
 /*}*/
 
 /*New Version Starts Here*/
+.JourneyPlannerResultDisplay {
+  border: 2px solid #32CD32;
+}
+.tab-content{
+    padding: 20px;
+}
 
 .JourneyPlanner_Table {
-    /*border-top: 5px solid #3577CE;*/
-    /*border-top: 5px !important;*/
+
     min-height: 70px;
     background-color: white;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-margin-bottom: 20px;
+    margin-bottom: 20px;
     margin-left: 10px;
     margin-right: 10px;
 }
-.resultDisplay{
+
+.resultDisplay {
     margin: auto !important;
 }
-.NumberContainer{
+
+.NumberContainer {
     margin: auto;
     width: 20%;
 }
 
 .ShowOrders {
-font-weight: bold;
+    font-weight: bold;
     font-size: 25px;
     color: white;
     height: 50px;
@@ -76,31 +83,36 @@ font-weight: bold;
 
     border-radius: 50%;
 }
-.NumberingOrders{
 
-    top:10%;
+.NumberingOrders {
+
+    top: 10%;
     left: 35%;
 
 }
-.AttractionName{
+
+.AttractionName {
     margin: auto;
     /*margin-left: 50px;*/
     text-align: center;
-        display: inline-block;
+    display: inline-block;
     display: inline-block;
     padding: 5px;
 
     width: 80%;
 }
-.TableCardBody{
 
-margin: auto;
- margin-bottom:15px ;
+.TableCardBody {
+
+    margin: auto;
+    margin-bottom: 15px;
 }
 
-.JourneyPlannerResultDisplay{
+.JourneyPlannerResultDisplay {
     width: 100%;
+    margin-bottom: 10px;
 }
-.instruction{
-    padding:5px ;
+
+.instruction {
+    padding: 5px;
 }

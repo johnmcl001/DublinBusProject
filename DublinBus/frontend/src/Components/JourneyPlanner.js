@@ -175,7 +175,7 @@ class JourneyPlanner extends Component {
       //    This function is for add card from the listed of Tourist Attraction into tourist to visit point components
     }
     console.log(this.state.PickedTouristAttraction);
-    if (this.state.PickedTouristAttraction.length <= 4) {
+    if (this.state.PickedTouristAttraction.length <= 2) {
       this.setState(
         {
           PickedTouristAttraction: [
@@ -224,7 +224,6 @@ class JourneyPlanner extends Component {
     delete this.state.submittedAttractions[
       this.state.submittedAttractions.indexOf(attraction.name)
     ];
-    console.log("jjj");
   }
 
   //    The two function below is used for managing button color (each selected attraction) for Picked Attraction
@@ -256,7 +255,6 @@ class JourneyPlanner extends Component {
       startLat: position.coords.latitude,
       startLon: position.coords.longitude
     });
-    console.log(this.state.startLocation_lat);
   }
 
   //Ask for permission to obtain current locations
@@ -276,7 +274,6 @@ class JourneyPlanner extends Component {
   }
 
   render() {
-    console.log(this.state.address_name);
 
     return (
       <div>
@@ -404,7 +401,7 @@ class JourneyPlanner extends Component {
           color={"#146EB4"}
           id={"JourneyPlannerAlertBox"}
           title={"Information"}
-          content={"Sorry, You can only select five attraction."}
+          content={"Sorry, You can only select three attraction."}
         />
         <WarningAlert
           color={"#F65314"}

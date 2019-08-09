@@ -15,8 +15,7 @@ class JourneyPlaner_ResultPage extends Component {
     var attractions = this.props.match.params.PickedTouristAttraction.split(
       ","
     );
-    console.log(attractions);
-    console.log(JSON.stringify(attractions));
+
     return (
       <div
         className="EntireBox  container col-md-12  position-absolute bg-light"
