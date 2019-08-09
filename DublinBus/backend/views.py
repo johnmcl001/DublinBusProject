@@ -593,7 +593,6 @@ class SearchByDestination(SearchByStop):
             route_breakdown = {}
             route_breakdown["directions"] = []
             route_breakdown["map"] = {"markers": [], "polyline": []}
-            route_breakdown["duration"]=result['duration']//60
 
             for i in range(0, len(result['journey'])):
                 leg=result["journey"][i]
@@ -674,6 +673,10 @@ class SearchByDestination(SearchByStop):
                         "lat": leg["markers"][2],
                         "lng": leg["markers"][3],
                     }]
+
+            route_breakdown["duration"] = 0
+            for duration in route_breakdown["directions"]:
+                route_breakdown["duration"] += duration["time"]
             if result_flag:
                 response += [route_breakdown]
 
