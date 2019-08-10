@@ -75,6 +75,7 @@ class Map extends Component {
                 />
                 {this.props.markers.map((x, y) => (
                     <Marker
+                        key={y}
                         position={{
                             lat: x.lat,
                             lng: x.lng
@@ -93,7 +94,7 @@ class Map extends Component {
         return (
             <div className={`position-relative ${this.props.showMap}` } id="map">
                 <div className='currentLocationIcon_map position-fixed'><a onClick={this.getLocation}>
-                    <IoMdLocate className="icon_map_1 " size={40}/>
+                    <IoMdLocate className="icon_map_1 " size={35}/>
                 </a></div>
 
                 <MapWithAMarker

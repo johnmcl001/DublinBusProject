@@ -83,7 +83,7 @@ const Autocomplete = props => {
             if (index === activeSuggestion) {
             }
             return (
-              <p onClick={onClick} className="show_suggestion">
+              <p onClick={onClick} className="show_suggestion" key={index}>
                 {suggestionName}
               </p>
             );

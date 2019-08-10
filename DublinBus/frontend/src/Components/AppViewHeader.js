@@ -39,9 +39,9 @@ class AppViewHeader extends Component {
             {/*<DropDownINav />*/}
             <a onClick={() => window.location.replace("/")}>
               <p>
-                <i class="fas fa-home"></i>
+                <i className="fas fa-home"></i>
               </p>
-              {/*<p id='Home'>Home</p>*/}
+
             </a>
           </div>
         </div>
