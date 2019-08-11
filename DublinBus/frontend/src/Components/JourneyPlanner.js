@@ -111,10 +111,6 @@ class JourneyPlanner extends Component {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-        {
-          console.log("here");
-        }
-        console.log(response.data)
         return response.data;
       })
       .then(data =>

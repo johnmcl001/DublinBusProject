@@ -25,12 +25,11 @@ class mobileMap extends React.Component {
         return (
 
             <div className="container col-12 position-relative MobileMap">
-                <Map ref={this.child} markers={this.props.markers} polyline={this.props.polyline} showMap=' d-none d-md-block'/>
+                <Map ref={this.child} markers={this.props.markers} polyline={this.props.polyline} showMap={true}/>
                 <div className='currentLocationIcon position-fixed' ><a
                     onClick={this.onclickFindLocation}>
                     <IoMdLocate className="icon_map " size={35}/>
                 </a></div>
-
 
             </div>
         );

@@ -83,7 +83,6 @@ class Map extends Component {
                 ))}
 
                 <Marker
-
                     position={{lat: this.state.lat, lng: this.state.long}}
                     animation={window.google.maps.Animation.DROP}
                     icon={marker}
@@ -93,7 +92,6 @@ class Map extends Component {
 
         return (
             <div className={`position-relative ${this.props.showMap}` } id="map">
-
                 <div className='currentLocationIcon_map position-fixed'><a onClick={this.getLocation}>
                     <IoMdLocate className="icon_map_1 " size={40}/>
                 </a></div>

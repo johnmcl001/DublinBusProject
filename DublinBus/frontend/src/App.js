@@ -61,8 +61,6 @@ class App extends Component {
                                         updateMap={this.updateMap}
                                         match={match}
                                         history={history}
-                                        polyline={this.state.polyline}
-                                        markers={this.state.markers}
                                     />
                                 )}
                             />
