@@ -47,6 +47,7 @@ class ResultPage_Stop_Route extends Component {
               updateMap={this.props.updateMap}
               stopnumber={this.props.match.params.stopnumber}
               route={this.props.match.params.route}
+              backend={this.props.backend}
               render={data => <ResultTable_StopRoute data={data} />}
             />
           </form>

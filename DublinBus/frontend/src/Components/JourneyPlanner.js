@@ -48,8 +48,6 @@ class JourneyPlanner extends Component {
       warningText: "",
       useSearchLocation: true
     };
-    this.handleChangeDate = this.handleChangeDate.bind(this);
-    this.handleChangeTime = this.handleChangeTime.bind(this);
 
     this.updateCurrentPosition = this.updateCurrentPosition.bind(this);
     this.updateHome = this.updateHome.bind(this);
@@ -103,7 +101,7 @@ class JourneyPlanner extends Component {
 
     axios({
       method: "get",
-      url: "http://localhost:8000/api/attractions/",
+      url: this.props.backend + "attractions/",
       params: {
         route: this.state.routeNumber,
         direction: this.state.direction
@@ -116,6 +114,7 @@ class JourneyPlanner extends Component {
         {
           console.log("here");
         }
+        console.log(response.data)
         return response.data;
       })
       .then(data =>
@@ -131,22 +130,6 @@ class JourneyPlanner extends Component {
     });
   }
 
-  handleChangeDate(date) {
-    //set date
-    this.setState({
-      initial_Date: date,
-      startDateToBackEnd:
-        date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear()
-    });
-  }
-
-  handleChangeTime(Time) {
-    //set time
-    this.setState({
-      initial_Time: Time,
-      startTimeToBackEnd: Time.getHours() + ":" + Time.getMinutes()
-    });
-  }
 
   setPosition(position) {
     {

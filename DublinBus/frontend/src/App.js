@@ -23,7 +23,9 @@ class App extends Component {
         super();
         this.state = {
             polyline: [],
-            markers: []
+            markers: [],
+            backend: "http://csi420-01-vm9.ucd.ie/api/",
+            //backend: "http://localhost:8000/api/"
         };
         this.updateMap = this.updateMap.bind(this);
     }
@@ -64,9 +66,25 @@ class App extends Component {
                                     />
                                 )}
                             />
-                            <Route path="/SearchByRoute" component={SearchByRoute}/>
+                            <Route path="/SearchByRoute"
+                                render={({updateMap, match, history}) => (
+                                    <SearchByRoute
+                                        match={match}
+                                        history={history}
+                                        backend={this.state.backend}
+                                    />
+                                )}
+                            />
                             <Route path="/SearchByStop" component={SearchByStop}/>
-                            <Route path="/JourneyPlanner" component={JourneyPlanner}/>
+                            <Route path="/JourneyPlanner"
+                                render={({updateMap, match, history}) => (
+                                    <JourneyPlanner
+                                        match={match}
+                                        history={history}
+                                        backend={this.state.backend}
+                                    />
+                                )}
+                            />
                             <Route
                                 path="/ResultPage_Stop_Route/:stopnumber/:route"
                                 render={({updateMap, match}) => (
@@ -75,6 +93,7 @@ class App extends Component {
                                         match={match}
                                         polyline={this.state.polyline}
                                         markers={this.state.markers}
+                                        backend={this.state.backend}
                                     />
                                 )}
                             />
@@ -86,6 +105,7 @@ class App extends Component {
                                         match={match}
                                         polyline={this.state.polyline}
                                         markers={this.state.markers}
+                                        backend={this.state.backend}
                                     />
                                 )}
                             />
@@ -98,6 +118,7 @@ class App extends Component {
                                         match={match}
                                         polyline={this.state.polyline}
                                         markers={this.state.markers}
+                                        backend={this.state.backend}
                                     />
                                 )}
                             />

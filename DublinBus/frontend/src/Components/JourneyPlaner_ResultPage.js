@@ -32,9 +32,11 @@ class JourneyPlaner_ResultPage extends Component {
           startLat={this.props.match.params.startLat}
           startLon={this.props.match.params.startLon}
           home={this.props.match.params.home}
+          backend={this.props.backend}
           render={data => (
             <JourneyPlannerResultsDisplay
               updateMap={this.props.updateMap}
+              backend={this.props.backend}
               data={data}
             />
           )}

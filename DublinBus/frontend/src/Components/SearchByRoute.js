@@ -30,6 +30,7 @@ class SearchByRoute extends Component {
     );
     this.updateStopAutocomplete = this.updateStopAutocomplete.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    console.log(this.props.backend)
   }
 
   updateRoute(e) {
@@ -49,7 +50,7 @@ class SearchByRoute extends Component {
   updateDirectionAutocomplete(e) {
     axios({
       method: "get",
-      url: "http://localhost:8000/api/directions/",
+      url: this.props.backend + "directions/",
       params: {
         route: this.state.routeNumber
       }
@@ -69,7 +70,7 @@ class SearchByRoute extends Component {
   updateStopAutocomplete(e) {
     this.state.stopsAutocomplete = axios({
       method: "get",
-      url: "http://localhost:8000/api/stopsautocomplete/",
+      url: this.props.backend + "stopsautocomplete/",
       params: {
         route: this.state.routeNumber,
         direction: this.state.direction
