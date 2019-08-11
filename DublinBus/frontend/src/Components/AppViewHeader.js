@@ -2,7 +2,9 @@ import React, { Component } from "react";
 import "../Static/StyleSheet/AppViewHeader.css";
 import DropDownINav from "./DropDownNav";
 
-// This Component is a header at the mobile view
+{
+  // This Component is a header at the mobile view
+}
 
 class AppViewHeader extends Component {
   constructor(props) {

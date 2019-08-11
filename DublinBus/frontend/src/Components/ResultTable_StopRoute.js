@@ -2,6 +2,11 @@ import React from "react";
 import key from "weak-key";
 import "../Static/StyleSheet/ResultPage_Stop_Route.css";
 
+
+{
+//  Display of result for Search by Route and Stop
+}
+
 const ResultTable_StopRoute = props => {
   const { data } = props;
 

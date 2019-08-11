@@ -1,10 +1,9 @@
 import React, { Component } from "react";
-import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import { Link } from "react-router-dom";
 import "../Static/StyleSheet/HomePage.css";
-// import backgroundImg from '../Static/img/img1.jpg'
-//This Component is the HomePage of the mobile view port
-
+{
+  //This Component is the HomePage of the mobile view port
+}
 class HomePage extends Component {
   render() {
     return (

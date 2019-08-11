@@ -4,7 +4,10 @@ import DataProvider from "./DataProvider";
 import {Button, Accordion, Card} from 'react-bootstrap';
 import JourneyPlannerRouteTable from "./JourneyPlannerRouteTable";
 
-
+{
+//    Display of User selected Destination Point
+//    Used at Component JourneyPlannerResultDisplay
+}
 class JourneyPlanner_Table extends React.Component {
   constructor (props) {
     super(props);

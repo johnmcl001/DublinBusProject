@@ -6,7 +6,9 @@ import "../Static/StyleSheet/ResultPage_Stop_Route.css";
 import DataProvider from "./DataProvider";
 import ResultTable_StopRoute from "./ResultTable_StopRoute";
 
-//This is Result Page Component for Search for Stop and Route
+{
+  //This is Result Page Component for Search for Stop and Route
+}
 class ResultPage_Stop_Route extends Component {
   constructor(props) {
     super(props);

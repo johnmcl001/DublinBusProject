@@ -1,12 +1,13 @@
 import React from "react";
 import GoogleAddressSearch from "./GoogleAddressSearch";
 import "../Static/StyleSheet/YourLocationOrSearch.css";
-import {OverlayTrigger, Card, Tooltip, Button} from 'react-bootstrap';
-import {IoMdLocate} from "react-icons/io";
+import {OverlayTrigger,  Tooltip} from 'react-bootstrap';
 
 
+//This component is uses to provided option for user whether if they want to use current location or
+        //search to choice for it own start point
+//This Component is used in the Component Search by Destination and Tourist Journey Planner
 import {FaCrosshairs, FaSearchLocation} from "react-icons/fa";
-
 class YourLocationOrSearch extends React.Component {
     constructor(props) {
         super(props);
@@ -77,7 +78,7 @@ class YourLocationOrSearch extends React.Component {
 
     render() {
         return (
-            <div YourLocationOrSearch className="row">
+            <div  className="row">
                 <div className="col-10 ">{this.renderInputField()}</div>
                 <div className="col-2  ClickChangeInput">{this.renderButton()}</div>
             </div>

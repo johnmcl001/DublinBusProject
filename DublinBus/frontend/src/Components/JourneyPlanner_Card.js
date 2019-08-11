@@ -3,7 +3,9 @@ import React from "react";
 import "../Static/StyleSheet/JourneyPlanner_Card.css";
 import { Button, Accordion, Card } from "react-bootstrap";
 
-//This is a card component which display attraction.
+{
+  //This is a card component which display attraction.
+}
 class JourneyPlanner_Card extends React.Component {
   render() {
     return (

@@ -1,14 +1,15 @@
 import React from "react";
-import PropTypes from "prop-types";
-import key from "weak-key";
 import {
     FaWalking,
     FaLevelDownAlt,
     FaMapMarkerAlt,
     FaBus
 } from "react-icons/fa";
-import Map from "./Map"
 
+
+{
+//    This Component is used in Result Page Destination , For the purpose of displaying route instruction
+}
 const Table = ({data}) =>
     !data.length ? (
         <p>Nothing to show</p>

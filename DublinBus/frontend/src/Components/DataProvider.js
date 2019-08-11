@@ -9,6 +9,9 @@ const imgStyle = {
     rightMargin: "auto"
 };
 
+{
+    /*Handling Get and Post*/
+}
 class DataProvider extends Component {
     static propTypes = {
         render: PropTypes.func.isRequired,
@@ -37,8 +40,6 @@ class DataProvider extends Component {
     componentDidMount() {
         axios({
             method: "get",
-            // url: "http://csi420-01-vm9.ucd.ie/api/" + this.props.endpoint + "/",
-
             url: this.props.backend + this.props.endpoint + "/",
             params: {
                 stopnumber: this.props.stopnumber,
@@ -61,7 +62,7 @@ class DataProvider extends Component {
                     return;
                 } else {
                     this.props.updateMap(response.data);
-                    console.log("yy");
+
                     this.setState({data: response.data, loaded: true});
                     return;
                 }

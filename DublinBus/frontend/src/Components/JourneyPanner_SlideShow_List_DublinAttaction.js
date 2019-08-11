@@ -4,6 +4,7 @@ import "react-sliding-pane/dist/react-sliding-pane.css";
 import "../Static/StyleSheet/SlideShowMobileMap.css";
 import JourneyPlanner_List_of_All_Tourist_Attraction from "./JourneyPlanner_List_of_All_Tourist_Attraction";
 import "bootstrap";
+import Modal from 'react-modal';
 
 {
   //this is the component will be appear at mobile version ,
@@ -18,12 +19,15 @@ class JourneyPanner_SlideShow_List_DublinAttaction extends Component {
       isPaneOpenLeft: false
     };
   }
-
+  componentDidMount() {
+        Modal.setAppElement(this.el);
+    }
   render() {
     return (
       <div
         className="row  col-12  position-absolute ResultPageButton"
         id="JourneyPannerListBottom"
+         ref={ref => this.el = ref}
       >
         <div className="d-lg-none   JourneyPannerListButton_">
           <a

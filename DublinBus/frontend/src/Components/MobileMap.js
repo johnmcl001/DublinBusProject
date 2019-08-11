@@ -3,6 +3,10 @@ import Map from "./Map";
 import {IoMdLocate} from "react-icons/io";
 import '../Static/StyleSheet/MobileMap.css'
 
+{
+//    Display map for mobile user
+//    Used at result page search by route stop and destination
+}
 class mobileMap extends React.Component {
     constructor(props) {
         super(props);

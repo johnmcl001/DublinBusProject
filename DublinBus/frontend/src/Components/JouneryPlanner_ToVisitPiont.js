@@ -1,6 +1,8 @@
 import React from "react";
 
-//This is Component is the attraction that tourist selected and planed to visit
+{
+    //This is Component is the attraction that tourist selected and planed to visit
+}
 class JouneryPlanner_ToVisitPiont extends React.Component {
   render() {
     console.log(this.props)

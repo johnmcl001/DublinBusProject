@@ -1,15 +1,16 @@
 import React, { Component } from "react";
 import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import "../Static/StyleSheet/StyleSearchByStop.css";
-import { Link } from "react-router-dom";
-import ResultPage_Stop_Route from "./ResultPage_Stop_Route";
 import AppViewHeader from "./AppViewHeader";
 import Autocomplete from "./Autocomplete";
 import WarningAlert from "./WarningAlert";
 import "bootstrap";
+
+//This import jquery is been used at ensureFill()
 import * as $ from "jquery";
 import { createBrowserHistory } from "history";
 
+//The history variable cleared below is used at function ensureFill()
 const history = createBrowserHistory();
 
 var busList = require("../Json/frontEndBusInfo.json");
@@ -31,17 +32,20 @@ class SearchByStop extends Component {
   }
 
   handleSubmit() {
-    // event.preventDefault();
+    event.preventDefault();
   }
 
   ensureFill() {
+    {
+    //  This function is used for ensure user entering valid input.
+    }
     if (Number.isInteger(this.state.stopNumber) && this.state.stopNumber != 0) {
       this.props.history.push(
         `/ResultPage_Stop_Route/${this.state.stopNumber}/null`
       );
     } else {
-      //This is used to activate the alert box
 
+      //This is used to activate the alert box
       (function($) {
         $("#SearchByStop").modal("toggle");
       })(jQuery);
@@ -72,7 +76,6 @@ class SearchByStop extends Component {
         </div>
 
         <div className="col-8  bottomClass">
-          {/*<Link to={`/ResultPage_Stop_Route/${this.state.stopNumber}/null`}>*/}
           <button
             type="button"
             className="btn btn-warning "
@@ -81,14 +84,13 @@ class SearchByStop extends Component {
           >
             Submit
           </button>
-          {/*</Link>*/}
         </div>
 
         <WarningAlert
           color={"#F65314"}
           id={"SearchByStop"}
           title={"Warning"}
-          content={"Please enter your topnumber"}
+          content={"Please enter your Stop Number"}
         />
       </div>
     );

@@ -1,28 +1,27 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import AppViewHeader from "./AppViewHeader";
-import AppViewFavourAndLogin from "./AppViewFavourAndLogin";
 import ResultPageButton from "./SlideShowMobileMap";
 import "../Static/StyleSheet/ResultPageDestination.css";
 import DataProvider from "./DataProvider";
 import Table from "./Table";
-import Map from "./Map";
 
-import { FaWalking, FaLevelDownAlt, FaMapMarkerAlt } from "react-icons/fa";
-//This Component is the Result page of Search By Destination
+{
+    //This Component is the Result page of Search By Destination
+}
 class ResultPageDestination extends Component {
-  componentWillUnmount() {
-    this.props.updateMap([{ none: "none" }]);
-  }
+    componentWillUnmount() {
+        this.props.updateMap([{none: "none"}]);
+    }
 
-  render() {
-    return (
-      <div
-        className="EntireBox  container col-md-12  position-absolute bg-light"
-        id="EntireBox_ResultDestination"
-      >
-        <div className="container ">
-          <AppViewHeader SearchState={"Real time Information"} />
-        </div>
+    render() {
+        return (
+            <div
+                className="EntireBox  container col-md-12  position-absolute bg-light"
+                id="EntireBox_ResultDestination"
+            >
+                <div className="container ">
+                    <AppViewHeader SearchState={"Real time Information"}/>
+                </div>
 
         <div className='DestinationResult'>
           <h5 className="col-8 resultLabel  ">
@@ -45,5 +44,7 @@ class ResultPageDestination extends Component {
       </div>
     );
   }
+
 }
+
 export default ResultPageDestination;
