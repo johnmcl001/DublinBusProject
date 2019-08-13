@@ -37,6 +37,7 @@ class ResultPageDestination extends Component {
             destinationLon={this.props.match.params.destinationLon}
             time={this.props.match.params.startTimeToBackEnd}
             date={this.props.match.params.startDateToBackEnd}
+            backend={this.props.backend}
             render={data => <Table data={data} />}
           />
         </div>

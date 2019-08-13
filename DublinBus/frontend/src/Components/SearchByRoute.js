@@ -25,11 +25,9 @@ class SearchByRoute extends Component {
     this.updateRoute = this.updateRoute.bind(this);
     this.updateDirection = this.updateDirection.bind(this);
     this.updateStop = this.updateStop.bind(this);
-    this.updateDirectionAutocomplete = this.updateDirectionAutocomplete.bind(
-      this
-    );
+    this.updateDirectionAutocomplete = this.updateDirectionAutocomplete.bind(this);
     this.updateStopAutocomplete = this.updateStopAutocomplete.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.updateNothing = this.updateNothing.bind(this);
   }
 
   updateRoute(e) {
@@ -37,21 +35,21 @@ class SearchByRoute extends Component {
   }
 
   updateDirection(e) {
-    console.log(e);
     this.setState({ direction: e });
-    console.log(this.state.direction);
   }
 
   updateStop(e) {
+    console.log(e)
     this.setState({ stopNumber: e.substring(0, e.indexOf(",")) });
+    console.log(this.state.stopNumber)
   }
 
   updateDirectionAutocomplete(e) {
     axios({
       method: "get",
-      url: "http://localhost:8000/api/directions/",
+      url: this.props.backend + "directions/",
       params: {
-        route: this.state.routeNumber
+        route: e
       }
     })
       .then(response => {
@@ -67,30 +65,28 @@ class SearchByRoute extends Component {
   }
 
   updateStopAutocomplete(e) {
+    console.log(this.state.routeNumber)
     this.state.stopsAutocomplete = axios({
       method: "get",
-      url: "http://localhost:8000/api/stopsautocomplete/",
+      url: this.props.backend + "stopsautocomplete/",
       params: {
         route: this.state.routeNumber,
-        direction: this.state.direction
+        direction: e
       }
     })
       .then(response => {
         if (response.status !== 200) {
           return this.setState({ placeholder: "Something went wrong" });
         }
-        console.log(response.data);
         return response.data;
       })
       .then(data => this.setState({ stopsAutocomplete: data, loaded: true }));
   }
 
-  handleSubmit(e) {
-    {
-      /*alert(new Date().toLocaleString('en-us', {  weekday: 'long' }).toLowerCase());*/
-    }
-    e.preventDefault();
+  updateNothing(e){
+    console.log("");
   }
+
 
   render() {
     return (
@@ -141,7 +137,7 @@ class SearchByRoute extends Component {
                   <Autocomplete
                     suggestions={this.state.stopsAutocomplete}
                     updateState={this.updateStop}
-                    updateAutocomplete={this.handleSubmit}
+                    updateAutocomplete={this.updateNothing}
                   />
                 </div>
               </div>

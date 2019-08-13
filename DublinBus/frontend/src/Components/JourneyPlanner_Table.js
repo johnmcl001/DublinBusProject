@@ -53,6 +53,7 @@ displayRoute() {
             startLon={this.state.startLon.toString()}
             destinationLat={this.state.destinationLat.toString()}
             destinationLon={this.state.destinationLon.toString()}
+            backend={this.props.backend}
             render={data => <JourneyPlannerRouteTable data={data} color={this.props.color}/>}
           /> : ""
     })
