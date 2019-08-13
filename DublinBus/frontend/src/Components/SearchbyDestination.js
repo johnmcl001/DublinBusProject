@@ -50,6 +50,15 @@ class SearchbyDestination extends Component {
         this.getLocation = this.getLocation.bind(this);
     }
 
+
+    PassToUrl() {
+        this.props.history.push(
+            `/ResultPageDestination/${this.state.startLat}/${this.state.startLon}/${this.state.destinationLat}/${this.state.destinationLon}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}/${this.state.start}/${this.state.end}`
+        );
+
+
+    }
+
     checkEmpty() {
         {
             //    To activate Warning alert
@@ -71,28 +80,53 @@ class SearchbyDestination extends Component {
             (function ($) {
                 $("#DestinationWarning").modal("toggle");
             })(jQuery);
-        } else if (this.state.startDateToBackEnd != null && this.state.startTimeToBackEnd != null) {
-            let date = this.state.startDateToBackEnd.split("-");
-            let time = this.state.startTimeToBackEnd.split(":");
-            let selectedTime = new Date(date[2], date[1] - 1, date[0], time[0], time[1])
-            let now = new Date;
+        }
 
-            if (selectedTime < now) {
-                this.setState({
-                    warningText: 'Hey, Time in the past is not allowed'
-                });
-                 (function ($) {
-                $("#DestinationWarning").modal("toggle");
-            })(jQuery);
+
+          else if (this.state.startDateToBackEnd != null || this.state.startTimeToBackEnd != null) {
+            let date = '';
+            let time = '';
+            let now = new Date;
+            let selectedTime = '';
+
+            if (this.state.startDateToBackEnd != null && this.state.startTimeToBackEnd != null) {
+                date = this.state.startDateToBackEnd.split("-");
+                time = this.state.startTimeToBackEnd.split(":");
+                selectedTime = new Date(date[2], date[1] - 1, date[0], time[0], time[1])
+
+                if (selectedTime < now) {
+                    this.setState({
+                        warningText: 'Hey, Not to allow to pick past time values '
+                    });
+                    (function ($) {
+                        $("#DestinationWarning").modal("toggle");
+                    })(jQuery);
+                } else {
+                    this.PassToUrl()
+                }
+
+
+            } else if (this.state.startDateToBackEnd == null && this.state.startTimeToBackEnd != null) {
+                now = new Date().getHours() + ":" + new Date().getMinutes()
+                if (this.state.startTimeToBackEnd < now) {
+                    this.setState({
+                        warningText: 'Hey, Not to allow to pick past time values '
+                    });
+                    (function ($) {
+                        $("#DestinationWarning").modal("toggle");
+                    })(jQuery);
+                } else {
+                    this.PassToUrl()
+                }
+
             } else {
-                this.props.history.push(
-                    `/ResultPageDestination/${this.state.startLat}/${this.state.startLon}/${this.state.destinationLat}/${this.state.destinationLon}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}/${this.state.start}/${this.state.end}`
-                );
+                this.PassToUrl()
+
             }
+
+
         } else {
-            this.props.history.push(
-                `/ResultPageDestination/${this.state.startLat}/${this.state.startLon}/${this.state.destinationLat}/${this.state.destinationLon}/${this.state.startDateToBackEnd}/${this.state.startTimeToBackEnd}/${this.state.start}/${this.state.end}`
-            );
+            this.PassToUrl()
         }
     }
 
