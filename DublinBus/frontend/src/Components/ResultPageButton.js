@@ -2,7 +2,9 @@ import React, { Component } from "react";
 
 import "../Static/StyleSheet/ResultPageButton.css";
 
-//This the Submit button for the Result page of the Search by Destination
+{
+    //This the Submit button for the Result page of the Search by Destination
+}
 class ButtonAtResultPage extends Component {
   render() {
     return (

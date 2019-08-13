@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 
-//This Component is the Favour Icon appear at the header
+{
+  //This Component is the Favour Icon appear at the header
+}
 class FavourPage extends Component {
   render() {
     return (

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import "../Static/StyleSheet/AutoComplete.css";
 import PropTypes from "prop-types";
 
+{
+//  Enable Autocomplet for the input box at Search by Stop and Route
+}
 const Autocomplete = props => {
   const [activeSuggestion, updateActiveSuggestion] = useState(0);
   const [filteredSuggestions, updateFilteredSuggestions] = useState([]);
@@ -83,7 +86,7 @@ const Autocomplete = props => {
             if (index === activeSuggestion) {
             }
             return (
-              <p onClick={onClick} className="show_suggestion">
+              <p onClick={onClick} className="show_suggestion" key={index}>
                 {suggestionName}
               </p>
             );

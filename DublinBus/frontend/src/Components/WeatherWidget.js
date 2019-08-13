@@ -1,5 +1,9 @@
 import React from "react";
 
+
+{
+//    This Cis WeatherWidget Component , Used in App.js
+}
 const WeatherWidget = () => {
   return (
     <div className="row  WeatherWidget  ">

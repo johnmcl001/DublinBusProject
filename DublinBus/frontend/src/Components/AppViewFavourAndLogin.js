@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import "../Static/StyleSheet/AppViewFavourAndLogin.css";
 
-//This Component is the login and favour icon at the mobile view ports
+{
+  //This Component is the login and favour icon at the mobile view ports
+}
 class AppViewFavourAndLogin extends Component {
   render() {
     return (

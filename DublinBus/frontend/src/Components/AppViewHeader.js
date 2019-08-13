@@ -2,7 +2,9 @@ import React, { Component } from "react";
 import "../Static/StyleSheet/AppViewHeader.css";
 import DropDownINav from "./DropDownNav";
 
-// This Component is a header at the mobile view
+{
+  // This Component is a header at the mobile view
+}
 
 class AppViewHeader extends Component {
   constructor(props) {
@@ -39,9 +41,9 @@ class AppViewHeader extends Component {
             {/*<DropDownINav />*/}
             <a onClick={() => window.location.replace("/")}>
               <p>
-                <i class="fas fa-home"></i>
+                <i className="fas fa-home"></i>
               </p>
-              {/*<p id='Home'>Home</p>*/}
+
             </a>
           </div>
         </div>

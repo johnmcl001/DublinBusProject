@@ -3,8 +3,13 @@ import SlidingPane from "react-sliding-pane";
 import "react-sliding-pane/dist/react-sliding-pane.css";
 import "../Static/StyleSheet/SlideShowMobileMap.css";
 import MobileMap from "./MobileMap";
+import Modal from 'react-modal';
 
-//This the Submit button for the Result page of the Search by Destination
+{
+//    This component is used to display map for mobile user
+//    used at ResultPageDestination, ResultPage_Stop_Route and Journey Planner_ResultPage
+}
+
 class ButtonAtResultPage extends Component {
   constructor(props) {
     super(props);
@@ -13,10 +18,12 @@ class ButtonAtResultPage extends Component {
       isPaneOpenLeft: false
     };
   }
-
+  componentDidMount() {
+        Modal.setAppElement(this.el);
+    }
   render() {
     return (
-      <div className="row container ShowMapAndFare position-relative ">
+      <div className="row container ShowMapAndFare position-relative "  ref={ref => this.el = ref}>
 
                 <div className="col-8 d-md-none showMapButton">
                     <button className="btn btn-warning " onClick={() => this.setState({isPaneOpenLeft: true})}>Show

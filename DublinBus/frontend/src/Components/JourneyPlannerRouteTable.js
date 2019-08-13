@@ -1,6 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
-import key from "weak-key";
 import {
     FaWalking,
     FaLevelDownAlt,
@@ -8,6 +6,9 @@ import {
     FaBus
 } from "react-icons/fa";
 
+{
+//    Display route Instruction at Result page Journey Planner
+}
 const JourneyPlannerRouteTable = ({data}) =>
     !data.length ? (
         <p>Nothing to show</p>
@@ -25,7 +26,7 @@ const JourneyPlannerRouteTable = ({data}) =>
                         aria-labelledby="pills-home-tab">
                         {data[0].directions.map((x, y) => (
                             //    Loop throught
-                            <div>
+                            <div  key={y}>
                                 <div className="row instruction ">
                                     <p className="Icons_ResultPage ">
                                         {x.travel_mode == "WALKING" ? (
@@ -36,11 +37,11 @@ const JourneyPlannerRouteTable = ({data}) =>
                                     </p>
                                     <p
                                         className="instruction_text "
-                                        key={y}
+
                                     >
                                         {x.instruction}
                                     </p>
-                                    <p className="time_show " key={y}>
+                                    <p className="time_show " >
                                         {x.time} mins
                                     </p>
                                 </div>

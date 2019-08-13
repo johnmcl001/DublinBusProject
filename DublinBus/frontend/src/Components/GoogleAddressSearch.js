@@ -4,6 +4,11 @@ import Script from "react-load-script";
 // npm i react-load-script --save
 let google = window.google;
 
+{
+//  For Google Address Search ,
+//  Displayed at Search by Destination and Journey Planner
+//  Used in the Component YourLocationOrSearch
+}
 class GoogleAddressSearch extends Component {
   componentDidMount() {
     const inputEl = document.getElementById(this.props.id);

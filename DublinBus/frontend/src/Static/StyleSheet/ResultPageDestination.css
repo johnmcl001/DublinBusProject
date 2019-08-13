@@ -9,6 +9,8 @@ then change font size and form
     left: 20px;
     border: black;
     height: auto;
+    max-height:90vh;
+    overflow: scroll;
 }
 
 .DestinationResult {

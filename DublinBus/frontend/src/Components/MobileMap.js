@@ -3,6 +3,10 @@ import Map from "./Map";
 import {IoMdLocate} from "react-icons/io";
 import '../Static/StyleSheet/MobileMap.css'
 
+{
+//    Display map for mobile user
+//    Used at result page search by route stop and destination
+}
 class mobileMap extends React.Component {
     constructor(props) {
         super(props);
@@ -26,10 +30,12 @@ class mobileMap extends React.Component {
 
             <div className="container col-12 position-relative MobileMap">
                 <Map ref={this.child} markers={this.props.markers} polyline={this.props.polyline} showMap={true}/>
+
                 <div className='currentLocationIcon position-fixed' ><a
                     onClick={this.onclickFindLocation}>
                     <IoMdLocate className="icon_map " size={35}/>
                 </a></div>
+
 
             </div>
         );

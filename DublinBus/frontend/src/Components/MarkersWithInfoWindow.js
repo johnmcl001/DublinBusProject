@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { Marker, InfoWindow } from "react-google-maps";
 
+
+
 class InfoWindowMap extends Component {
   constructor(props) {
     super(props);
