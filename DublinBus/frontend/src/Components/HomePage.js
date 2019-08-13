@@ -34,13 +34,6 @@ class HomePage extends Component {
                 </button>
               </Link>
             </div>
-            <div className="row ">
-              <Link to={"/SearchByRoute"} className="LinkCss ">
-                <button type="button" className="btn btn-success">
-                  Search By Route
-                </button>
-              </Link>
-            </div>
 
             <div className="row">
               <Link to={"/SearchByDestination"} className="LinkCss">
