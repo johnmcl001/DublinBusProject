@@ -109,13 +109,13 @@
     left: -10%;
 }
 
-#SubmitButton{
+#SubmitButton {
     margin-top: 20px;
 }
 
 @media only screen and (max-width: 770px) {
     .JoureyPlaner form {
-        height: 320px;
+        height: 260px;
         padding-bottom: 10px;
 
     }
@@ -161,14 +161,14 @@
 }
 
 
-
 @media only screen and (max-width: 420px) {
     .modal {
         width: 90%;
     }
-.JoureyPlaner form{
-    padding-bottom: 100px;
-}
+
+    .JoureyPlaner form {
+        padding-bottom: 100px;
+    }
 
 }
 

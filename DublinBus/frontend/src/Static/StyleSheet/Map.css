@@ -35,3 +35,11 @@ margin-left: auto;
     background-color: white;
     z-index: 2;
 }
+
+
+@media only screen and (max-width: 420px) {
+
+    .currentLocationIcon_map {
+        display: none;
+    }
+}

@@ -50,7 +50,7 @@ class App extends Component {
 
                 <div className="App">
                     <div className="container-fluid position-relative appContainer">
-                        <Map polyline={this.state.polyline} markers={this.state.markers}/>
+                        <Map polyline={this.state.polyline} markers={this.state.markers} showMap=' d-none d-md-block'/>
 
                         <Switch>
                             <Route path="/" exact={true} component={HomePage}/>
