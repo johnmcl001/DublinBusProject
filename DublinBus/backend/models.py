@@ -3,17 +3,10 @@
 #   * Rearrange models' order
 #   * Make sure each model has one field with primary_key=True
 #   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
+#   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
-
-class Apikeys(models.Model):
-    api_key = models.CharField(max_length=100, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'ApiKeys'
 
 
 class Touristattractions(models.Model):
@@ -24,23 +17,12 @@ class Touristattractions(models.Model):
     rating = models.FloatField(blank=True, null=True)
     raters = models.IntegerField(blank=True, null=True)
     address = models.CharField(max_length=100, blank=True, null=True)
+    visiting_time = models.IntegerField(blank=True, null=True)
     image = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'TouristAttractions'
-
-
-class Agency(models.Model):
-    agency_url = models.TextField(blank=True, null=True)
-    agency_name = models.TextField(blank=True, null=True)
-    agency_timezone = models.CharField(max_length=45, blank=True, null=True)
-    agency_id = models.CharField(primary_key=True, max_length=45)
-    agency_lang = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'agency'
 
 
 class AuthGroup(models.Model):
@@ -122,31 +104,28 @@ class Calendar(models.Model):
     sunday = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'calendar'
 
 
 class CalendarDates(models.Model):
-    service = models.OneToOneField(Calendar, models.DO_NOTHING, primary_key=True)
+    service = models.ForeignKey(Calendar, models.DO_NOTHING, primary_key=True)
     date = models.CharField(max_length=45)
     exception_type = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'calendar_dates'
         unique_together = (('service', 'date'),)
 
 
 class Costs(models.Model):
-
-    origin = models.ForeignKey(Touristattractions, models.DO_NOTHING, db_column='origin', primary_key=True,
-    related_name='origin')
-    destination = models.ForeignKey(Touristattractions, models.DO_NOTHING, db_column='destination')
-
+    origin = models.ForeignKey(Touristattractions, models.DO_NOTHING, db_column='origin', primary_key=True, related_name="cost")
+    destination = models.ForeignKey(Touristattractions, models.DO_NOTHING, db_column='destination', null=True)
     cost = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'costs'
         unique_together = (('origin', 'destination'),)
 
@@ -196,18 +175,17 @@ class DjangoSession(models.Model):
 
 
 class Forecast(models.Model):
-    date = models.CharField(primary_key=True, max_length=45)
-    start_time = models.CharField(max_length=45)
+    date = models.TextField(blank=True, null=True)
+    start_time = models.TextField(blank=True, null=True)
     end_time = models.TextField(blank=True, null=True)
-    temperature = models.FloatField(blank=True, null=True)
-    cloud_percent = models.FloatField(blank=True, null=True)
-    rain = models.FloatField(blank=True, null=True)
+    temperature = models.TextField(blank=True, null=True)
+    cloud_percent = models.TextField(blank=True, null=True)
+    rain = models.TextField(blank=True, null=True)
     description = models.TextField(db_column='Description', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'forecast'
-        unique_together = (('date', 'start_time'),)
 
 
 class Routes(models.Model):
@@ -216,7 +194,7 @@ class Routes(models.Model):
     route_long_name = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'routes'
 
 
@@ -242,10 +220,9 @@ class StopTimes(models.Model):
     predicted_arrival_times_9 = models.TimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'stop_times'
         unique_together = (('trip_id', 'stop_sequence'),)
-
 
 
 class Stops(models.Model):
@@ -256,19 +233,19 @@ class Stops(models.Model):
     stopid_short = models.IntegerField(db_column='stopID_short', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'stops'
 
 
 class Trips(models.Model):
-    route = models.OneToOneField(Routes, models.DO_NOTHING, primary_key=True)
+    route = models.ForeignKey(Routes, models.DO_NOTHING, primary_key=True)
     direction_id = models.IntegerField()
     trip_headsign = models.CharField(max_length=100, blank=True, null=True)
     shape_id = models.CharField(max_length=45, blank=True, null=True)
     service = models.ForeignKey(Calendar, models.DO_NOTHING, blank=True, null=True)
-    trip = models.ForeignKey(StopTimes, models.DO_NOTHING)
+    trip = models.ForeignKey(StopTimes, models.DO_NOTHING, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'trips'
         unique_together = (('route', 'direction_id', 'trip'),)
