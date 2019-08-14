@@ -468,7 +468,6 @@ class TouristPlannerTest(TestCase):
             "Trinity College Dublin",
             "The Spire",
             "Guinness Storehouse",
-            "Westin"
         ]
         self.assertEqual(self.test_view.get_attractions(), expected)
 
@@ -496,23 +495,6 @@ class TouristPlannerTest(TestCase):
         ]
         self.assertEqual(self.test_view.remove_home_from_attractions(test_input, "Westin"), expected)
 
-    def test_compute_permutations(self):
-        """
-        Should return all permutations of attractions
-        """
-        test_input = ["A", "B", "C"]
-        expected = [
-            ['A', 'B', 'C'],
-            ['B', 'A', 'C'],
-            ['C', 'A', 'B'],
-            ['A', 'C', 'B'],
-            ['B', 'C', 'A'],
-            ['C', 'B', 'A'],
-
-        ]
-        self.assertEqual(self.test_view.compute_permutations(len(test_input),
-                                                             test_input),
-                                                            expected)
 
     def test_add_home(self):
         """
