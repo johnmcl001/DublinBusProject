@@ -132,6 +132,21 @@ then change font size and form
     margin: auto;
 
 }
+.DestinationLabels{
+  background-color: #FFCC00;
+    height: 40px;
+    width: 100%;
+    margin: auto;
+    border-radius: 5px 5px 5px 5px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+.DestinationLabels h5{
+        color: white;
+    margin: auto;
+
+}
+
 
 @media only screen and (max-width: 420px) {
     .ResultPageDestination a {
