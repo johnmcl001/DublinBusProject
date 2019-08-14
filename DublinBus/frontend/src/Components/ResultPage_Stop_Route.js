@@ -40,7 +40,7 @@ class ResultPage_Stop_Route extends Component {
                 <p>Bus</p>
               </div>
               <div className="col-8  ">
-                <p id="ArrivalLabel">Estimate arrival </p>
+                <p id="ArrivalLabel">Estimated Arrival </p>
               </div>
             </div>
 

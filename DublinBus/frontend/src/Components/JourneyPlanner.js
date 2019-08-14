@@ -64,7 +64,7 @@ class JourneyPlanner extends Component {
     }
     if (this.state.startLat.length == 0) {
       this.setState({
-        warningText: "Hey Please Pick Your Start Point"
+        warningText: "Please select a start point"
       });
 
       let $ = jQuery;
@@ -74,7 +74,7 @@ class JourneyPlanner extends Component {
       })(jQuery);
     } else if (this.state.PickedTouristAttraction.length == 0) {
       this.setState({
-        warningText: "Hey Please select some location to visit"
+        warningText: "Please select a location to visit"
       });
       let $ = jQuery;
 
@@ -282,7 +282,7 @@ class JourneyPlanner extends Component {
                 </div>
 
                 <div className="col-12 listDestination_label  ">
-                  <label> Picked Attraction:</label>
+                  <label> Selected Attractions:</label>
                 </div>
                 <div className="accordion" id="accordionExample">
                   <div className="row listDestination border border-white ">
@@ -343,7 +343,7 @@ class JourneyPlanner extends Component {
           color={"#146EB4"}
           id={"JourneyPlannerAlertBox"}
           title={"Information"}
-          content={"Sorry, You can only select three attraction."}
+          content={"Sorry, You can only select up to three attractions."}
         />
         <WarningAlert
           color={"#F65314"}

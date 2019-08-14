@@ -71,7 +71,7 @@ class JouneryPlanner_ToVisitPiont extends React.Component {
                   );
                 }}
               >
-                Remove it from list?
+                Remove selected attraction?
               </button>
             </div>
           </div>
