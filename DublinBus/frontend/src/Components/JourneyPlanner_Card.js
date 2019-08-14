@@ -1,4 +1,4 @@
-import Imgx from "../Static/img/img1.jpg";
+import Imgx from "../Static/img/img1.webp";
 import React from "react";
 import "../Static/StyleSheet/JourneyPlanner_Card.css";
 import { Button, Accordion, Card } from "react-bootstrap";
