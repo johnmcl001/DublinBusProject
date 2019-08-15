@@ -1,7 +1,10 @@
 import pymysql
-
+import os
+import sys
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
 sql = "select stop_lat, zone_id, stop_lon, stop_id, stop_name, location_type, stopID_short from stops"
-db = pymysql.connect(host="csi420-01-vm9.ucd.ie", port=3306 , user="niamh", passwd="comp47360jnnd", db="website")
+db = pymysql.connect(host=os.getenv("HOST"), port=3306 , user=os.getenv("USER"), passwd=os.getenv("PASSWORD"), db="website")
 cursor = db.cursor()
 cursor.execute(sql)
 db.commit()
@@ -20,4 +23,3 @@ for i in range(0, len(Data)):
         print(i)
         print(e)
 cursor.close()
-

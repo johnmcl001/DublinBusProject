@@ -9,12 +9,10 @@ from datetime import datetime
 import pickle
 import sys
 import numpy as np
-
-#results=pd.DataFrame(columns = ['route','<3','<10','<30','<60','<120', '>120', 'overall'])
-
-#results.to_csv('linear_regression_tt_scores.csv', header=True, index=False)
-
-engine = create_engine("mysql+pymysql://niamh:comp47360jnnd@127.0.0.1:3306/DublinBus")
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
+engine = db.create_engine('mysql+pymysql://'+os.getenv("USER")+':'+os.getenv("PASSWORD")+'@'+os.getenv("HOST")+':3306/website')
 
 def clampLB(minV,maxV, Q3, Q1):
     return max(minV, Q1-1.5*(Q3-Q1))
@@ -54,10 +52,10 @@ for route in files:
     y=None
     X_train=None
     Y_train=None
-    
+
     df['day']=df['DAYOFSERVICE'].dt.dayofweek
     df['month']=df['DAYOFSERVICE'].dt.month #school term
-    
+
     #Merge with historical weather
     df['TIMESTAMP']=pd.to_datetime(df.DAYOFSERVICE)+pd.to_timedelta(df.ACTUALTIME_ARR, unit='second')
     #merge weather
@@ -78,7 +76,7 @@ for route in files:
     #opening the model
     i=route.find('r')
     route=route[:i]
-          
+
     try:
         model_dict = pickle.load(open('./pickles_linear_regression/'+route,'rb'))
     except:
@@ -90,7 +88,7 @@ for route in files:
     df['predicted_arrival_diff']=np.array(predictions_list)
     df['predicted_arrival_time']=round(df['PLANNEDTIME_ARR']+df['predicted_arrival_diff'])
     df=df.drop(['DIFFERENCE_PLANNED_ACTUAL_ARR','predicted_arrival_diff', 'PLANNEDTIME_ARR', 'PLANNEDTIME_DEP', 'day', 'month', 'temperature'],1, errors='ignore')
-    
+
     df_temp=pd.DataFrame(df.groupby(['TRIPID', 'DAYOFSERVICE'])['ACTUALTIME_DEP'].quantile(.25, interpolation='nearest'))
     df_temp.columns=['tt_quarter']
     df=pd.merge(df, df_temp, on=['TRIPID', 'DAYOFSERVICE'])
@@ -106,7 +104,7 @@ for route in files:
     df.loc[(df['tt_quarter'] < 0), 'tt_quarter'] = None
     df.loc[(df['tt_mid'] < 0), 'tt_mid'] = None
     df.loc[(df['tt_3quarter'] < 0), 'tt_3quarter'] = None
-    
+
     df_temp=pd.DataFrame(df.groupby(['TRIPID', 'DAYOFSERVICE'])['predicted_arrival_time'].quantile(.25, interpolation='nearest'))
     df_temp.columns=['pred_tt_quarter']
     df=pd.merge(df, df_temp, on=['TRIPID', 'DAYOFSERVICE'])
@@ -122,11 +120,11 @@ for route in files:
     df.loc[(df['pred_tt_quarter'] < 0), 'pred_tt_quarter'] = None
     df.loc[(df['pred_tt_mid'] < 0), 'pred_tt_mid'] = None
     df.loc[(df['pred_tt_3quarter'] < 0), 'pred_tt_3quarter'] = None
-    
+
     df['diff_from_quarter']=abs(df['tt_quarter']-df['pred_tt_quarter'])
     df['diff_from_mid']=abs(df['tt_mid']-df['pred_tt_mid'])
     df['diff_from_3quarter']=abs(df['tt_3quarter']-df['pred_tt_3quarter'])
-    
+
     mean_errors={180:None,600:None,1800:None,3600:None,7200:None,'greater_than_2_hours':None, 'overall':None}
     last_key=0
     for key in mean_errors:

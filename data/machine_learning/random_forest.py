@@ -8,12 +8,14 @@ import math
 from datetime import datetime
 import pickle
 import sys
-
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
 results=pd.DataFrame(columns = ['route','features','n_est','max_depth','train/test/CV','mae', 'mean_squared_error', 'r2', 'date'])
 
 results.to_csv('RFScores.csv', mode='a', header=True, index=False)
 
-engine = create_engine("mysql+pymysql://niamh:comp47360jnnd@127.0.0.1:3306/DublinBus")
+engine = db.create_engine('mysql+pymysql://'+os.getenv("USER")+':'+os.getenv("PASSWORD")+'@'+os.getenv("HOST")+':3306/DublinBus')
 
 def clampLB(minV,maxV, Q3, Q1):
     return max(minV, Q1-1.5*(Q3-Q1))
@@ -29,7 +31,7 @@ for route in files:
             df=df.sample(n=1000000)
         df=df.drop(df.loc[df.DAYOFSERVICE=='DAYOFSERVICE'].index, errors='ignore')
         df.DAYOFSERVICE=pd.to_datetime(df.DAYOFSERVICE)
-        
+
         #day, weekday, month
         df=df.sort_values(['DAYOFSERVICE', 'TRIPID','PROGRNUMBER'])
         df['day']=df['DAYOFSERVICE'].dt.dayofweek
@@ -51,7 +53,7 @@ for route in files:
          '2018-08-06',  '2018-10-29',  '2018-12-21',  '2018-12-24', '2018-12-25', '2018-12-26', '2018-12-31']
         df['OBSERVENCE/NATIONALHOL']=0
         df.loc[df.DAYOFSERVICE.isin(nathols), 'OBSERVENCE/NATIONALHOL']=1
-        
+
         df[['PLANNEDTIME_ARR','PLANNEDTIME_DEP','ACTUALTIME_ARR','ACTUALTIME_DEP']] = df[['PLANNEDTIME_ARR','PLANNEDTIME_DEP','ACTUALTIME_ARR','ACTUALTIME_DEP']].astype(int)
         #Target Feature
         df['DIFFERENCE_PLANNED_ACTUAL_ARR']=df['ACTUALTIME_ARR']-df['PLANNEDTIME_ARR']
@@ -80,7 +82,7 @@ for route in files:
         max_dep=15
         model= RandomForestRegressor(n_estimators=n_est, max_depth=max_dep, oob_score=True, random_state=1)
         model.fit(X_train, y_train);
-        
+
         #pickling the model
         outfile = open('pickle_'+route,'wb')
         pickle.dump({'model':model, 'features':list(chosen_features)},outfile)
@@ -95,4 +97,3 @@ for route in files:
     except Exception as e:
         print(route)
         print(e)
-

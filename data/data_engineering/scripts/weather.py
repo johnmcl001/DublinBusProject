@@ -3,7 +3,10 @@ import requests
 import pandas as pd
 import dateutil.parser
 from dateutil.tz import gettz
-
+import os
+import sys
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
 #Dublin Airport
 api='http://metwdb-prod.ichec.ie/metno-wdb2ts/locationforecast?lat=53.4264;long=-6.2499'
 response=requests.get(api)
@@ -25,8 +28,8 @@ for i in range(0, len(forecast)):
         row['rain']=forecast[i]['location']['precipitation']['@value']
         df=df.append(row,ignore_index=True)
         row=dict()
-df.to_csv('weather')
+#df.to_csv('weather')
 #send data to db
 import sqlalchemy as db
-engine = db.create_engine('mysql+pymysql://niamh:comp47360jnnd@csi420-01-vm9.ucd.ie/website')
+engine = db.create_engine('mysql+pymysql://'+os.getenv("USER")+':'+os.getenv("PASSWORD")+'@'+os.getenv("HOST")+'/website')
 df.to_sql('forecast', con=engine, index=False, if_exists='replace')

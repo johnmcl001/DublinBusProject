@@ -9,7 +9,10 @@ from datetime import datetime
 import pickle
 import sys
 import numpy as np
-engine = create_engine("mysql+pymysql://niamh:comp47360jnnd@127.0.0.1:3306/DublinBus")
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
+engine = db.create_engine('mysql+pymysql://'+os.getenv("USER")+':'+os.getenv("PASSWORD")+'@'+os.getenv("HOST")+':3306/website')
 
 def clampLB(minV,maxV, Q3, Q1):
     return max(minV, Q1-1.5*(Q3-Q1))
@@ -20,7 +23,7 @@ def clampUB(minV, maxV, Q3, Q1):
 #results.to_csv('linear_regression_total_journey_tt_scores.csv', header=True, index=False)
 
 files=['102r.csv', '104r.csv', '111r.csv', '114r.csv', '116r.csv', '118r.csv', '11r.csv', '120r.csv', '122r.csv', '123r.csv', '130r.csv', '13r.csv', '140r.csv', '142r.csv', '145r.csv', '14Cr.csv', '14r.csv', '150r.csv', '151r.csv', '15Ar.csv', '15Br.csv', '15Dr.csv', '15r.csv', '161r.csv', '16Cr.csv', '16Dr.csv', '16r.csv', '17Ar.csv', '17r.csv', '184r.csv', '185r.csv', '18r.csv', '1r.csv', '220r.csv', '236r.csv',  '238r.csv', '239r.csv', '25Ar.csv', '25Br.csv', '25Dr.csv', '25r.csv','25Xr.csv','26r.csv','270r.csv','27Ar.csv','27Br.csv','27.csv','27r.csv','27Xr.csv','29Ar.csv','31Ar.csv','31Br.csv','31Dr.csv','31r.csv','32r.csv','32Xr.csv','33Ar.csv','33Br.csv', '33Dr.csv', '33Er.csv', '33r.csv', '33Xr.csv', '37r.csv','38Ar.csv','38Br.csv','38Dr.csv','38r.csv','39Ar.csv','39r.csv','39Xr.csv','40Br.csv','40Dr.csv','40Er.csv','40r.csv','41Ar.csv','41Br.csv','41Cr.csv','41Dr.csv','41r.csv','41Xr.csv','42Dr.csv','42r.csv','43r.csv','44Br.csv','44r.csv','45Ar.csv','46Ar.csv','46Er.csv','47r.csv','49r.csv','4r.csv','51Dr.csv','51Xr.csv','53r.csv','54Ar.csv','56Ar.csv','59r.csv','61r.csv','63r.csv','65Br.csv','65r.csv','66Ar.csv','66Br.csv','66r.csv','66Xr.csv','67r.csv','67Xr.csv','68Ar.csv','68r.csv','68Xr.csv','69r.csv','69Xr.csv','70Dr.csv','70r.csv','75r.csv','76Ar.csv','76r.csv','77Ar.csv','77Xr.csv','79Ar.csv','79r.csv','7Ar.csv','7Br.csv','7Dr.csv','7r.csv','83Ar.csv','83r.csv','84Ar.csv','84r.csv','84Xr.csv','9r.csv', 'all_routes_model.csv']
-       
+
 for route in files:
     if route=='all_routes_model.csv':
         total=pd.read_csv('./files/all_routes_model.csv', names=['DAYOFSERVICE', 'TRIPID', 'PROGRNUMBER', 'STOPPOINTID', 'PLANNEDTIME_ARR', 'PLANNEDTIME_DEP', 'ACTUALTIME_ARR', 'ACTUALTIME_DEP', 'LineID', 'RouteID', 'Direction', 'weekday'], parse_dates=['DAYOFSERVICE'])
@@ -78,31 +81,31 @@ for route in files:
 
     #drop all unneccessary features
     df=df.drop(['Timestamp',  'LineID_y'], 1, errors='ignore')
-    
+
     chosen_features = ["temperature", "PROGRNUMBER", "month", "day"]
     df[['month', 'day']]=df[['month', 'day']].astype('float64')
 
     #opening the model
     i=route.find('r')
     route=route[:i]
-          
+
     try:
         model_dict = pickle.load(open('./pickles_linear_regression/'+route,'rb'))
     except:
         model_dict = pickle.load(open('./pickles_linear_regression/all_routes_model','rb'))
     model=model_dict['model']
-    
+
     #Get scores for test set
     predictions_list=model.predict(df[chosen_features])
     df['predicted_arrival_diff']=np.array(predictions_list)
     df['predicted_arrival_time']=round(df['PLANNEDTIME_ARR']+df['predicted_arrival_diff'])
     df=df.drop(['DIFFERENCE_PLANNED_ACTUAL_ARR','predicted_arrival_diff', 'PLANNEDTIME_ARR', 'PLANNEDTIME_DEP', 'day', 'month', 'temperature'],1, errors='ignore')
-    
+
     df['ACTUAL_TT']=df.groupby(['TRIPID', 'DAYOFSERVICE'])['ACTUALTIME_ARR'].diff()
     df['PREDICTED_TT']=df.groupby(['TRIPID', 'DAYOFSERVICE'])['predicted_arrival_time'].diff()
     df['DIFF']=abs(df['ACTUAL_TT']-df['PREDICTED_TT'])
     df=df.dropna()
-    
+
     mean_errors={3600:None,7200:None,'greater_than_2_hours':None}
     last_key=0
     for key in mean_errors:
@@ -113,5 +116,5 @@ for route in files:
             mean_errors[key]=df.loc[df.ACTUAL_TT>7200]['DIFF'].mean()
     mean_errors['overall']=df.DIFF.mean()
     errors=pd.DataFrame(mean_errors, index=[route,])
-    
+
     errors.to_csv('linear_regression_total_journey_tt_scores.csv', mode='a', header=False, index=True)

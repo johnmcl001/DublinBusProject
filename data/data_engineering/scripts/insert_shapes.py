@@ -1,6 +1,11 @@
 import sqlalchemy as db
-engine = db.create_engine('mysql+pymysql://niamh:comp47360jnnd@csi420-01-vm9.ucd.ie/website')
 import pandas as pd
+import os
+import sys
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
+
+engine = db.create_engine('mysql+pymysql://'+os.getenv("USER")+':'+os.getenv("PASSWORD")+'@'+os.getenv("HOST")+':3306/website')
 df=pd.read_csv('shapes.txt',delimiter=',', dtype=str)
 try:
     df.to_sql('shapes', con=engine, index=False, if_exists='append')

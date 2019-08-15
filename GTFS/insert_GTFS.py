@@ -42,7 +42,7 @@ def check_for_new_feed(timestamp):
                     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(transit['latest']['ts'])))
                     return timestamp
                 return False
-                
+
 def insert_data_into_stops(engine):
     """
     used to insert data into stops as there is editing to be done
@@ -82,7 +82,7 @@ def insert_data_into_stops(engine):
             else:
                 #Data=Data.drop(i, errors='ignore')
                 pass
-        
+
     try:
         Data.to_sql('stops', con=engine, index=False, if_exists='append')
     except Exception as e:
@@ -103,7 +103,7 @@ def insert_data_into_table(text_file, engine):
                 chunk.to_sql(text_file['table'], con=engine, index=False, if_exists='append')
             except Exception as e:
                 print(e)
-            
+
 def reset_tables(engine, sql_text):
     """
     used to reset tables but keep keys
@@ -132,7 +132,7 @@ def reset_tables(engine, sql_text):
     connection.commit()
     cursor.close()
     connection.close()
-    
+
 def insert_stop_times(engine):
     reset_tables(engine, 'reset_stop_times.sql')
     chunks = 10**5
@@ -169,7 +169,7 @@ def insert_stop_times(engine):
             chunk=pd.merge_asof(chunk, df1, left_on='TIMESTAMP', right_on='Timestamp', direction='backward')
             chunk=chunk.drop('TIMESTAMP',1, errors='ignore')
             chunk=chunk.fillna(0)
-            
+
             for route in chunk.route_short_name.unique():
                 if route in ['25X', '32X', '40E', '41X', '51X', '66X', '68A', '70D', '130', '53', '68X', '116', '11', '38B', '70']:
                     model = pickle.load(open("./pickles_random_forest/all_routes_model",'rb'))
@@ -183,7 +183,7 @@ def insert_stop_times(engine):
                 df=chunk.loc[chunk.route_short_name==route]
                 df = df.reindex(columns = chosen_feat)
                 chunk.loc[chunk.route_short_name==route,'predictions']=model.predict(df)
-            
+
             chunk['predicted_arrival_times_'+str(n)]= (pd.to_datetime(chunk['arrival_time']) + pd.to_timedelta( chunk['predictions'], unit='s')).dt.strftime("%H:%M")
             chunk=chunk.drop(['date_x', 'date_y', 'Unnamed: 0', 'start_time', 'end_time', 'cloud_percent', 'rain', 'Description', 'Timestamp', 'month', 'day', 'predictions', 'temperature', 'OBSERVENCE/NATIONALHOL'],1, errors='ignore')
         #chunk=chunk.drop(['date_x', 'date_y', 'Unnamed: 0', 'start_time', 'end_time', 'cloud_percent', 'rain', 'Description', 'Timestamp', 'month', 'day', 'predictions', 'temperature', 'temperature_NORM'],1, errors='ignore')
@@ -191,7 +191,7 @@ def insert_stop_times(engine):
             chunk.to_sql('stop_times', con=engine, index=False, if_exists='append')
         except Exception as e:
             print(e)
-            
+
 def update_weather(engine):
     #Dublin Airport
     api='http://metwdb-prod.ichec.ie/metno-wdb2ts/locationforecast?lat=53.4264;long=-6.2499'

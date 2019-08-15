@@ -9,7 +9,10 @@ from datetime import datetime
 import pickle
 import sys
 import numpy as np
-engine = create_engine("mysql+pymysql://niamh:comp47360jnnd@127.0.0.1:3306/DublinBus")
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
+engine = db.create_engine('mysql+pymysql://'+os.getenv("USER")+':'+os.getenv("PASSWORD")+'@'+os.getenv("HOST")+':3306/website')
 
 def clampLB(minV,maxV, Q3, Q1):
     return max(minV, Q1-1.5*(Q3-Q1))
@@ -76,7 +79,7 @@ for route in files:
     outfile = open('pickle_'+route,'wb')
     pickle.dump({'model':model, 'features':list(chosen_features)},outfile)
     outfile.close()
-       
+
     #Get scores for test set
     predictions_list=model.predict(X_test[chosen_features])
     df=X_test
@@ -99,7 +102,7 @@ for route in files:
     df.loc[(df['tt_quarter'] < 0), 'tt_quarter'] = None
     df.loc[(df['tt_mid'] < 0), 'tt_mid'] = None
     df.loc[(df['tt_3quarter'] < 0), 'tt_3quarter'] = None
-    
+
     df_temp=pd.DataFrame(df.groupby(['TRIPID', 'DAYOFSERVICE'])['predicted_arrival_time'].quantile(.25, interpolation='nearest'))
     df_temp.columns=['pred_tt_quarter']
     df=pd.merge(df, df_temp, on=['TRIPID', 'DAYOFSERVICE'])
@@ -115,7 +118,7 @@ for route in files:
     df.loc[(df['pred_tt_quarter'] < 0), 'pred_tt_quarter'] = None
     df.loc[(df['pred_tt_mid'] < 0), 'pred_tt_mid'] = None
     df.loc[(df['pred_tt_3quarter'] < 0), 'pred_tt_3quarter'] = None
-    
+
     df['diff_from_quarter']=abs(df['tt_quarter']-df['pred_tt_quarter'])
     df['diff_from_mid']=abs(df['tt_mid']-df['pred_tt_mid'])
     df['diff_from_3quarter']=abs(df['tt_3quarter']-df['pred_tt_3quarter'])

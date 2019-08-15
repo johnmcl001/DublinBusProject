@@ -1,11 +1,15 @@
 import pymysql
 import json
-connection = pymysql.connect(host='csi420-01-vm9.ucd.ie',
-                             user='niamh',
-                             password='comp47360jnnd',
+import sys
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
+connection = pymysql.connect(host=os.getenv("HOST"),
+                             user=os.getenv("USER"),
+                             password=os.getenv("PASSWORD"),
                              db='website',
                              cursorclass=pymysql.cursors.DictCursor)
-with open('frontEndBusInfo.json') as json_file:  
+with open('frontEndBusInfo.json') as json_file:
         data = json.load(json_file)
 
 try:

@@ -9,10 +9,11 @@ from datetime import datetime
 import pickle
 import sys
 import os
-
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
 results=pd.DataFrame(columns = ['route','features','train/test/CV','mae', 'mean_squared_error', 'r2', 'date'])
 results.to_csv('LRScores.csv', mode='a', header=True, index=False)
-engine = create_engine("mysql+pymysql://niamh:comp47360jnnd@127.0.0.1:3306/DublinBus")
+engine = db.create_engine('mysql+pymysql://'+os.getenv("USER")+':'+os.getenv("PASSWORD")+'@'+os.getenv("HOST")+':3306/DublinBus')
 
 def clampLB(minV,maxV, Q3, Q1):
     return max(minV, Q1-1.5*(Q3-Q1))
@@ -26,7 +27,7 @@ for route in files:
         df=pd.read_csv(route, names=['DAYOFSERVICE','TRIPID','PROGRNUMBER','STOPPOINTID','PLANNEDTIME_ARR', 'PLANNEDTIME_DEP','ACTUALTIME_ARR','ACTUALTIME_DEP','LineID','RouteID', 'Direction'], parse_dates=['DAYOFSERVICE'])
         df=df.drop(df.loc[df.DAYOFSERVICE=='DAYOFSERVICE'].index, errors='ignore')
         df.DAYOFSERVICE=pd.to_datetime(df.DAYOFSERVICE)
-        
+
         #day, weekday, month
         df=df.sort_values(['DAYOFSERVICE','TRIPID','PROGRNUMBER'])
         df['day']=df['DAYOFSERVICE'].dt.dayofweek
@@ -42,7 +43,7 @@ for route in files:
         df=df.sort_values('TIMESTAMP')
         df=pd.merge_asof(df, df1, left_on='TIMESTAMP', right_on='Timestamp', direction='backward')
         df=df.drop('TIMESTAMP',1, errors='ignore')
-        
+
         df[['PLANNEDTIME_ARR','PLANNEDTIME_DEP','ACTUALTIME_ARR','ACTUALTIME_DEP']] = df[['PLANNEDTIME_ARR','PLANNEDTIME_DEP','ACTUALTIME_ARR','ACTUALTIME_DEP']].astype(int)
         #Target Feature
         df['DIFFERENCE_PLANNED_ACTUAL_ARR']=df['ACTUALTIME_ARR']-df['PLANNEDTIME_ARR']
@@ -54,12 +55,12 @@ for route in files:
         #drop all unneccessary features
         df=df.drop(['Timestamp', 'TRIPID'], 1, errors='ignore')
         df.DAYOFSERVICE=pd.to_datetime(df.DAYOFSERVICE)
-        
+
         df[['month', 'day']]=df[['month', 'day']].astype('float64')
         for feat in ["temperature"]:
             normalized=(df[feat]-df[feat].mean())/df[feat].std()
             df[feat+"_NORM"] = normalized
-        
+
         chosen_features = ["temperature_NORM", "PROGRNUMBER", "month", "day"]
         X = df[chosen_features]
         y = df['DIFFERENCE_PLANNED_ACTUAL_ARR']
@@ -72,7 +73,7 @@ for route in files:
 
         #Fitting the model
         model= LinearRegression().fit(X_train, y_train)
-        
+
         #pickling the model
         outfile = open('pickle_'+route,'wb')
         pickle.dump({'model':model, 'features':list(chosen_features)},outfile)
