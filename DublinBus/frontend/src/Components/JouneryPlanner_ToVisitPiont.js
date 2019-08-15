@@ -5,7 +5,6 @@ import React from "react";
 }
 class JouneryPlanner_ToVisitPiont extends React.Component {
   render() {
-    console.log(this.props)
     return (
       <React.Fragment>
         {/*This the the button shown on Journey Planner page , after a user pick the attraction to visit*/}
@@ -64,14 +63,14 @@ class JouneryPlanner_ToVisitPiont extends React.Component {
                   this.props.removeAttractionFromSelected({
                     name: this.props.name,
                     description: this.props.description,
-                    img: this.props.img
+                    href: this.props.image
                   });
                   this.props._AddBackSelectedColor(
                     this.props.PickedAttractionButtonBgColor
                   );
                 }}
               >
-                Remove it from list?
+                Remove selected attraction?
               </button>
             </div>
           </div>

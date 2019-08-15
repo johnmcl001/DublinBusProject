@@ -39,7 +39,7 @@ class ButtonAtResultPage extends Component {
             </a>
           }
           isOpen={this.state.isPaneOpenLeft}
-          title="Back To Direction"
+          title="Previous Page"
           from="right"
           width="100%"
           onRequestClose={() => this.setState({ isPaneOpenLeft: false })}

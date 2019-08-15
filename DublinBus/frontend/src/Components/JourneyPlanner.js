@@ -64,7 +64,7 @@ class JourneyPlanner extends Component {
     }
     if (this.state.startLat.length == 0) {
       this.setState({
-        warningText: "Hey Please Pick Your Start Point"
+        warningText: "Please select a start point"
       });
 
       let $ = jQuery;
@@ -74,7 +74,7 @@ class JourneyPlanner extends Component {
       })(jQuery);
     } else if (this.state.PickedTouristAttraction.length == 0) {
       this.setState({
-        warningText: "Hey Please select some location to visit"
+        warningText: "Please select a location to visit"
       });
       let $ = jQuery;
 
@@ -153,7 +153,6 @@ class JourneyPlanner extends Component {
     {
       //    This function is for add card from the listed of Tourist Attraction into tourist to visit point components
     }
-    console.log(this.state.PickedTouristAttraction);
     if (this.state.PickedTouristAttraction.length <= 2) {
       this.setState(
         {
@@ -168,28 +167,31 @@ class JourneyPlanner extends Component {
           );
         }
       );
+      this.state.submittedAttractions.push(attractions.name);
     } else {
       //This is used to activate the alert box
       let $ = jQuery;
 
       (function($) {
+        console.log("This one here")
         $("#JourneyPlannerAlertBox").modal("toggle");
       })(jQuery);
     }
-    this.state.submittedAttractions.push(attractions.name);
   }
 
   ToAddCardBackToAllCardList(attractions) {
     {
       //    return the card back to all attraction card list after user that card from selected list
     }
-
+    console.log("oo")
+    console.log(attractions)
     this.setState({
       ListOfAllAttractions: [...this.state.ListOfAllAttractions, attractions]
     });
   }
 
   removeAttractionFromSelected(attraction) {
+    console.log(attraction)
     this.setState(
       prevState => ({
         PickedTouristAttraction: prevState.PickedTouristAttraction.filter(
@@ -257,7 +259,7 @@ class JourneyPlanner extends Component {
     return (
       <div>
         <div className="EntireBox  SearchByDestinationBox JoureyPlaner bg-light container col-md-12  position-absolute  ">
-          <AppViewHeader SearchState={"Journey Planner"} Return="toHomePage" />
+          <AppViewHeader SearchState={"Tourist Planner"} Return="toHomePage" />
           <AppViewFavourAndLogin />
 
           <div id="formColor">
@@ -282,12 +284,12 @@ class JourneyPlanner extends Component {
                 </div>
 
                 <div className="col-12 listDestination_label  ">
-                  <label> Picked Attraction:</label>
+                  <label> Selected Attractions:</label>
                 </div>
                 <div className="accordion" id="accordionExample">
                   <div className="row listDestination border border-white ">
                     {/*add to travel destination*/}
-
+                    {console.log(this.state.PickedTouristAttraction)}
                     {this.state.PickedTouristAttraction.map(
                       (cardInfo, index) => (
                         <JouneryPlanner_ToVisitPiont
@@ -296,7 +298,7 @@ class JourneyPlanner extends Component {
                           cardID={`attraction_${index}`}
                           key={index}
                           name={cardInfo.name}
-                          image={cardInfo.image}
+                          image={cardInfo.img}
                           description={cardInfo.description}
                           removeAttractionFromSelected={this.removeAttractionFromSelected.bind(
                             this
@@ -343,7 +345,7 @@ class JourneyPlanner extends Component {
           color={"#146EB4"}
           id={"JourneyPlannerAlertBox"}
           title={"Information"}
-          content={"Sorry, You can only select three attraction."}
+          content={"Sorry, You can only select up to three attractions."}
         />
         <WarningAlert
           color={"#F65314"}

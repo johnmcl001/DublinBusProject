@@ -64,15 +64,6 @@ class App extends Component {
                                     />
                                 )}
                             />
-                            <Route path="/SearchByRoute"
-                                render={({updateMap, match, history}) => (
-                                    <SearchByRoute
-                                        match={match}
-                                        history={history}
-                                        backend={this.state.backend}
-                                    />
-                                )}
-                            />
                             <Route path="/SearchByStop" component={SearchByStop}/>
                             <Route path="/JourneyPlanner"
                                 render={({updateMap, match, history}) => (
