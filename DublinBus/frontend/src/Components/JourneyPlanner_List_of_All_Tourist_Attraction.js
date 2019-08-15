@@ -15,7 +15,7 @@ class JourneyPlanner_List_of_All_Tourist_Attraction extends Component {
           <Cards
             key={Index}
             name={cardInfo.name}
-            href={"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&key=AIzaSyDBnVde8R4LpYQapr6-zbAHPD5Xcva9H_c&photo_reference=" + cardInfo.image}
+            href={cardInfo.image ? "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&key=AIzaSyDBnVde8R4LpYQapr6-zbAHPD5Xcva9H_c&photo_reference=" + cardInfo.image : cardInfo.href}
             description={cardInfo.description}
             buttonID={`CardButton_${Index}`}
             cardID={`CardAttraction_${Index}`}

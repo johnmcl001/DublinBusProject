@@ -10,13 +10,14 @@ class JourneyPlanner_Card extends React.Component {
   render() {
     return (
       <div>
+      {console.log(this.props.href)}
         <div className="card col-12 Card_allAttraction">
           <img
             className="card-img-top"
             src={this.props.href}
             alt="Card image cap"
           />
-{console.log(this.props)}
+
           <div className="cardBody">
             <Accordion.Toggle
               as={Button}
@@ -43,7 +44,7 @@ class JourneyPlanner_Card extends React.Component {
             onClick={this.props.AddAttactionCardFunction.bind(this, {
               name: this.props.name,
               description: this.props.description,
-              img: this.props.img
+              img: this.props.href
             })}
           >
             <p>

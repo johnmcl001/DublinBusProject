@@ -24,7 +24,7 @@ const Table = ({data}) =>
 
                         <div className="row DestinationLabels  ">
 
-                            <h5>Estimate Time:  {data[0].duration}  mins</h5>
+                            <h5>Estimated Travel Time:  {data[0].duration}  mins</h5>
 
                         </div>
                     </div>

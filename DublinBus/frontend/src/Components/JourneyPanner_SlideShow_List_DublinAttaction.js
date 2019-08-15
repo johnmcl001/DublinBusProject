@@ -35,7 +35,7 @@ class JourneyPanner_SlideShow_List_DublinAttaction extends Component {
             style={{ width: "auto" }}
             onClick={() => this.setState({ isPaneOpenLeft: true })}
           >
-            Show All Attraction
+            Show All Attractions
           </a>
         </div>
 

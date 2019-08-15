@@ -65,7 +65,7 @@ class SearchbyDestination extends Component {
         }
         if (this.state.startLat.length == 0) {
             this.setState({
-                warningText: "Hey, Please Pick Your Start Point"
+                warningText: "Please select a start point"
             });
             let $ = jQuery;
 
@@ -74,7 +74,7 @@ class SearchbyDestination extends Component {
             })(jQuery);
         } else if (this.state.destinationLat.length == 0) {
             this.setState({
-                warningText: "Hey, Please Pick Your Destination Point"
+                warningText: "Please select a destination"
             });
 
             (function ($) {
@@ -96,7 +96,7 @@ class SearchbyDestination extends Component {
 
                 if (selectedTime < now) {
                     this.setState({
-                        warningText: 'Hey, Not to allow to pick past time values '
+                        warningText: 'Sorry, that time is in the past'
                     });
                     (function ($) {
                         $("#DestinationWarning").modal("toggle");
@@ -110,7 +110,7 @@ class SearchbyDestination extends Component {
                 now = new Date().getHours() + ":" + new Date().getMinutes()
                 if (this.state.startTimeToBackEnd < now) {
                     this.setState({
-                        warningText: 'Hey, Not to allow to pick past time values '
+                        warningText: 'Sorry, that time is in the past'
                     });
                     (function ($) {
                         $("#DestinationWarning").modal("toggle");
