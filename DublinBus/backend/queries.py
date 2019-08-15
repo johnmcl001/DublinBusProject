@@ -35,18 +35,6 @@ def get_relevant_stop_times_per_routes_and_stops(stop_numbers, route_numbers, se
     stop_times=StopTimes.objects.filter(service_id__in=services, **{ filter_gt: start_time }, **{ filter_lt: end_time }, stop__stopid_short__in=stop_numbers, route_short_name__in=route_numbers).order_by(variable_column)
     return stop_times
 
-
-def get_direction( day, date, route_number, stop_number):
-    """
-    Input: bus stop number and route_number
-    Filters endpoints that the bus goes to (one the given day) based on route and stop given
-    Output: Direction of route as int and headsign label
-    """
-    services=get_services(day, date)
-    route_ids=Routes.objects.filter(route_short_name=route_number)
-    headsigns=Trips.objects.filter(service_id__in=services, route__in=route_ids).values('trip_headsign','direction_id').distinct()
-    return headsigns
-
 def get_station_number( name, dest_lat, dest_lon, route):
     """
     Input: Station name and coordinates and a route that serves it.

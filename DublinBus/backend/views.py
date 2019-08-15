@@ -12,7 +12,6 @@ import json
 import requests
 import os
 from rest_framework import generics
-from .HereManager import HereManager
 from datetime import datetime, timedelta, date
 from ast import literal_eval
 import pickle
@@ -75,7 +74,6 @@ class SearchByStop(views.APIView):
         """
         #results+={'stop': machine_learning_inputs['stop_number'], 'route': route, 'arrival_time': arrival_time.strftime("%H:%M"), 'stop':machine_learning_inputs['trips'][route][num].stop, 'trip_id':machine_learning_inputs['trips'][route][num].trip_id},
         formatted_results = [{"directions": [], "map": {"markers": [], "polyline": []}}]
-        count=0
         for i in range(0, len(results)):
             formatted_results[0]["directions"] += [
                 {
@@ -83,8 +81,6 @@ class SearchByStop(views.APIView):
                     "time": getattr(results[i], "predicted_arrival_times_"+str(prediction_digit))
                 }
             ]
-
-            count+=1
         formatted_results[0]["map"]["markers"] += [stop_coords]
         return formatted_results
 
@@ -205,7 +201,6 @@ class SearchByDestination(SearchByStop):
             results=self.get_polyline_coords(results)
             results = self.format_response(results)
             return Response(results)
-
         routes = self.get_route(time, day_info['date'], start_coords, end_coords)
         full_journeys = self.get_full_journeys(routes, time, services, day_info['prediction_digit'], day_info['date'])
         results=self.sort_routes(full_journeys)
@@ -248,6 +243,7 @@ class SearchByDestination(SearchByStop):
         Input: route as json
         Ouput: route segments as json
         """
+
         all_routes=[]
         for r in range(0, len(route["routes"])):
             valid_flag=True
@@ -280,13 +276,13 @@ class SearchByDestination(SearchByStop):
                     step_route=step["transit_details"]["line"]["short_name"].lower()
                     dep_stop=get_station_number(step["transit_details"]["departure_stop"]["name"], step["start_location"]["lat"], step["start_location"]["lng"], step_route)
                     arrival_stop=get_station_number(step["transit_details"]["arrival_stop"]["name"], step["end_location"]["lat"], step["end_location"]["lng"], step_route)
-
                     if step['transit_details']['line']['agencies'][0]['name']=='Dublin Bus':
                         variable_column = 'predicted_arrival_times_'+str(prediction_day)
                         filter_gt = variable_column + '__' + 'gte'
                         stop_times=StopTimes.objects.filter(service_id__in=services, stop__stopid_short=dep_stop, route_short_name=step_route)
-                        stop_times1=stop_times=StopTimes.objects.filter(service_id__in=services, stop__stopid_short=arrival_stop, route_short_name=step_route)
+                        stop_times1=StopTimes.objects.filter(service_id__in=services, stop__stopid_short=arrival_stop, route_short_name=step_route)
                         stop_times=stop_times.filter(trip_id__in=stop_times1).values('trip_id')
+
                         trip=StopTimes.objects.filter(trip_id__in=stop_times, **{ filter_gt: start_time }, stop__stopid_short=dep_stop).order_by(variable_column)
                         if trip.count()==0:
                             valid_flag=False
@@ -559,7 +555,6 @@ class SearchByDestination(SearchByStop):
         When no direct route is possible, our app looks for a route with a stop_id as a direct crossover
         Output: All valid trips for each route with each leg in a list in the nearest start station to the user with valid trips.
         """
-
         stoptimes_all_start_stops=get_relevant_stop_times_per_routes_and_stops(start_stations['list_stop_short'], start_routes['all'], services, time, prediction_day)
         possible_crossovers_stops_leg1=StopTimes.objects.filter(trip_id__in=stoptimes_all_start_stops).values('stop__stopid_short')
         stoptimes_all_end_stops=get_relevant_stop_times_per_routes_and_stops(end_stations['list_stop_short'], end_routes['all'], services, time, prediction_day)
@@ -665,7 +660,7 @@ class SearchByDestination(SearchByStop):
                     }
                     if wait_time>0:
                         route_breakdown["directions"] += [waiting]
-                    
+
 
                 if i == len(result):
                     route_breakdown["map"]["markers"] += [{
@@ -714,9 +709,7 @@ class TouristPlanner(SearchByStop):
         Input: best route as an array
         Output:best route formatted as json
         """
-
         results = []
-
         for i in range(len(best_route[0])-1):
             if best_route[0][i] != home and best_route[0][i+1] != home:
                 start_lat = Touristattractions.objects.filter(name=best_route[0][i])[0].lat
@@ -747,7 +740,6 @@ class TouristPlanner(SearchByStop):
                 "time": str(time),
                 "date": str(date)
             }]
-
         return results
 
     def get_attractions(self):
@@ -802,6 +794,7 @@ class TouristPlanner(SearchByStop):
         Input: permutations as array of arrays
         Output: lowest cost permutation as array, cost of permutation
         """
+        print(attractions)
         minimum = float("inf")
         lowest_cost_permutation = []
         r = redis.Redis(host="localhost", port=6379, db=0)
@@ -893,41 +886,3 @@ class directions(views.APIView):
         """
         result = self.request.GET.get(param, None)
         return result
-
-class StopsAutocomplete(views.APIView):
-
-    def get(self, request):
-        """
-        Input: User HTTP request
-        Output: List of stops for a specific route, direction, day
-        """
-        params = self.get_params()
-        day = datetime.today().strftime('%A').lower()
-        stops = self.get_stops(params, day)
-        return Response(stops)
-
-    def get_params(self):
-        """
-        Input: None
-        Output: Route, direction, day as dict
-        """
-        params = {}
-        params["route"] = self.request.GET.get("route", None)
-        params["direction"] = self.request.GET.get("direction", None)
-        return params
-
-
-    def get_stops(self, params, day):
-        """
-        Input: sql query as string
-        Output: stops for route given direction and day as list
-        """
-        query = "select distinct s.stopID_short, s.stop_id from stops s, stop_times st, trips t where s.stop_id = st.stop_id and st.trip_id = t.trip_id and t.direction_id = %s and st.route_short_name = %s"
-
-        stops = list(Stops.objects.raw(query, [params["direction"], params["route"]]))
-
-        stop_list = []
-        for stop in stops:
-            stop_list += [str(stop.stopid_short) + ", " + str(stop.stop_name)]
-
-        return stop_list
