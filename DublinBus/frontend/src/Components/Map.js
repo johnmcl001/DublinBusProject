@@ -11,7 +11,6 @@ import {
     Polyline
 } from "react-google-maps";
 import "../Static/StyleSheet/Map.css";
-import MarkerContainer from "./MarkerContainer.js";
 
 class Map extends Component {
 

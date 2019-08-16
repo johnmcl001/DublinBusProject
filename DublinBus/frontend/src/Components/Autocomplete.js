@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "../Static/StyleSheet/AutoComplete.css";
-import PropTypes from "prop-types";
 
 {
 //  Enable Autocomplet for the input box at Search by Stop and Route
