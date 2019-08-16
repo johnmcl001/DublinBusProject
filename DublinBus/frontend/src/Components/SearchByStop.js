@@ -75,16 +75,14 @@ class SearchByStop extends Component {
           </form>
         </div>
 
-        <div className="col-8  bottomClass">
           <button
             type="button"
-            className="btn btn-warning "
+            className="btn btn-warning col-7"
             id="SubmitButton"
             onClick={this.ensureFill.bind(this)}
           >
             Submit
           </button>
-        </div>
 
         <WarningAlert
           color={"#F65314"}

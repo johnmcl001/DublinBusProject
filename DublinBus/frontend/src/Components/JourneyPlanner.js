@@ -259,7 +259,7 @@ class JourneyPlanner extends Component {
           <AppViewFavourAndLogin />
 
           <div id="formColor">
-            <form>
+            <form onSubmit={e => {e.preventDefault(); }}>
               <div className="container  SearchByDestinationForm">
                 <div className="row  JourneyPlannerRowSecond">
                   {/*Start location starts here*/}

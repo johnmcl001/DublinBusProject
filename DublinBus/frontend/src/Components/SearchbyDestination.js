@@ -202,7 +202,7 @@ class SearchbyDestination extends Component {
                     />
                     <AppViewFavourAndLogin/>
                     <div id="formColor">
-                        <form>
+                        <form onSubmit={e => {e.preventDefault(); }}>
                             <div className="container  SearchByDestinationForm">
                                 <div className="row row_first ">
                                     <h5 id="whereLabel">Where:</h5>
