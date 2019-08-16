@@ -94,7 +94,9 @@
        padding-left: 0!important;
 
 }
-
+.slide-pane__overlay{
+    z-index: 99 !important;
+}
 .slide-pane .slide-pane__title {
      width: 100%!important;
  font-size: 23px;

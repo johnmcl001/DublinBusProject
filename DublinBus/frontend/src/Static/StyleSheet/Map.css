@@ -37,7 +37,7 @@ margin-left: auto;
 }
 
 
-@media only screen and (max-width: 420px) {
+@media only screen and (max-width: 769px) {
 
     .currentLocationIcon_map {
         display: none;
