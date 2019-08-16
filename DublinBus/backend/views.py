@@ -794,7 +794,6 @@ class TouristPlanner(SearchByStop):
         Input: permutations as array of arrays
         Output: lowest cost permutation as array, cost of permutation
         """
-        print(attractions)
         minimum = float("inf")
         lowest_cost_permutation = []
         r = redis.Redis(host="localhost", port=6379, db=0)

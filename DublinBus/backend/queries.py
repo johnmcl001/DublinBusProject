@@ -81,7 +81,6 @@ def get_stations_nearby(dest_lat, dest_lon, num_stations=8, radius=5):
         +'%(default_radius)s ORDER BY distance limit 30;',{'dest_lat':str(dest_lat), 'dest_lon':str(dest_lon), 'default_radius':str(default_radius)})
         default_radius+=.5
     if (len(list(station_list))==0):
-        print("No stations found nearby")
         return None
 
     station_dict={'list_stop_long':[], 'list_stop_short':[]}
