@@ -17,8 +17,8 @@ class App extends Component {
         this.state = {
             polyline: [],
             markers: [],
-            //backend: "https://route13.eu/api/",
-            backend: "http://localhost:8000/api/"
+            backend: "https://route13.eu/api/",
+            //backend: "http://localhost:8000/api/"
         };
         this.updateMap = this.updateMap.bind(this);
     }
