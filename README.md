@@ -1,6 +1,26 @@
-# COMP47360 Research Practicum - Predicting Dublin Bus Journey Times
+# COMP47360 Research Practicum: Predicting Dublin Bus Journey Times
 
-## Prerequisites
+## Table of Contents
+
+- [Introduction](#intro)
+- [Features](#features)
+- [Prerequisites](#pre)
+- [Installation](#install)
+- [Running the Application](#run)
+- [Contributions](#contr)
+
+## <a name="intro">Introduction</a>
+Route 13 is an eay to use application that accurately estimates the travel time of buses ran by Dublin Bus. If you want accurate estimations of bus arrival times that consider the affect weather and historical traffic patterns have on travel times, clone and launch.
+
+Our homepage allows you to choose from three features, Search by Stop, Search by Destination and Tourist Journey Planner. Search by Stop will give you arrurate arrival times for all buses that serve your stop. Search by Destination will find a bus stop near your destination and departure points and plan your journey for you. Tourist Journey Planner provides a list of popular Dublin Tourist destinations from which you can select your preferred destinations and the application will provide you with the best route to travel to each starting and ending at a point of your choice!
+
+## <a name="features">Features</a>
+
+__UX Design:__ Simple and easy to use interface which includes common user features such as a home button.
+__Prediction Models:__ Premade prediction models which can be used with Dublin Bus GTFS data to accurately predict bus arrival time.
+__Routing:__ Does not rely on APIs for routing.
+
+## <a name="pre">Prerequisites</a>
 
 ### Git
 Used to clone the repository and navigate its branches.
@@ -20,7 +40,7 @@ Redis is an in-memory data store used as a cache in the application.
 ### MySQL
 MySQL is a relational database management system used to store the data which drives the application.
 
-## Installation
+## <a name="install">Installation</a>
 
 1. Clone the git repository, master is the stable branch and is immutable.
 
@@ -58,7 +78,7 @@ MySQL is a relational database management system used to store the data which dr
 
         npm install npx
 
-## Running the Application
+## <a name="run">Running the Application</a>
 
 1. Start the Django backend.
 
@@ -105,17 +125,13 @@ MySQL is a relational database management system used to store the data which dr
 
 7. (Optional) Navigate to localhost:5000 in a browser
 
+## <a name="contr">Contributions</a>
 
-## Introduction
-Route 13 is an eay to use application that accurately estimates the travel time of buses ran by Dublin Bus. If you want accurate estimations of bus arrival times that consider the affect weather and historical traffic patterns have on travel times, clone and launch.
+John McLoughlin
+Niamh Crowley
+Deyan Chen
+Nonty Dazana 
 
-Our homepage allows you to choose from three features, Search by Stop, Search by Destination and Tourist Journey Planner. Search by Stop will give you arrurate arrival times for all buses that serve your stop. Search by Destination will find a bus stop near your destination and departure points and plan your journey for you. Tourist Journey Planner provides a list of popular Dublin Tourist destinations from which you can select your preferred destinations and the application will provide you with the best route to travel to each starting and ending at a point of your choice!
-
-## Features
-
-UX Design: Simple and easy to use interface which includes common user features such as a home button.
-Prediction Models: Premade prediction models which can be used with Dublin Bus GTFS data to accurately predict bus arrival time.
-Routing: Does not rely on APIs for routing.
 
 
 
