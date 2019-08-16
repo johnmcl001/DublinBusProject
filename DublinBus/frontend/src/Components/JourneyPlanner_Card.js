@@ -10,7 +10,6 @@ class JourneyPlanner_Card extends React.Component {
   render() {
     return (
       <div>
-      {console.log(this.props.href)}
         <div className="card col-12 Card_allAttraction">
           <img
             className="card-img-top"

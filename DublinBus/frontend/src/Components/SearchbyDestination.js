@@ -200,7 +200,6 @@ class SearchbyDestination extends Component {
                         SearchState={"Search By Destination"}
                         Return="toHomePage"
                     />
-                    {console.log(this.props.history)}
                     <AppViewFavourAndLogin/>
                     <div id="formColor">
                         <form>

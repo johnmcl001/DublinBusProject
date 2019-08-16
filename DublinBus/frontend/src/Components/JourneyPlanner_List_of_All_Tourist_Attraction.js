@@ -10,7 +10,6 @@ class JourneyPlanner_List_of_All_Tourist_Attraction extends Component {
   render() {
     return (
       <React.Fragment>
-      {console.log(this.props)}
         {this.props.ListOfAllAttractions.map((cardInfo, Index) => (
           <Cards
             key={Index}

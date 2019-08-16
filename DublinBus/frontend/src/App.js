@@ -31,7 +31,6 @@ class App extends Component {
     }
 
     updateMap = newMapInfo => {
-        console.log(newMapInfo);
         this.setState({
             polyline: newMapInfo[0].hasOwnProperty("map")
                 ? newMapInfo[0].map.polyline

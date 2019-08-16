@@ -57,7 +57,6 @@ class DataProvider extends Component {
         })
             .then(response => {
                 if (response.data.length == 0) {
-                    console.log("empty array");
                     this.setState({placeholder: "No routes possible at this time"});
                     return;
                 } else {

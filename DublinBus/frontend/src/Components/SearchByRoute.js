@@ -39,9 +39,7 @@ class SearchByRoute extends Component {
   }
 
   updateStop(e) {
-    console.log(e)
     this.setState({ stopNumber: e.substring(0, e.indexOf(",")) });
-    console.log(this.state.stopNumber)
   }
 
   updateDirectionAutocomplete(e) {
@@ -61,11 +59,9 @@ class SearchByRoute extends Component {
       .then(data =>
         this.setState({ directionAutocomplete: data, loaded: true })
       );
-    console.log(this.state.directionAutocomplete);
   }
 
   updateStopAutocomplete(e) {
-    console.log(this.state.routeNumber)
     this.state.stopsAutocomplete = axios({
       method: "get",
       url: this.props.backend + "stopsautocomplete/",

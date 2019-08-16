@@ -66,7 +66,6 @@ class Map extends Component {
                     disableDefaultUI: true
                 }}
             >
-                {console.log(this.props.markers)}
                 <Polyline
                     path={this.props.polyline}
                     strokeColor="#0000FF"

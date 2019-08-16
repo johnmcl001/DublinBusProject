@@ -70,7 +70,6 @@ class MapContainer extends Component {
               {/* Creates the marker if it is in the markers array(state)
                We only want this to update when markers state is updated.*/}
               {this.state.markers.map(station => {
-                //console.log(stationkeys[station]['name']);
                 this.addPolyline({
                   lat: stationkeys[station]["lat"],
                   lng: stationkeys[station]["long"]

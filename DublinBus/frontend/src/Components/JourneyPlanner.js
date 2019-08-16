@@ -173,7 +173,6 @@ class JourneyPlanner extends Component {
       let $ = jQuery;
 
       (function($) {
-        console.log("This one here")
         $("#JourneyPlannerAlertBox").modal("toggle");
       })(jQuery);
     }
@@ -183,15 +182,12 @@ class JourneyPlanner extends Component {
     {
       //    return the card back to all attraction card list after user that card from selected list
     }
-    console.log("oo")
-    console.log(attractions)
     this.setState({
       ListOfAllAttractions: [...this.state.ListOfAllAttractions, attractions]
     });
   }
 
   removeAttractionFromSelected(attraction) {
-    console.log(attraction)
     this.setState(
       prevState => ({
         PickedTouristAttraction: prevState.PickedTouristAttraction.filter(
@@ -289,7 +285,6 @@ class JourneyPlanner extends Component {
                 <div className="accordion" id="accordionExample">
                   <div className="row listDestination border border-white ">
                     {/*add to travel destination*/}
-                    {console.log(this.state.PickedTouristAttraction)}
                     {this.state.PickedTouristAttraction.map(
                       (cardInfo, index) => (
                         <JouneryPlanner_ToVisitPiont
