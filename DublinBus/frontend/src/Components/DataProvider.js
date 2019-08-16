@@ -1,7 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
-import decodePolyline from "decode-google-map-polyline";
 import loading from "../Static/img/loading.gif";
 
 const imgStyle = {
