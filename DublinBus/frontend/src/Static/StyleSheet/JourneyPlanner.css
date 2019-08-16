@@ -113,7 +113,7 @@
     margin-top: 20px;
 }
 
-@media only screen and (max-width: 770px) {
+@media only screen and (max-width: 991px) {
     .JoureyPlaner form {
         height: 260px;
         padding-bottom: 10px;
