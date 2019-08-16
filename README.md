@@ -127,10 +127,10 @@ MySQL is a relational database management system used to store the data which dr
 
 ## <a name="contr">Contributions</a>
 
-John McLoughlin
-Niamh Crowley
-Deyan Chen
-Nonty Dazana 
+- John McLoughlin
+- Niamh Crowley
+- Deyan Chen
+- Nonty Dazana 
 
 
 
