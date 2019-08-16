@@ -71,7 +71,7 @@ class DataProvider extends Component {
                 if (error.response) {
                     this.setState({placeholder: "No routes possible at this time"});
                 } else if (error.request) {
-                    this.setState({placeholder: "Server down, try again later"});
+                    this.setState({placeholder: "The server is not available at this time"});
                 }
             });
     }
