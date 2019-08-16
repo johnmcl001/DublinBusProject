@@ -17,10 +17,6 @@ class JourneyPlanner_Table extends React.Component {
       destinationLat: this.props.destinationLat,
       destinationLon: this.props.destinationLon,
       route: "",
-      timeOne: this.props.startTime,
-      timeTwo: "",
-      timeThree: "",
-      timeFour: ""
     }
     this.displayRoute = this.displayRoute.bind(this);
   }
@@ -61,7 +57,6 @@ displayRoute() {
           /> : ""
     })
 }
-
   render() {
     const color = this.props.color;
     return (
@@ -94,7 +89,6 @@ displayRoute() {
                     <Accordion.Collapse  eventKey={this.props.number}
                     >
                         <div>{this.state.route}</div>
-
                     </Accordion.Collapse>
                     </Accordion>
 

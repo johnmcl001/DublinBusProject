@@ -702,6 +702,7 @@ class TouristPlanner(SearchByStop):
         attractions = self.add_home(attractions, home)
         best_route = self.get_best_route(attractions)
         best_route_formatted = self.format_route(best_route, home, home_coords, time, day_info["date"])
+        best_route_formatted = self.remove_null(best_route_formatted, home)
         return Response(best_route_formatted)
 
     def format_route(self, best_route, home, home_coords, time, date):
@@ -788,6 +789,12 @@ class TouristPlanner(SearchByStop):
             for i in range(len(permutations)):
                 permutations[i] = [home] + permutations[i] + [home]
         return permutations
+
+    def remove_null(self, results, home):
+        if home == "null":
+            results[0]["attraction"] = results[0]["attraction"].replace("null", "Your starting point")
+            results[len(results)-1]["attraction"] = results[len(results)-1]["attraction"].replace("null", "your starting point")
+        return results
 
     def get_best_route(self, attractions):
         """
